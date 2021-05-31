@@ -83,7 +83,7 @@ class AppstreamCollection {
       Iterable<AppstreamComponent> components = const []})
       : components = List<AppstreamComponent>.from(components);
 
-  factory AppstreamCollection.fromXML(String xml) {
+  factory AppstreamCollection.fromXml(String xml) {
     var document = XmlDocument.parse(xml);
 
     var root = document.getElement('components');
@@ -164,7 +164,7 @@ class AppstreamCollection {
         version: version.text, origin: origin.text, components: components);
   }
 
-  factory AppstreamCollection.fromYAML(String yaml) {
+  factory AppstreamCollection.fromYaml(String yaml) {
     var yamlDocuments = loadYamlDocuments(yaml);
     if (yamlDocuments.isEmpty) {
       throw FormatException('Empty YAML file');
