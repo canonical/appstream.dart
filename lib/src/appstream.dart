@@ -47,6 +47,46 @@ class AppstreamRemoteIcon extends AppstreamIcon {
   String toString() => '$runtimeType($url)';
 }
 
+enum AppstreamImageType { source, thumbnail }
+
+class AppstreamImage {
+  final AppstreamImageType type;
+  final String url;
+  final int? width;
+  final int? height;
+
+  const AppstreamImage(
+      {required this.type, required this.url, this.width, this.height});
+
+  @override
+  bool operator ==(other) =>
+      other is AppstreamImage &&
+      other.type == type &&
+      other.url == url &&
+      other.width == width &&
+      other.height == height;
+
+  @override
+  String toString() =>
+      "$runtimeType(type: $type, url: '$url', width: $width, height: $height)";
+}
+
+class AppstreamScreenshot {
+  final List<AppstreamImage> images;
+  final Map<String, String> caption;
+
+  const AppstreamScreenshot({this.images = const [], this.caption = const {}});
+
+  @override
+  bool operator ==(other) =>
+      other is AppstreamScreenshot &&
+      _listsEqual(other.images, images) &&
+      _mapsEqual(other.caption, caption);
+
+  @override
+  String toString() => '$runtimeType(images: $images, caption: $caption)';
+}
+
 enum AppstreamUrlType {
   homepage,
   bugtracker,
@@ -98,6 +138,7 @@ class AppstreamComponent {
   final Map<String, String> summary;
   final List<AppstreamIcon> icons;
   final List<AppstreamUrl> urls;
+  final List<AppstreamScreenshot> screenshots;
 
   const AppstreamComponent(
       {required this.id,
@@ -106,11 +147,12 @@ class AppstreamComponent {
       required this.name,
       required this.summary,
       this.icons = const [],
-      this.urls = const []});
+      this.urls = const [],
+      this.screenshots = const []});
 
   @override
   String toString() =>
-      '$runtimeType(id: $id, type: $type, package: $package, name: $name, summary: $summary, icons: $icons, urls: $urls)';
+      '$runtimeType(id: $id, type: $type, package: $package, name: $name, summary: $summary, icons: $icons, urls: $urls, screenshots: $screenshots)';
 }
 
 class AppstreamCollection {
@@ -232,6 +274,38 @@ class AppstreamCollection {
         urls.add(AppstreamUrl(url.text, type: type));
       }
 
+      var screenshots = <AppstreamScreenshot>[];
+      for (var screenshot
+          in elements.where((e) => e.name.local == 'screenshot')) {
+        var caption = _getXmlTranslatedString(screenshot, 'caption');
+        var images = <AppstreamImage>[];
+        for (var imageElement in screenshot.children
+            .whereType<XmlElement>()
+            .where((e) => e.name.local == 'image')) {
+          var typeName = imageElement.getAttribute('type');
+          if (typeName == null) {
+            throw FormatException('Missing image type');
+          }
+          var type = {
+            'source': AppstreamImageType.source,
+            'thumbnail': AppstreamImageType.thumbnail
+          }[typeName];
+          if (type == null) {
+            throw FormatException('Unknown image type');
+          }
+          var w = imageElement.getAttribute('width');
+          var width = w != null ? int.parse(w) : null;
+          var h = imageElement.getAttribute('height');
+          var height = h != null ? int.parse(h) : null;
+          images.add(AppstreamImage(
+              type: type,
+              url: imageElement.text,
+              width: width,
+              height: height));
+        }
+        screenshots.add(AppstreamScreenshot(images: images, caption: caption));
+      }
+
       components.add(AppstreamComponent(
           id: id.text,
           type: type,
@@ -239,7 +313,8 @@ class AppstreamCollection {
           name: name,
           summary: summary,
           icons: icons,
-          urls: urls));
+          urls: urls,
+          screenshots: screenshots));
     }
 
     return AppstreamCollection(
@@ -365,6 +440,56 @@ class AppstreamCollection {
         }
       }
 
+      var screenshots = <AppstreamScreenshot>[];
+      var screenshotsComponent = component['Screenshots'];
+      if (screenshotsComponent != null) {
+        if (!(screenshotsComponent is YamlList)) {
+          throw FormatException('Invaid Screenshots type');
+        }
+        for (var screenshot in screenshotsComponent) {
+          var caption = screenshot['caption'];
+          var images = <AppstreamImage>[];
+          var thumbnails = screenshot['thumbnails'];
+          if (thumbnails != null) {
+            if (!(thumbnails is YamlList)) {
+              throw FormatException('Invaid thumbnails type');
+            }
+            for (var thumbnail in thumbnails) {
+              var url = thumbnail['url'];
+              if (url == null) {
+                throw FormatException('Image missing Url');
+              }
+              var width = thumbnail['width'];
+              var height = thumbnail['height'];
+              images.add(AppstreamImage(
+                  type: AppstreamImageType.thumbnail,
+                  url: _makeUrl(mediaBaseUrl, url),
+                  width: width,
+                  height: height));
+            }
+          }
+          var sourceImage = screenshot['source-image'];
+          if (sourceImage != null) {
+            var url = sourceImage['url'];
+            if (url == null) {
+              throw FormatException('Image missing Url');
+            }
+            var width = sourceImage['width'];
+            var height = sourceImage['height'];
+            images.add(AppstreamImage(
+                type: AppstreamImageType.source,
+                url: _makeUrl(mediaBaseUrl, url),
+                width: width,
+                height: height));
+          }
+          screenshots.add(AppstreamScreenshot(
+              images: images,
+              caption: caption != null
+                  ? _parseYamlTranslatedString(caption)
+                  : const {}));
+        }
+      }
+
       components.add(AppstreamComponent(
           id: id,
           type: type,
@@ -372,7 +497,8 @@ class AppstreamCollection {
           name: _parseYamlTranslatedString(name),
           summary: _parseYamlTranslatedString(summary),
           icons: icons,
-          urls: urls));
+          urls: urls,
+          screenshots: screenshots));
     }
 
     return AppstreamCollection(
@@ -412,9 +538,37 @@ String _makeUrl(String? mediaBaseUrl, String url) {
     return url;
   }
 
-  if (url.startsWith('http:')) {
+  if (url.startsWith('http:') || url.startsWith('https:')) {
     return url;
   }
 
   return mediaBaseUrl + '/' + url;
+}
+
+bool _listsEqual<T>(List<T> a, List<T> b) {
+  if (a.length != b.length) {
+    return false;
+  }
+
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool _mapsEqual<K, V>(Map<K, V> a, Map<K, V> b) {
+  if (a.length != b.length) {
+    return false;
+  }
+
+  for (var key in a.keys) {
+    if (a[key] != b[key]) {
+      return false;
+    }
+  }
+
+  return true;
 }

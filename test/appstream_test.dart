@@ -41,6 +41,8 @@ void main() {
     expect(component.name, equals({'C': 'Hello World'}));
     expect(component.summary, equals({'C': 'A simple example application'}));
     expect(component.icons, isEmpty);
+    expect(component.urls, isEmpty);
+    expect(component.screenshots, isEmpty);
   });
 
   test('collection - icons - xml', () async {
@@ -109,6 +111,52 @@ void main() {
         ]));
   });
 
+  test('collection - screenshot - xml', () async {
+    var collection = AppstreamCollection.fromXml('''<components>
+  <version>0.12</version>
+  <origin>ubuntu-hirsute-main</origin>
+  <component type="console-application">
+    <id>com.example.Hello</id>
+    <pkgname>hello</pkgname>
+    <name>Hello World</name>
+    <summary>A simple example application</summary>
+    <screenshot>
+      <caption>A screenshot</caption>
+      <image type="thumbnail" width="512" height="384">https://example.com/thumbnail-big.jpg</image>
+      <image type="thumbnail" width="256" height="192">https://example.com/thumbnail-small.jpg</image>
+      <image type="source" width="1024" height="768">https://example.com/screenshot.jpg</image>
+    </screenshot>
+  </component>
+</components>
+''');
+    expect(collection.components, hasLength(1));
+    var component = collection.components[0];
+    expect(
+        component.screenshots,
+        equals([
+          AppstreamScreenshot(images: [
+            AppstreamImage(
+                type: AppstreamImageType.thumbnail,
+                url: 'https://example.com/thumbnail-big.jpg',
+                width: 512,
+                height: 384),
+            AppstreamImage(
+                type: AppstreamImageType.thumbnail,
+                url:
+                    'https://example.com/thumbnail-small.jpg',
+                width: 256,
+                height: 192),
+            AppstreamImage(
+                type: AppstreamImageType.source,
+                url: 'https://example.com/screenshot.jpg',
+                width: 1024,
+                height: 768)
+          ], caption: {
+            'C': 'A screenshot'
+          })
+        ]));
+  });
+
   test('collection - empty yaml', () async {
     expect(() => AppstreamCollection.fromYaml(''), throwsFormatException);
   });
@@ -153,6 +201,8 @@ Summary:
     expect(component.name, equals({'C': 'Hello World'}));
     expect(component.summary, equals({'C': 'A simple example application'}));
     expect(component.icons, isEmpty);
+    expect(component.urls, isEmpty);
+    expect(component.screenshots, isEmpty);
   });
 
   test('collection - icons - yaml', () async {
@@ -238,6 +288,63 @@ Url:
           AppstreamUrl('https://example.com/help', type: AppstreamUrlType.help),
           AppstreamUrl('https://example.com/contact',
               type: AppstreamUrlType.contact)
+        ]));
+  });
+
+  test('collection - screenshot - yaml', () async {
+    var collection = AppstreamCollection.fromYaml("""---
+File: DEP-11
+Version: '0.12'
+Origin: ubuntu-hirsute-main
+MediaBaseUrl: https://example.com/images
+---
+Type: console-application
+ID: com.example.Hello
+Package: hello
+Name:
+  C: Hello World
+Summary:
+  C: A simple example application
+Screenshots:
+- caption:
+    C: A screenshot
+  thumbnails:
+  - url: https://example.com/thumbnail-big.jpg
+    width: 512
+    height: 384
+  - url: thumbnail-small.jpg
+    width: 256
+    height: 192
+  source-image:
+    url: screenshot.jpg
+    width: 1024
+    height: 768
+""");
+    expect(collection.components, hasLength(1));
+    var component = collection.components[0];
+    expect(
+        component.screenshots,
+        equals([
+          AppstreamScreenshot(images: [
+            AppstreamImage(
+                type: AppstreamImageType.thumbnail,
+                url: 'https://example.com/thumbnail-big.jpg',
+                width: 512,
+                height: 384),
+            AppstreamImage(
+                type: AppstreamImageType.thumbnail,
+                url:
+                    'https://example.com/images/thumbnail-small.jpg',
+                width: 256,
+                height: 192),
+            AppstreamImage(
+                type: AppstreamImageType.source,
+                url: 'https://example.com/images/screenshot.jpg',
+                width: 1024,
+                height: 768)
+          ], caption: {
+            'C': 'A screenshot'
+          })
         ]));
   });
 }
