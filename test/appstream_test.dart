@@ -147,6 +147,43 @@ void main() {
         ]));
   });
 
+  test('collection - screenshots - xml', () async {
+    var collection = AppstreamCollection.fromXml('''<components>
+  <version>0.12</version>
+  <origin>ubuntu-hirsute-main</origin>
+  <component type="console-application">
+    <id>com.example.Hello</id>
+    <pkgname>hello</pkgname>
+    <name>Hello World</name>
+    <summary>A simple example application</summary>
+    <screenshot>
+      <image type="source">https://example.com/screenshot1.jpg</image>
+    </screenshot>
+    <screenshot type="default">
+      <image type="source">https://example.com/screenshot2.jpg</image>
+    </screenshot>
+  </component>
+</components>
+''');
+    expect(collection.components, hasLength(1));
+    var component = collection.components[0];
+    expect(
+        component.screenshots,
+        equals([
+          AppstreamScreenshot(images: [
+            AppstreamImage(
+              type: AppstreamImageType.source,
+              url: 'https://example.com/screenshot1.jpg',
+            )
+          ]),
+          AppstreamScreenshot(images: [
+            AppstreamImage(
+                type: AppstreamImageType.source,
+                url: 'https://example.com/screenshot2.jpg')
+          ], isDefault: true)
+        ]));
+  });
+
   test('collection - empty yaml', () async {
     expect(() => AppstreamCollection.fromYaml(''), throwsFormatException);
   });
@@ -330,6 +367,45 @@ Screenshots:
           ], caption: {
             'C': 'A screenshot'
           })
+        ]));
+  });
+
+  test('collection - screenshots - yaml', () async {
+    var collection = AppstreamCollection.fromYaml("""---
+File: DEP-11
+Version: '0.12'
+Origin: ubuntu-hirsute-main
+---
+Type: console-application
+ID: com.example.Hello
+Package: hello
+Name:
+  C: Hello World
+Summary:
+  C: A simple example application
+Screenshots:
+- source-image:
+    url: https://example.com/screenshot1.jpg
+- default: true
+  source-image:
+    url: https://example.com/screenshot2.jpg
+""");
+    expect(collection.components, hasLength(1));
+    var component = collection.components[0];
+    expect(
+        component.screenshots,
+        equals([
+          AppstreamScreenshot(images: [
+            AppstreamImage(
+              type: AppstreamImageType.source,
+              url: 'https://example.com/screenshot1.jpg',
+            )
+          ]),
+          AppstreamScreenshot(images: [
+            AppstreamImage(
+                type: AppstreamImageType.source,
+                url: 'https://example.com/screenshot2.jpg')
+          ], isDefault: true)
         ]));
   });
 }

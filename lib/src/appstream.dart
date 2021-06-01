@@ -99,17 +99,23 @@ class AppstreamImage {
 class AppstreamScreenshot {
   final List<AppstreamImage> images;
   final Map<String, String> caption;
+  final bool isDefault;
 
-  const AppstreamScreenshot({this.images = const [], this.caption = const {}});
+  const AppstreamScreenshot(
+      {this.images = const [],
+      this.caption = const {},
+      this.isDefault = false});
 
   @override
   bool operator ==(other) =>
       other is AppstreamScreenshot &&
       _listsEqual(other.images, images) &&
-      _mapsEqual(other.caption, caption);
+      _mapsEqual(other.caption, caption) &&
+      other.isDefault == isDefault;
 
   @override
-  String toString() => '$runtimeType(images: $images, caption: $caption)';
+  String toString() =>
+      '$runtimeType(images: $images, caption: $caption, isDefault: $isDefault)';
 }
 
 enum AppstreamUrlType {
@@ -302,6 +308,7 @@ class AppstreamCollection {
       var screenshots = <AppstreamScreenshot>[];
       for (var screenshot
           in elements.where((e) => e.name.local == 'screenshot')) {
+        var isDefault = screenshot.getAttribute('type') == 'default';
         var caption = _getXmlTranslatedString(screenshot, 'caption');
         var images = <AppstreamImage>[];
         for (var imageElement in screenshot.children
@@ -328,7 +335,8 @@ class AppstreamCollection {
               width: width,
               height: height));
         }
-        screenshots.add(AppstreamScreenshot(images: images, caption: caption));
+        screenshots.add(AppstreamScreenshot(
+            images: images, caption: caption, isDefault: isDefault));
       }
 
       components.add(AppstreamComponent(
@@ -472,6 +480,7 @@ class AppstreamCollection {
           throw FormatException('Invaid Screenshots type');
         }
         for (var screenshot in screenshotsComponent) {
+          var isDefault = screenshot['default'] ?? 'false' == 'true';
           var caption = screenshot['caption'];
           var images = <AppstreamImage>[];
           var thumbnails = screenshot['thumbnails'];
@@ -511,7 +520,8 @@ class AppstreamCollection {
               images: images,
               caption: caption != null
                   ? _parseYamlTranslatedString(caption)
-                  : const {}));
+                  : const {},
+              isDefault: isDefault));
         }
       }
 
