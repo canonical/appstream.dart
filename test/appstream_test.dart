@@ -42,6 +42,7 @@ void main() {
     expect(component.summary, equals({'C': 'A simple example application'}));
     expect(component.developerName, isNull);
     expect(component.projectLicense, isNull);
+    expect(component.projectGroup, isNull);
     expect(component.icons, isEmpty);
     expect(component.urls, isEmpty);
     expect(component.screenshots, isEmpty);
@@ -58,6 +59,7 @@ void main() {
     <summary>A simple example application</summary>
     <developer_name>The Developer</developer_name>
     <project_license>GPL-3</project_license>
+    <project_group>GNOME</project_group>
   </component>
 </components>
 ''');
@@ -65,6 +67,7 @@ void main() {
     var component = collection.components[0];
     expect(component.developerName, equals("The Developer"));
     expect(component.projectLicense, equals("GPL-3"));
+    expect(component.projectGroup, equals("GNOME"));
   });
 
   test('collection - icons - xml', () async {
@@ -252,6 +255,7 @@ Summary:
     expect(component.summary, equals({'C': 'A simple example application'}));
     expect(component.developerName, isNull);
     expect(component.projectLicense, isNull);
+    expect(component.projectGroup, isNull);
     expect(component.icons, isEmpty);
     expect(component.urls, isEmpty);
     expect(component.screenshots, isEmpty);
@@ -272,11 +276,13 @@ Summary:
   C: A simple example application
 DeveloperName: The Developer
 ProjectLicense: GPL-3
+ProjectGroup: GNOME
 """);
     expect(collection.components, hasLength(1));
     var component = collection.components[0];
     expect(component.developerName, equals("The Developer"));
     expect(component.projectLicense, equals("GPL-3"));
+    expect(component.projectGroup, equals("GNOME"));
   });
 
   test('collection - icons - yaml', () async {

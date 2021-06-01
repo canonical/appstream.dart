@@ -175,6 +175,7 @@ class AppstreamComponent {
   final Map<String, String> summary;
   final String? developerName;
   final String? projectLicense;
+  final String? projectGroup;
   final List<AppstreamIcon> icons;
   final List<AppstreamUrl> urls;
   final List<AppstreamScreenshot> screenshots;
@@ -187,13 +188,14 @@ class AppstreamComponent {
       required this.summary,
       this.developerName,
       this.projectLicense,
+      this.projectGroup,
       this.icons = const [],
       this.urls = const [],
       this.screenshots = const []});
 
   @override
   String toString() =>
-      "$runtimeType(id: $id, type: $type, package: $package, name: $name, summary: $summary, developerName: '$developerName', icons: $icons, urls: $urls, screenshots: $screenshots)";
+      "$runtimeType(id: $id, type: $type, package: $package, name: $name, summary: $summary, developerName: '$developerName', projectLicense: $projectLicense, projectGroup: $projectGroup, icons: $icons, urls: $urls, screenshots: $screenshots)";
 }
 
 class AppstreamCollection {
@@ -268,6 +270,7 @@ class AppstreamCollection {
       var summary = _getXmlTranslatedString(component, 'summary');
       var developerName = component.getElement('developer_name')?.text;
       var projectLicense = component.getElement('project_license')?.text;
+      var projectGroup = component.getElement('project_group')?.text;
 
       var elements = component.children.whereType<XmlElement>();
 
@@ -361,6 +364,7 @@ class AppstreamCollection {
           summary: summary,
           developerName: developerName,
           projectLicense: projectLicense,
+          projectGroup: projectGroup,
           icons: icons,
           urls: urls,
           screenshots: screenshots));
@@ -440,6 +444,7 @@ class AppstreamCollection {
       }
       var developerName = component['DeveloperName'];
       var projectLicense = component['ProjectLicense'];
+      var projectGroup = component['ProjectGroup'];
 
       var icons = <AppstreamIcon>[];
       var icon = component['Icon'];
@@ -555,6 +560,7 @@ class AppstreamCollection {
           summary: _parseYamlTranslatedString(summary),
           developerName: developerName,
           projectLicense: projectLicense,
+          projectGroup: projectGroup,
           icons: icons,
           urls: urls,
           screenshots: screenshots));
