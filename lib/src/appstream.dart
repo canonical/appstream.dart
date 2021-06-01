@@ -173,6 +173,7 @@ class AppstreamComponent {
   final String package;
   final Map<String, String> name;
   final Map<String, String> summary;
+  final Map<String, String> description;
   final String? developerName;
   final String? projectLicense;
   final String? projectGroup;
@@ -186,6 +187,7 @@ class AppstreamComponent {
       required this.package,
       required this.name,
       required this.summary,
+      this.description = const {},
       this.developerName,
       this.projectLicense,
       this.projectGroup,
@@ -195,7 +197,7 @@ class AppstreamComponent {
 
   @override
   String toString() =>
-      "$runtimeType(id: $id, type: $type, package: $package, name: $name, summary: $summary, developerName: '$developerName', projectLicense: $projectLicense, projectGroup: $projectGroup, icons: $icons, urls: $urls, screenshots: $screenshots)";
+      "$runtimeType(id: $id, type: $type, package: $package, name: $name, summary: $summary, description: $description, developerName: '$developerName', projectLicense: $projectLicense, projectGroup: $projectGroup, icons: $icons, urls: $urls, screenshots: $screenshots)";
 }
 
 class AppstreamCollection {
@@ -268,6 +270,7 @@ class AppstreamCollection {
       }
       var name = _getXmlTranslatedString(component, 'name');
       var summary = _getXmlTranslatedString(component, 'summary');
+      var description = _getXmlTranslatedString(component, 'description');
       var developerName = component.getElement('developer_name')?.text;
       var projectLicense = component.getElement('project_license')?.text;
       var projectGroup = component.getElement('project_group')?.text;
@@ -362,6 +365,7 @@ class AppstreamCollection {
           package: package.text,
           name: name,
           summary: summary,
+          description: description,
           developerName: developerName,
           projectLicense: projectLicense,
           projectGroup: projectGroup,
@@ -442,6 +446,7 @@ class AppstreamCollection {
       if (summary == null) {
         throw FormatException('Missing component summary');
       }
+      var description = component['Description'];
       var developerName = component['DeveloperName'];
       var projectLicense = component['ProjectLicense'];
       var projectGroup = component['ProjectGroup'];
@@ -558,6 +563,9 @@ class AppstreamCollection {
           package: package,
           name: _parseYamlTranslatedString(name),
           summary: _parseYamlTranslatedString(summary),
+          description: description != null
+              ? _parseYamlTranslatedString(description)
+              : const {},
           developerName: developerName,
           projectLicense: projectLicense,
           projectGroup: projectGroup,
@@ -592,7 +600,7 @@ Map<String, String> _getXmlTranslatedString(XmlElement parent, String name) {
       .whereType<XmlElement>()
       .where((e) => e.name.local == name)) {
     var lang = element.getAttribute('lang') ?? 'C';
-    value[lang] = element.text;
+    value[lang] = element.innerXml;
   }
 
   return value;

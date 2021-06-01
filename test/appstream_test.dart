@@ -40,6 +40,7 @@ void main() {
     expect(component.package, equals('hello'));
     expect(component.name, equals({'C': 'Hello World'}));
     expect(component.summary, equals({'C': 'A simple example application'}));
+    expect(component.description, isEmpty);
     expect(component.developerName, isNull);
     expect(component.projectLicense, isNull);
     expect(component.projectGroup, isNull);
@@ -57,6 +58,7 @@ void main() {
     <pkgname>hello</pkgname>
     <name>Hello World</name>
     <summary>A simple example application</summary>
+    <description><p>The <b>best</b> thing since sliced bread</p></description>
     <developer_name>The Developer</developer_name>
     <project_license>GPL-3</project_license>
     <project_group>GNOME</project_group>
@@ -65,9 +67,11 @@ void main() {
 ''');
     expect(collection.components, hasLength(1));
     var component = collection.components[0];
-    expect(component.developerName, equals("The Developer"));
-    expect(component.projectLicense, equals("GPL-3"));
-    expect(component.projectGroup, equals("GNOME"));
+    expect(component.description,
+        equals({'C': '<p>The <b>best</b> thing since sliced bread</p>'}));
+    expect(component.developerName, equals('The Developer'));
+    expect(component.projectLicense, equals('GPL-3'));
+    expect(component.projectGroup, equals('GNOME'));
   });
 
   test('collection - icons - xml', () async {
@@ -253,6 +257,7 @@ Summary:
     expect(component.package, equals('hello'));
     expect(component.name, equals({'C': 'Hello World'}));
     expect(component.summary, equals({'C': 'A simple example application'}));
+    expect(component.description, isEmpty);
     expect(component.developerName, isNull);
     expect(component.projectLicense, isNull);
     expect(component.projectGroup, isNull);
@@ -274,15 +279,20 @@ Name:
   C: Hello World
 Summary:
   C: A simple example application
+Description:
+  C: >-
+    <p>The <b>best</b> thing since sliced bread</p>
 DeveloperName: The Developer
 ProjectLicense: GPL-3
 ProjectGroup: GNOME
 """);
     expect(collection.components, hasLength(1));
     var component = collection.components[0];
-    expect(component.developerName, equals("The Developer"));
-    expect(component.projectLicense, equals("GPL-3"));
-    expect(component.projectGroup, equals("GNOME"));
+    expect(component.description,
+        equals({'C': '<p>The <b>best</b> thing since sliced bread</p>'}));
+    expect(component.developerName, equals('The Developer'));
+    expect(component.projectLicense, equals('GPL-3'));
+    expect(component.projectGroup, equals('GNOME'));
   });
 
   test('collection - icons - yaml', () async {
