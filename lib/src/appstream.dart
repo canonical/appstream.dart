@@ -70,9 +70,29 @@ class AppstreamUrl {
   String toString() => '$runtimeType($url, type: $type)';
 }
 
+enum AppstreamComponentType {
+  unknown,
+  generic,
+  desktopApplication,
+  consoleApplication,
+  webApplication,
+  addon,
+  font,
+  codec,
+  inputMethod,
+  firmware,
+  driver,
+  localization,
+  service,
+  repository,
+  operatingSystem,
+  iconTheme,
+  runtime
+}
+
 class AppstreamComponent {
   final String id;
-  final String type;
+  final AppstreamComponentType type;
   final String package;
   final Map<String, String> name;
   final Map<String, String> summary;
@@ -129,10 +149,29 @@ class AppstreamCollection {
     for (var component in root.children
         .whereType<XmlElement>()
         .where((e) => e.name.local == 'component')) {
-      var type = component.getAttribute('type');
-      if (type == null) {
+      var typeName = component.getAttribute('type');
+      if (typeName == null) {
         throw FormatException('Missing component type');
       }
+      var type = {
+            'generic': AppstreamComponentType.generic,
+            'desktop-application': AppstreamComponentType.desktopApplication,
+            'console-application': AppstreamComponentType.consoleApplication,
+            'web-application': AppstreamComponentType.webApplication,
+            'addon': AppstreamComponentType.addon,
+            'font': AppstreamComponentType.font,
+            'codec': AppstreamComponentType.codec,
+            'inputMethod': AppstreamComponentType.inputMethod,
+            'firmware': AppstreamComponentType.firmware,
+            'driver': AppstreamComponentType.driver,
+            'localization': AppstreamComponentType.localization,
+            'service': AppstreamComponentType.service,
+            'repository': AppstreamComponentType.repository,
+            'operating-system': AppstreamComponentType.operatingSystem,
+            'icon-theme': AppstreamComponentType.iconTheme,
+            'runtime': AppstreamComponentType.runtime
+          }[typeName] ??
+          AppstreamComponentType.unknown;
 
       var id = component.getElement('id');
       if (id == null) {
@@ -240,10 +279,29 @@ class AppstreamCollection {
       if (id == null) {
         throw FormatException('Missing component ID');
       }
-      var type = component['Type'];
-      if (type == null) {
+      var typeName = component['Type'];
+      if (typeName == null) {
         throw FormatException('Missing component type');
       }
+      var type = {
+            'generic': AppstreamComponentType.generic,
+            'desktop-application': AppstreamComponentType.desktopApplication,
+            'console-application': AppstreamComponentType.consoleApplication,
+            'web-application': AppstreamComponentType.webApplication,
+            'addon': AppstreamComponentType.addon,
+            'font': AppstreamComponentType.font,
+            'codec': AppstreamComponentType.codec,
+            'inputMethod': AppstreamComponentType.inputMethod,
+            'firmware': AppstreamComponentType.firmware,
+            'driver': AppstreamComponentType.driver,
+            'localization': AppstreamComponentType.localization,
+            'service': AppstreamComponentType.service,
+            'repository': AppstreamComponentType.repository,
+            'operating-system': AppstreamComponentType.operatingSystem,
+            'icon-theme': AppstreamComponentType.iconTheme,
+            'runtime': AppstreamComponentType.runtime
+          }[typeName] ??
+          AppstreamComponentType.unknown;
       var package = component['Package'];
       if (package == null) {
         throw FormatException('Missing component package');

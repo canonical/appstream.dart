@@ -36,7 +36,7 @@ void main() {
     expect(collection.components, hasLength(1));
     var component = collection.components[0];
     expect(component.id, equals('com.example.Hello'));
-    expect(component.type, equals('console-application'));
+    expect(component.type, equals(AppstreamComponentType.consoleApplication));
     expect(component.package, equals('hello'));
     expect(component.name, equals({'C': 'Hello World'}));
     expect(component.summary, equals({'C': 'A simple example application'}));
@@ -148,7 +148,7 @@ Summary:
     expect(collection.components, hasLength(1));
     var component = collection.components[0];
     expect(component.id, equals('com.example.Hello'));
-    expect(component.type, equals('console-application'));
+    expect(component.type, equals(AppstreamComponentType.consoleApplication));
     expect(component.package, equals('hello'));
     expect(component.name, equals({'C': 'Hello World'}));
     expect(component.summary, equals({'C': 'A simple example application'}));
@@ -186,7 +186,7 @@ Icon:
     expect(collection.components, hasLength(1));
     var component = collection.components[0];
     expect(component.id, equals('com.example.Hello'));
-    expect(component.type, equals('console-application'));
+    expect(component.type, equals(AppstreamComponentType.consoleApplication));
     expect(component.package, equals('hello'));
     expect(component.name, equals({'C': 'Hello World'}));
     expect(component.summary, equals({'C': 'A simple example application'}));
