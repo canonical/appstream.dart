@@ -57,31 +57,22 @@ void main() {
     <icon type="stock">stock-name</icon>
     <icon type="cached" width="8" height="16">icon.png</icon>
     <icon type="local" width="32" height="48">/path/to/icon.png</icon>
-    <icon type="remote" width="64" height="128">http://example.com/icon.png</icon>
+    <icon type="remote" width="64" height="128">https://example.com/icon.png</icon>
   </component>
 </components>
 ''');
     expect(collection.components, hasLength(1));
     var component = collection.components[0];
     expect(component.icons, hasLength(4));
-    expect(component.icons[0], isA<AppstreamStockIcon>());
-    var stockIcon = component.icons[0] as AppstreamStockIcon;
-    expect(stockIcon.name, equals('stock-name'));
-    expect(component.icons[1], isA<AppstreamCachedIcon>());
-    var cachedIcon = component.icons[1] as AppstreamCachedIcon;
-    expect(cachedIcon.name, equals('icon.png'));
-    expect(cachedIcon.width, equals(8));
-    expect(cachedIcon.height, equals(16));
-    expect(component.icons[2], isA<AppstreamLocalIcon>());
-    var localIcon = component.icons[2] as AppstreamLocalIcon;
-    expect(localIcon.filename, equals('/path/to/icon.png'));
-    expect(localIcon.width, equals(32));
-    expect(localIcon.height, equals(48));
-    expect(component.icons[3], isA<AppstreamRemoteIcon>());
-    var remoteIcon = component.icons[3] as AppstreamRemoteIcon;
-    expect(remoteIcon.url, equals('http://example.com/icon.png'));
-    expect(remoteIcon.width, equals(64));
-    expect(remoteIcon.height, equals(128));
+    expect(
+        component.icons,
+        equals([
+          AppstreamStockIcon('stock-name'),
+          AppstreamCachedIcon('icon.png', width: 8, height: 16),
+          AppstreamLocalIcon('/path/to/icon.png', width: 32, height: 48),
+          AppstreamRemoteIcon('https://example.com/icon.png',
+              width: 64, height: 128)
+        ]));
   });
 
   test('collection - urls - xml', () async {
@@ -142,8 +133,7 @@ void main() {
                 height: 384),
             AppstreamImage(
                 type: AppstreamImageType.thumbnail,
-                url:
-                    'https://example.com/thumbnail-small.jpg',
+                url: 'https://example.com/thumbnail-small.jpg',
                 width: 256,
                 height: 192),
             AppstreamImage(
@@ -210,6 +200,7 @@ Summary:
 File: DEP-11
 Version: '0.12'
 Origin: ubuntu-hirsute-main
+MediaBaseUrl: https://example.com/images
 ---
 Type: console-application
 ID: com.example.Hello
@@ -229,9 +220,12 @@ Icon:
     width: 32
     height: 48
   remote:
-  - url: http://example.com/icon.png
+  - url: https://example.com/icon.png
     width: 64
     height: 128
+  - url: icon-big.png
+    width: 256
+    height: 256
 """);
     expect(collection.components, hasLength(1));
     var component = collection.components[0];
@@ -240,25 +234,17 @@ Icon:
     expect(component.package, equals('hello'));
     expect(component.name, equals({'C': 'Hello World'}));
     expect(component.summary, equals({'C': 'A simple example application'}));
-    expect(component.icons, hasLength(4));
-    expect(component.icons[0], isA<AppstreamStockIcon>());
-    var stockIcon = component.icons[0] as AppstreamStockIcon;
-    expect(stockIcon.name, equals('stock-name'));
-    expect(component.icons[1], isA<AppstreamCachedIcon>());
-    var cachedIcon = component.icons[1] as AppstreamCachedIcon;
-    expect(cachedIcon.name, equals('icon.png'));
-    expect(cachedIcon.width, equals(8));
-    expect(cachedIcon.height, equals(16));
-    expect(component.icons[2], isA<AppstreamLocalIcon>());
-    var localIcon = component.icons[2] as AppstreamLocalIcon;
-    expect(localIcon.filename, equals('/path/to/icon.png'));
-    expect(localIcon.width, equals(32));
-    expect(localIcon.height, equals(48));
-    expect(component.icons[3], isA<AppstreamRemoteIcon>());
-    var remoteIcon = component.icons[3] as AppstreamRemoteIcon;
-    expect(remoteIcon.url, equals('http://example.com/icon.png'));
-    expect(remoteIcon.width, equals(64));
-    expect(remoteIcon.height, equals(128));
+    expect(
+        component.icons,
+        equals([
+          AppstreamStockIcon('stock-name'),
+          AppstreamCachedIcon('icon.png', width: 8, height: 16),
+          AppstreamLocalIcon('/path/to/icon.png', width: 32, height: 48),
+          AppstreamRemoteIcon('https://example.com/icon.png',
+              width: 64, height: 128),
+          AppstreamRemoteIcon('https://example.com/images/icon-big.png',
+              width: 256, height: 256)
+        ]));
   });
 
   test('collection - urls - yaml', () async {
@@ -333,8 +319,7 @@ Screenshots:
                 height: 384),
             AppstreamImage(
                 type: AppstreamImageType.thumbnail,
-                url:
-                    'https://example.com/images/thumbnail-small.jpg',
+                url: 'https://example.com/images/thumbnail-small.jpg',
                 width: 256,
                 height: 192),
             AppstreamImage(

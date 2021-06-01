@@ -11,7 +11,10 @@ class AppstreamStockIcon extends AppstreamIcon {
   const AppstreamStockIcon(this.name);
 
   @override
-  String toString() => '$runtimeType($name)';
+  bool operator ==(other) => other is AppstreamStockIcon && other.name == name;
+
+  @override
+  String toString() => "$runtimeType('$name')";
 }
 
 class AppstreamCachedIcon extends AppstreamIcon {
@@ -22,7 +25,14 @@ class AppstreamCachedIcon extends AppstreamIcon {
   const AppstreamCachedIcon(this.name, {this.width, this.height});
 
   @override
-  String toString() => '$runtimeType($name)';
+  bool operator ==(other) =>
+      other is AppstreamCachedIcon &&
+      other.name == name &&
+      other.width == width &&
+      other.height == height;
+
+  @override
+  String toString() => "$runtimeType('$name', width: $width, height: $height)";
 }
 
 class AppstreamLocalIcon extends AppstreamIcon {
@@ -33,7 +43,15 @@ class AppstreamLocalIcon extends AppstreamIcon {
   const AppstreamLocalIcon(this.filename, {this.width, this.height});
 
   @override
-  String toString() => '$runtimeType($filename)';
+  bool operator ==(other) =>
+      other is AppstreamLocalIcon &&
+      other.filename == filename &&
+      other.width == width &&
+      other.height == height;
+
+  @override
+  String toString() =>
+      "$runtimeType('$filename', width: $width, height: $height)";
 }
 
 class AppstreamRemoteIcon extends AppstreamIcon {
@@ -44,7 +62,14 @@ class AppstreamRemoteIcon extends AppstreamIcon {
   const AppstreamRemoteIcon(this.url, {this.width, this.height});
 
   @override
-  String toString() => '$runtimeType($url)';
+  bool operator ==(other) =>
+      other is AppstreamRemoteIcon &&
+      other.url == url &&
+      other.width == width &&
+      other.height == height;
+
+  @override
+  String toString() => "$runtimeType('$url', width: $width, height: $height)";
 }
 
 enum AppstreamImageType { source, thumbnail }
