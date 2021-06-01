@@ -174,6 +174,7 @@ class AppstreamComponent {
   final Map<String, String> name;
   final Map<String, String> summary;
   final String? developerName;
+  final String? projectLicense;
   final List<AppstreamIcon> icons;
   final List<AppstreamUrl> urls;
   final List<AppstreamScreenshot> screenshots;
@@ -185,6 +186,7 @@ class AppstreamComponent {
       required this.name,
       required this.summary,
       this.developerName,
+      this.projectLicense,
       this.icons = const [],
       this.urls = const [],
       this.screenshots = const []});
@@ -265,6 +267,7 @@ class AppstreamCollection {
       var name = _getXmlTranslatedString(component, 'name');
       var summary = _getXmlTranslatedString(component, 'summary');
       var developerName = component.getElement('developer_name')?.text;
+      var projectLicense = component.getElement('project_license')?.text;
 
       var elements = component.children.whereType<XmlElement>();
 
@@ -357,6 +360,7 @@ class AppstreamCollection {
           name: name,
           summary: summary,
           developerName: developerName,
+          projectLicense: projectLicense,
           icons: icons,
           urls: urls,
           screenshots: screenshots));
@@ -435,6 +439,7 @@ class AppstreamCollection {
         throw FormatException('Missing component summary');
       }
       var developerName = component['DeveloperName'];
+      var projectLicense = component['ProjectLicense'];
 
       var icons = <AppstreamIcon>[];
       var icon = component['Icon'];
@@ -549,6 +554,7 @@ class AppstreamCollection {
           name: _parseYamlTranslatedString(name),
           summary: _parseYamlTranslatedString(summary),
           developerName: developerName,
+          projectLicense: projectLicense,
           icons: icons,
           urls: urls,
           screenshots: screenshots));

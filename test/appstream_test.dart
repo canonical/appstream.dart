@@ -41,6 +41,7 @@ void main() {
     expect(component.name, equals({'C': 'Hello World'}));
     expect(component.summary, equals({'C': 'A simple example application'}));
     expect(component.developerName, isNull);
+    expect(component.projectLicense, isNull);
     expect(component.icons, isEmpty);
     expect(component.urls, isEmpty);
     expect(component.screenshots, isEmpty);
@@ -56,12 +57,14 @@ void main() {
     <name>Hello World</name>
     <summary>A simple example application</summary>
     <developer_name>The Developer</developer_name>
+    <project_license>GPL-3</project_license>
   </component>
 </components>
 ''');
     expect(collection.components, hasLength(1));
     var component = collection.components[0];
     expect(component.developerName, equals("The Developer"));
+    expect(component.projectLicense, equals("GPL-3"));
   });
 
   test('collection - icons - xml', () async {
@@ -247,6 +250,8 @@ Summary:
     expect(component.package, equals('hello'));
     expect(component.name, equals({'C': 'Hello World'}));
     expect(component.summary, equals({'C': 'A simple example application'}));
+    expect(component.developerName, isNull);
+    expect(component.projectLicense, isNull);
     expect(component.icons, isEmpty);
     expect(component.urls, isEmpty);
     expect(component.screenshots, isEmpty);
@@ -266,10 +271,12 @@ Name:
 Summary:
   C: A simple example application
 DeveloperName: The Developer
+ProjectLicense: GPL-3
 """);
     expect(collection.components, hasLength(1));
     var component = collection.components[0];
     expect(component.developerName, equals("The Developer"));
+    expect(component.projectLicense, equals("GPL-3"));
   });
 
   test('collection - icons - yaml', () async {
