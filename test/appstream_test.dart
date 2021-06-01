@@ -40,9 +40,28 @@ void main() {
     expect(component.package, equals('hello'));
     expect(component.name, equals({'C': 'Hello World'}));
     expect(component.summary, equals({'C': 'A simple example application'}));
+    expect(component.developerName, isNull);
     expect(component.icons, isEmpty);
     expect(component.urls, isEmpty);
     expect(component.screenshots, isEmpty);
+  });
+
+  test('collection - optional fields - xml', () async {
+    var collection = AppstreamCollection.fromXml('''<components>
+  <version>0.12</version>
+  <origin>ubuntu-hirsute-main</origin>
+  <component type="console-application">
+    <id>com.example.Hello</id>
+    <pkgname>hello</pkgname>
+    <name>Hello World</name>
+    <summary>A simple example application</summary>
+    <developer_name>The Developer</developer_name>
+  </component>
+</components>
+''');
+    expect(collection.components, hasLength(1));
+    var component = collection.components[0];
+    expect(component.developerName, equals("The Developer"));
   });
 
   test('collection - icons - xml', () async {
@@ -231,6 +250,26 @@ Summary:
     expect(component.icons, isEmpty);
     expect(component.urls, isEmpty);
     expect(component.screenshots, isEmpty);
+  });
+
+  test('collection - optional fields - yaml', () async {
+    var collection = AppstreamCollection.fromYaml("""---
+File: DEP-11
+Version: '0.12'
+Origin: ubuntu-hirsute-main
+---
+Type: console-application
+ID: com.example.Hello
+Package: hello
+Name:
+  C: Hello World
+Summary:
+  C: A simple example application
+DeveloperName: The Developer
+""");
+    expect(collection.components, hasLength(1));
+    var component = collection.components[0];
+    expect(component.developerName, equals("The Developer"));
   });
 
   test('collection - icons - yaml', () async {

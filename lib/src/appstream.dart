@@ -173,6 +173,7 @@ class AppstreamComponent {
   final String package;
   final Map<String, String> name;
   final Map<String, String> summary;
+  final String? developerName;
   final List<AppstreamIcon> icons;
   final List<AppstreamUrl> urls;
   final List<AppstreamScreenshot> screenshots;
@@ -183,13 +184,14 @@ class AppstreamComponent {
       required this.package,
       required this.name,
       required this.summary,
+      this.developerName,
       this.icons = const [],
       this.urls = const [],
       this.screenshots = const []});
 
   @override
   String toString() =>
-      '$runtimeType(id: $id, type: $type, package: $package, name: $name, summary: $summary, icons: $icons, urls: $urls, screenshots: $screenshots)';
+      "$runtimeType(id: $id, type: $type, package: $package, name: $name, summary: $summary, developerName: '$developerName', icons: $icons, urls: $urls, screenshots: $screenshots)";
 }
 
 class AppstreamCollection {
@@ -262,6 +264,7 @@ class AppstreamCollection {
       }
       var name = _getXmlTranslatedString(component, 'name');
       var summary = _getXmlTranslatedString(component, 'summary');
+      var developerName = component.getElement('developer_name')?.text;
 
       var elements = component.children.whereType<XmlElement>();
 
@@ -353,6 +356,7 @@ class AppstreamCollection {
           package: package.text,
           name: name,
           summary: summary,
+          developerName: developerName,
           icons: icons,
           urls: urls,
           screenshots: screenshots));
@@ -430,6 +434,7 @@ class AppstreamCollection {
       if (summary == null) {
         throw FormatException('Missing component summary');
       }
+      var developerName = component['DeveloperName'];
 
       var icons = <AppstreamIcon>[];
       var icon = component['Icon'];
@@ -543,6 +548,7 @@ class AppstreamCollection {
           package: package,
           name: _parseYamlTranslatedString(name),
           summary: _parseYamlTranslatedString(summary),
+          developerName: developerName,
           icons: icons,
           urls: urls,
           screenshots: screenshots));
