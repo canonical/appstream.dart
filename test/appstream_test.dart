@@ -114,7 +114,7 @@ void main() {
     <screenshot>
       <caption>A screenshot</caption>
       <image type="thumbnail" width="512" height="384">https://example.com/thumbnail-big.jpg</image>
-      <image type="thumbnail" width="256" height="192">https://example.com/thumbnail-small.jpg</image>
+      <image type="thumbnail" width="256" height="192" xml:lang="en_NZ">https://example.com/thumbnail-small.jpg</image>
       <image type="source" width="1024" height="768">https://example.com/screenshot.jpg</image>
     </screenshot>
   </component>
@@ -135,7 +135,8 @@ void main() {
                 type: AppstreamImageType.thumbnail,
                 url: 'https://example.com/thumbnail-small.jpg',
                 width: 256,
-                height: 192),
+                height: 192,
+                lang: "en_NZ"),
             AppstreamImage(
                 type: AppstreamImageType.source,
                 url: 'https://example.com/screenshot.jpg',
@@ -338,6 +339,7 @@ Screenshots:
   - url: thumbnail-small.jpg
     width: 256
     height: 192
+    lang: en_NZ
   source-image:
     url: screenshot.jpg
     width: 1024
@@ -358,7 +360,8 @@ Screenshots:
                 type: AppstreamImageType.thumbnail,
                 url: 'https://example.com/images/thumbnail-small.jpg',
                 width: 256,
-                height: 192),
+                height: 192,
+                lang: "en_NZ"),
             AppstreamImage(
                 type: AppstreamImageType.source,
                 url: 'https://example.com/images/screenshot.jpg',

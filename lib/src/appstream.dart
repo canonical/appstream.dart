@@ -79,9 +79,14 @@ class AppstreamImage {
   final String url;
   final int? width;
   final int? height;
+  final String? lang;
 
   const AppstreamImage(
-      {required this.type, required this.url, this.width, this.height});
+      {required this.type,
+      required this.url,
+      this.width,
+      this.height,
+      this.lang});
 
   @override
   bool operator ==(other) =>
@@ -89,11 +94,12 @@ class AppstreamImage {
       other.type == type &&
       other.url == url &&
       other.width == width &&
-      other.height == height;
+      other.height == height &&
+      other.lang == lang;
 
   @override
   String toString() =>
-      "$runtimeType(type: $type, url: '$url', width: $width, height: $height)";
+      "$runtimeType(type: $type, url: '$url', width: $width, height: $height, lang: $lang)";
 }
 
 class AppstreamScreenshot {
@@ -329,11 +335,13 @@ class AppstreamCollection {
           var width = w != null ? int.parse(w) : null;
           var h = imageElement.getAttribute('height');
           var height = h != null ? int.parse(h) : null;
+          var lang = imageElement.getAttribute('xml:lang');
           images.add(AppstreamImage(
               type: type,
               url: imageElement.text,
               width: width,
-              height: height));
+              height: height,
+              lang: lang));
         }
         screenshots.add(AppstreamScreenshot(
             images: images, caption: caption, isDefault: isDefault));
@@ -495,11 +503,13 @@ class AppstreamCollection {
               }
               var width = thumbnail['width'];
               var height = thumbnail['height'];
+              var lang = thumbnail['lang'];
               images.add(AppstreamImage(
                   type: AppstreamImageType.thumbnail,
                   url: _makeUrl(mediaBaseUrl, url),
                   width: width,
-                  height: height));
+                  height: height,
+                  lang: lang));
             }
           }
           var sourceImage = screenshot['source-image'];
@@ -510,11 +520,13 @@ class AppstreamCollection {
             }
             var width = sourceImage['width'];
             var height = sourceImage['height'];
+            var lang = sourceImage['lang'];
             images.add(AppstreamImage(
                 type: AppstreamImageType.source,
                 url: _makeUrl(mediaBaseUrl, url),
                 width: width,
-                height: height));
+                height: height,
+                lang: lang));
           }
           screenshots.add(AppstreamScreenshot(
               images: images,
