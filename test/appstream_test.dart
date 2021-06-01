@@ -82,6 +82,33 @@ void main() {
     expect(remoteIcon.height, equals(128));
   });
 
+  test('collection - urls - xml', () async {
+    var collection = AppstreamCollection.fromXml('''<components>
+  <version>0.12</version>
+  <origin>ubuntu-hirsute-main</origin>
+  <component type="console-application">
+    <id>com.example.Hello</id>
+    <pkgname>hello</pkgname>
+    <name>Hello World</name>
+    <summary>A simple example application</summary>
+    <url type="homepage">https://example.com</url>
+    <url type="help">https://example.com/help</url>
+    <url type="contact">https://example.com/contact</url>
+  </component>
+</components>
+''');
+    expect(collection.components, hasLength(1));
+    var component = collection.components[0];
+    expect(
+        component.urls,
+        equals([
+          AppstreamUrl('https://example.com', type: AppstreamUrlType.homepage),
+          AppstreamUrl('https://example.com/help', type: AppstreamUrlType.help),
+          AppstreamUrl('https://example.com/contact',
+              type: AppstreamUrlType.contact)
+        ]));
+  });
+
   test('collection - empty yaml', () async {
     expect(() => AppstreamCollection.fromYaml(''), throwsFormatException);
   });
@@ -182,5 +209,35 @@ Icon:
     expect(remoteIcon.url, equals('http://example.com/icon.png'));
     expect(remoteIcon.width, equals(64));
     expect(remoteIcon.height, equals(128));
+  });
+
+  test('collection - urls - yaml', () async {
+    var collection = AppstreamCollection.fromYaml("""---
+File: DEP-11
+Version: '0.12'
+Origin: ubuntu-hirsute-main
+---
+Type: console-application
+ID: com.example.Hello
+Package: hello
+Name:
+  C: Hello World
+Summary:
+  C: A simple example application
+Url:
+  homepage: https://example.com
+  help: https://example.com/help
+  contact: https://example.com/contact
+""");
+    expect(collection.components, hasLength(1));
+    var component = collection.components[0];
+    expect(
+        component.urls,
+        equals([
+          AppstreamUrl('https://example.com', type: AppstreamUrlType.homepage),
+          AppstreamUrl('https://example.com/help', type: AppstreamUrlType.help),
+          AppstreamUrl('https://example.com/contact',
+              type: AppstreamUrlType.contact)
+        ]));
   });
 }

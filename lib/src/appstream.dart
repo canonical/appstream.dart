@@ -47,6 +47,29 @@ class AppstreamRemoteIcon extends AppstreamIcon {
   String toString() => '$runtimeType($url)';
 }
 
+enum AppstreamUrlType {
+  homepage,
+  bugtracker,
+  faq,
+  help,
+  donation,
+  translate,
+  contact
+}
+
+class AppstreamUrl {
+  final AppstreamUrlType type;
+  final String url;
+  const AppstreamUrl(this.url, {required this.type});
+
+  @override
+  bool operator ==(other) =>
+      other is AppstreamUrl && other.type == type && other.url == url;
+
+  @override
+  String toString() => '$runtimeType($url, type: $type)';
+}
+
 class AppstreamComponent {
   final String id;
   final String type;
@@ -54,6 +77,7 @@ class AppstreamComponent {
   final Map<String, String> name;
   final Map<String, String> summary;
   final List<AppstreamIcon> icons;
+  final List<AppstreamUrl> urls;
 
   const AppstreamComponent(
       {required this.id,
@@ -61,11 +85,12 @@ class AppstreamComponent {
       required this.package,
       required this.name,
       required this.summary,
-      this.icons = const []});
+      this.icons = const [],
+      this.urls = const []});
 
   @override
   String toString() =>
-      '$runtimeType(id: $id, type: $type, package: $package, name: $name, summary: $summary, icons: $icons)';
+      '$runtimeType(id: $id, type: $type, package: $package, name: $name, summary: $summary, icons: $icons, urls: $urls)';
 }
 
 class AppstreamCollection {
@@ -120,10 +145,10 @@ class AppstreamCollection {
       var name = _getXmlTranslatedString(component, 'name');
       var summary = _getXmlTranslatedString(component, 'summary');
 
+      var elements = component.children.whereType<XmlElement>();
+
       var icons = <AppstreamIcon>[];
-      for (var icon in component.children
-          .whereType<XmlElement>()
-          .where((e) => e.name.local == 'icon')) {
+      for (var icon in elements.where((e) => e.name.local == 'icon')) {
         var type = icon.getAttribute('type');
         if (type == null) {
           throw FormatException('Missing icon type');
@@ -151,13 +176,31 @@ class AppstreamCollection {
         }
       }
 
+      var urls = <AppstreamUrl>[];
+      for (var url in elements.where((e) => e.name.local == 'url')) {
+        var type = {
+          'homepage': AppstreamUrlType.homepage,
+          'bugtracker': AppstreamUrlType.bugtracker,
+          'faq': AppstreamUrlType.faq,
+          'help': AppstreamUrlType.help,
+          'donation': AppstreamUrlType.donation,
+          'translate': AppstreamUrlType.translate,
+          'contact': AppstreamUrlType.contact
+        }[url.getAttribute('type')];
+        if (type == null) {
+          throw FormatException('Missing/unknown Url type');
+        }
+        urls.add(AppstreamUrl(url.text, type: type));
+      }
+
       components.add(AppstreamComponent(
           id: id.text,
           type: type,
           package: package.text,
           name: name,
           summary: summary,
-          icons: icons));
+          icons: icons,
+          urls: urls));
     }
 
     return AppstreamCollection(
@@ -244,13 +287,34 @@ class AppstreamCollection {
         }
       }
 
+      var urls = <AppstreamUrl>[];
+      var url = component['Url'];
+      if (url != null) {
+        for (var typeName in url.keys) {
+          var type = {
+            'homepage': AppstreamUrlType.homepage,
+            'bugtracker': AppstreamUrlType.bugtracker,
+            'faq': AppstreamUrlType.faq,
+            'help': AppstreamUrlType.help,
+            'donation': AppstreamUrlType.donation,
+            'translate': AppstreamUrlType.translate,
+            'contact': AppstreamUrlType.contact
+          }[typeName];
+          if (type == null) {
+            throw FormatException('Missing/unknown Url type');
+          }
+          urls.add(AppstreamUrl(url[typeName], type: type));
+        }
+      }
+
       components.add(AppstreamComponent(
           id: id,
           type: type,
           package: package,
           name: _parseYamlTranslatedString(name),
           summary: _parseYamlTranslatedString(summary),
-          icons: icons));
+          icons: icons,
+          urls: urls));
     }
 
     return AppstreamCollection(
