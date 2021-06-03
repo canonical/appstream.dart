@@ -139,6 +139,17 @@ class AppstreamCollection {
         }
       }
 
+      var keywords = <String, List<String>>{};
+      for (var keywordsElement
+          in elements.where((e) => e.name.local == 'keywords')) {
+        var lang = keywordsElement.getAttribute('xml:lang') ?? 'C';
+        keywords[lang] = keywordsElement.children
+            .whereType<XmlElement>()
+            .where((e) => e.name.local == 'keyword')
+            .map((e) => e.text)
+            .toList();
+      }
+
       var screenshots = <AppstreamScreenshot>[];
       for (var screenshot
           in elements.where((e) => e.name.local == 'screenshot')) {
@@ -188,6 +199,7 @@ class AppstreamCollection {
           icons: icons,
           urls: urls,
           categories: categories,
+          keywords: keywords,
           screenshots: screenshots));
     }
 
@@ -327,6 +339,16 @@ class AppstreamCollection {
         categories.addAll(categoriesComponent.cast<String>());
       }
 
+      var keywords = <String, List<String>>{};
+      var keywordsComponent = component['Keywords'];
+      if (keywordsComponent != null) {
+        if (!(keywordsComponent is YamlMap)) {
+          throw FormatException('Invaid Keywords type');
+        }
+        keywords = keywordsComponent.map(
+            (lang, keywordList) => MapEntry(lang, keywordList.cast<String>()));
+      }
+
       var screenshots = <AppstreamScreenshot>[];
       var screenshotsComponent = component['Screenshots'];
       if (screenshotsComponent != null) {
@@ -398,6 +420,7 @@ class AppstreamCollection {
           icons: icons,
           urls: urls,
           categories: categories,
+          keywords: keywords,
           screenshots: screenshots));
     }
 

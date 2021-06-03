@@ -35,6 +35,7 @@ class AppstreamComponent {
   final List<AppstreamIcon> icons;
   final List<AppstreamUrl> urls;
   final List<String> categories;
+  final Map<String, List<String>> keywords;
   final List<AppstreamScreenshot> screenshots;
 
   const AppstreamComponent(
@@ -50,9 +51,10 @@ class AppstreamComponent {
       this.icons = const [],
       this.urls = const [],
       this.categories = const [],
+      this.keywords = const {},
       this.screenshots = const []});
 
   @override
   String toString() =>
-      "$runtimeType(id: $id, type: $type, package: $package, name: $name, summary: $summary, description: $description, developerName: '$developerName', projectLicense: $projectLicense, projectGroup: $projectGroup, icons: $icons, urls: $urls, categories: $categories, screenshots: $screenshots)";
+      "$runtimeType(id: $id, type: $type, package: $package, name: $name, summary: $summary, description: $description, developerName: '$developerName', projectLicense: $projectLicense, projectGroup: $projectGroup, icons: $icons, urls: $urls, categories: $categories, keywords: $keywords, screenshots: $screenshots)";
 }
