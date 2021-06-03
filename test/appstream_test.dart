@@ -49,6 +49,7 @@ void main() {
     expect(component.categories, isEmpty);
     expect(component.keywords, isEmpty);
     expect(component.screenshots, isEmpty);
+    expect(component.compulsoryForDesktops, isEmpty);
   });
 
   test('collection - optional fields - xml', () async {
@@ -64,6 +65,8 @@ void main() {
     <developer_name>The Developer</developer_name>
     <project_license>GPL-3</project_license>
     <project_group>GNOME</project_group>
+    <compulsory_for_desktop>GNOME</compulsory_for_desktop>
+    <compulsory_for_desktop>KDE</compulsory_for_desktop>
   </component>
 </components>
 ''');
@@ -74,6 +77,7 @@ void main() {
     expect(component.developerName, equals('The Developer'));
     expect(component.projectLicense, equals('GPL-3'));
     expect(component.projectGroup, equals('GNOME'));
+    expect(component.compulsoryForDesktops, equals(['GNOME', 'KDE']));
   });
 
   test('collection - icons - xml', () async {
@@ -319,6 +323,7 @@ Summary:
     expect(component.categories, isEmpty);
     expect(component.keywords, isEmpty);
     expect(component.screenshots, isEmpty);
+    expect(component.compulsoryForDesktops, isEmpty);
   });
 
   test('collection - optional fields - yaml', () async {
@@ -340,6 +345,9 @@ Description:
 DeveloperName: The Developer
 ProjectLicense: GPL-3
 ProjectGroup: GNOME
+CompulsoryForDesktops:
+- GNOME
+- KDE
 """);
     expect(collection.components, hasLength(1));
     var component = collection.components[0];
@@ -348,6 +356,7 @@ ProjectGroup: GNOME
     expect(component.developerName, equals('The Developer'));
     expect(component.projectLicense, equals('GPL-3'));
     expect(component.projectGroup, equals('GNOME'));
+    expect(component.compulsoryForDesktops, equals(['GNOME', 'KDE']));
   });
 
   test('collection - icons - yaml', () async {

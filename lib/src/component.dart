@@ -37,6 +37,7 @@ class AppstreamComponent {
   final List<String> categories;
   final Map<String, List<String>> keywords;
   final List<AppstreamScreenshot> screenshots;
+  final List<String> compulsoryForDesktops;
 
   const AppstreamComponent(
       {required this.id,
@@ -52,9 +53,10 @@ class AppstreamComponent {
       this.urls = const [],
       this.categories = const [],
       this.keywords = const {},
-      this.screenshots = const []});
+      this.screenshots = const [],
+      this.compulsoryForDesktops = const []});
 
   @override
   String toString() =>
-      "$runtimeType(id: $id, type: $type, package: $package, name: $name, summary: $summary, description: $description, developerName: '$developerName', projectLicense: $projectLicense, projectGroup: $projectGroup, icons: $icons, urls: $urls, categories: $categories, keywords: $keywords, screenshots: $screenshots)";
+      "$runtimeType(id: $id, type: $type, package: $package, name: $name, summary: $summary, description: $description, developerName: '$developerName', projectLicense: $projectLicense, projectGroup: $projectGroup, icons: $icons, urls: $urls, categories: $categories, keywords: $keywords, screenshots: $screenshots, compulsoryForDesktops: $compulsoryForDesktops)";
 }

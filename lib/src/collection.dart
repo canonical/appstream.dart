@@ -186,6 +186,11 @@ class AppstreamCollection {
             images: images, caption: caption, isDefault: isDefault));
       }
 
+      var compulsoryForDesktops = elements
+          .where((e) => e.name.local == 'compulsory_for_desktop')
+          .map((e) => e.text)
+          .toList();
+
       components.add(AppstreamComponent(
           id: id.text,
           type: type,
@@ -200,7 +205,8 @@ class AppstreamCollection {
           urls: urls,
           categories: categories,
           keywords: keywords,
-          screenshots: screenshots));
+          screenshots: screenshots,
+          compulsoryForDesktops: compulsoryForDesktops));
     }
 
     return AppstreamCollection(
@@ -405,6 +411,16 @@ class AppstreamCollection {
         }
       }
 
+      var compulsoryForDesktops = <String>[];
+      var compulsoryForDesktopsComponent = component['CompulsoryForDesktops'];
+      if (compulsoryForDesktopsComponent != null) {
+        if (!(compulsoryForDesktopsComponent is YamlList)) {
+          throw FormatException('Invaid CompulsoryForDesktops type');
+        }
+        compulsoryForDesktops
+            .addAll(compulsoryForDesktopsComponent.cast<String>());
+      }
+
       components.add(AppstreamComponent(
           id: id,
           type: type,
@@ -421,7 +437,8 @@ class AppstreamCollection {
           urls: urls,
           categories: categories,
           keywords: keywords,
-          screenshots: screenshots));
+          screenshots: screenshots,
+          compulsoryForDesktops: compulsoryForDesktops));
     }
 
     return AppstreamCollection(
