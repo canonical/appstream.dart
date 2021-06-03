@@ -129,6 +129,16 @@ class AppstreamCollection {
         urls.add(AppstreamUrl(url.text, type: type));
       }
 
+      var categories = <String>[];
+      var categoriesElement = component.getElement('categories');
+      if (categoriesElement != null) {
+        for (var categoryElement in categoriesElement.children
+            .whereType<XmlElement>()
+            .where((e) => e.name.local == 'category')) {
+          categories.add(categoryElement.text);
+        }
+      }
+
       var screenshots = <AppstreamScreenshot>[];
       for (var screenshot
           in elements.where((e) => e.name.local == 'screenshot')) {
@@ -177,6 +187,7 @@ class AppstreamCollection {
           projectGroup: projectGroup,
           icons: icons,
           urls: urls,
+          categories: categories,
           screenshots: screenshots));
     }
 
@@ -307,6 +318,15 @@ class AppstreamCollection {
         }
       }
 
+      var categories = <String>[];
+      var categoriesComponent = component['Categories'];
+      if (categoriesComponent != null) {
+        if (!(categoriesComponent is YamlList)) {
+          throw FormatException('Invaid Categories type');
+        }
+        categories.addAll(categoriesComponent.cast<String>());
+      }
+
       var screenshots = <AppstreamScreenshot>[];
       var screenshotsComponent = component['Screenshots'];
       if (screenshotsComponent != null) {
@@ -377,6 +397,7 @@ class AppstreamCollection {
           projectGroup: projectGroup,
           icons: icons,
           urls: urls,
+          categories: categories,
           screenshots: screenshots));
     }
 

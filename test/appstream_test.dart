@@ -46,6 +46,7 @@ void main() {
     expect(component.projectGroup, isNull);
     expect(component.icons, isEmpty);
     expect(component.urls, isEmpty);
+    expect(component.categories, isEmpty);
     expect(component.screenshots, isEmpty);
   });
 
@@ -129,6 +130,27 @@ void main() {
           AppstreamUrl('https://example.com/contact',
               type: AppstreamUrlType.contact)
         ]));
+  });
+
+  test('collection - categories - xml', () async {
+    var collection = AppstreamCollection.fromXml('''<components>
+  <version>0.12</version>
+  <origin>ubuntu-hirsute-main</origin>
+  <component type="console-application">
+    <id>com.example.Hello</id>
+    <pkgname>hello</pkgname>
+    <name>Hello World</name>
+    <summary>A simple example application</summary>
+    <categories>
+      <category>Game</category>
+      <category>ArcadeGame</category>
+    </categories>
+  </component>
+</components>
+''');
+    expect(collection.components, hasLength(1));
+    var component = collection.components[0];
+    expect(component.categories, equals(['Game', 'ArcadeGame']));
   });
 
   test('collection - screenshot - xml', () async {
@@ -263,6 +285,7 @@ Summary:
     expect(component.projectGroup, isNull);
     expect(component.icons, isEmpty);
     expect(component.urls, isEmpty);
+    expect(component.categories, isEmpty);
     expect(component.screenshots, isEmpty);
   });
 
@@ -375,6 +398,28 @@ Url:
           AppstreamUrl('https://example.com/contact',
               type: AppstreamUrlType.contact)
         ]));
+  });
+
+  test('collection - categories - yaml', () async {
+    var collection = AppstreamCollection.fromYaml("""---
+File: DEP-11
+Version: '0.12'
+Origin: ubuntu-hirsute-main
+---
+Type: console-application
+ID: com.example.Hello
+Package: hello
+Name:
+  C: Hello World
+Summary:
+  C: A simple example application
+Categories:
+  - Game
+  - ArcadeGame
+""");
+    expect(collection.components, hasLength(1));
+    var component = collection.components[0];
+    expect(component.categories, equals(['Game', 'ArcadeGame']));
   });
 
   test('collection - screenshot - yaml', () async {
