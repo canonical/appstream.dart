@@ -132,11 +132,11 @@ class AppstreamCollection {
       var categories = <String>[];
       var categoriesElement = component.getElement('categories');
       if (categoriesElement != null) {
-        for (var categoryElement in categoriesElement.children
+        categories = categoriesElement.children
             .whereType<XmlElement>()
-            .where((e) => e.name.local == 'category')) {
-          categories.add(categoryElement.text);
-        }
+            .where((e) => e.name.local == 'category')
+            .map((e) => e.text)
+            .toList();
       }
 
       var keywords = <String, List<String>>{};
