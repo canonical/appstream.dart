@@ -1,2 +1,6 @@
-export 'src/appstream.dart';
+export 'src/collection.dart';
+export 'src/component.dart';
+export 'src/icon.dart';
 export 'src/pool.dart';
+export 'src/screenshot.dart';
+export 'src/url.dart';

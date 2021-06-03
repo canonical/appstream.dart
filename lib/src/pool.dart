@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'appstream.dart';
+import 'collection.dart';
+import 'component.dart';
 
 class AppstreamPool {
   final components = <AppstreamComponent>[];
