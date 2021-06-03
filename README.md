@@ -5,8 +5,11 @@ A parser for [Appstream](https://www.freedesktop.org/software/appstream) files.
 ```dart
 import 'package:appstream/appstream.dart';
 
-var doc = loadAppstreamComponents();
-print (doc);
+var pool = AppstreamPool();
+await pool.load();
+for (var component in pool.components) {
+  print(pool.components);
+}
 ```
 
 ## Contributing to appstream.dart
