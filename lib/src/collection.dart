@@ -3,6 +3,7 @@ import 'package:yaml/yaml.dart';
 
 import 'component.dart';
 import 'icon.dart';
+import 'provides.dart';
 import 'screenshot.dart';
 import 'url.dart';
 
@@ -191,6 +192,53 @@ class AppstreamCollection {
           .map((e) => e.text)
           .toList();
 
+      var provides = <AppstreamProvides>[];
+      var providesElement = component.getElement('provides');
+      if (providesElement != null) {
+        for (var element in providesElement.children.whereType<XmlElement>()) {
+          switch (element.name.local) {
+            case 'mediatype':
+              provides.add(AppstreamProvidesMediatype(element.text));
+              break;
+            case 'library':
+              provides.add(AppstreamProvidesLibrary(element.text));
+              break;
+            case 'binary':
+              provides.add(AppstreamProvidesBinary(element.text));
+              break;
+            case 'font':
+              provides.add(AppstreamProvidesFont(element.text));
+              break;
+            case 'modalias':
+              provides.add(AppstreamProvidesModalias(element.text));
+              break;
+            case 'firmware':
+              var type = element.getAttribute('type');
+              if (type == null) {
+                throw FormatException('Missing firmware type');
+              }
+              provides.add(AppstreamProvidesFirmware(type, element.text));
+              break;
+            case 'python2':
+              provides.add(AppstreamProvidesPython2(element.text));
+              break;
+            case 'python3':
+              provides.add(AppstreamProvidesPython3(element.text));
+              break;
+            case 'dbus':
+              var type = element.getAttribute('type');
+              if (type == null) {
+                throw FormatException('Missing DBus bus type');
+              }
+              provides.add(AppstreamProvidesDBus(type, element.text));
+              break;
+            case 'id':
+              provides.add(AppstreamProvidesId(element.text));
+              break;
+          }
+        }
+      }
+
       components.add(AppstreamComponent(
           id: id.text,
           type: type,
@@ -206,7 +254,8 @@ class AppstreamCollection {
           categories: categories,
           keywords: keywords,
           screenshots: screenshots,
-          compulsoryForDesktops: compulsoryForDesktops));
+          compulsoryForDesktops: compulsoryForDesktops,
+          provides: provides));
     }
 
     return AppstreamCollection(
@@ -421,6 +470,65 @@ class AppstreamCollection {
             .addAll(compulsoryForDesktopsComponent.cast<String>());
       }
 
+      var provides = <AppstreamProvides>[];
+      var providesComponent = component['Provides'];
+      if (providesComponent != null) {
+        if (!(providesComponent is YamlMap)) {
+          throw FormatException('Invaid Provides type');
+        }
+        for (var type in providesComponent.keys) {
+          var values = providesComponent[type];
+          if (!(values is YamlList)) {
+            throw FormatException('Invaid $type provides');
+          }
+          switch (type) {
+            case 'mediatypes':
+            case 'mimetypes':
+              provides.addAll(values.map((e) => AppstreamProvidesMediatype(e)));
+              break;
+            case 'libraries':
+              provides.addAll(values.map((e) => AppstreamProvidesLibrary(e)));
+              break;
+            case 'binaries':
+              provides.addAll(values.map((e) => AppstreamProvidesBinary(e)));
+              break;
+            case 'fonts':
+              provides.addAll(values.map((e) => AppstreamProvidesFont(e)));
+              break;
+            case 'firmware':
+              for (var firmwareComponent in values) {
+                if (!(firmwareComponent is YamlMap)) {
+                  throw FormatException('Invaid firmware provides');
+                }
+                var type = firmwareComponent['type'];
+                switch (type) {
+                  case 'runtime':
+                    provides.add(AppstreamProvidesFirmware(
+                        type, firmwareComponent['file']));
+                    break;
+                  case 'flashed':
+                    provides.add(AppstreamProvidesFirmware(
+                        type, firmwareComponent['guid']));
+                    break;
+                }
+              }
+              break;
+            case 'dbus':
+              for (var dbusComponent in values) {
+                if (!(dbusComponent is YamlMap)) {
+                  throw FormatException('Invaid dbus provides');
+                }
+                provides.add(AppstreamProvidesDBus(
+                    dbusComponent['type'], dbusComponent['service']));
+              }
+              break;
+            case 'ids':
+              provides.addAll(values.map((e) => AppstreamProvidesId(e)));
+              break;
+          }
+        }
+      }
+
       components.add(AppstreamComponent(
           id: id,
           type: type,
@@ -438,7 +546,8 @@ class AppstreamCollection {
           categories: categories,
           keywords: keywords,
           screenshots: screenshots,
-          compulsoryForDesktops: compulsoryForDesktops));
+          compulsoryForDesktops: compulsoryForDesktops,
+          provides: provides));
     }
 
     return AppstreamCollection(

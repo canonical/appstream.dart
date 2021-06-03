@@ -50,6 +50,7 @@ void main() {
     expect(component.keywords, isEmpty);
     expect(component.screenshots, isEmpty);
     expect(component.compulsoryForDesktops, isEmpty);
+    expect(component.provides, isEmpty);
   });
 
   test('collection - optional fields - xml', () async {
@@ -271,6 +272,34 @@ void main() {
         ]));
   });
 
+  test('collection - provides - xml', () async {
+    var collection = AppstreamCollection.fromXml('''<components>
+  <version>0.12</version>
+  <origin>ubuntu-hirsute-main</origin>
+  <component type="console-application">
+    <id>com.example.Hello</id>
+    <pkgname>hello</pkgname>
+    <name>Hello World</name>
+    <summary>A simple example application</summary>
+    <provides>
+      <mediatype>text/html</mediatype>
+      <mediatype>image/png</mediatype>
+      <binary>hello</binary>
+    </provides>
+  </component>
+</components>
+''');
+    expect(collection.components, hasLength(1));
+    var component = collection.components[0];
+    expect(
+        component.provides,
+        equals([
+          AppstreamProvidesMediatype('text/html'),
+          AppstreamProvidesMediatype('image/png'),
+          AppstreamProvidesBinary('hello')
+        ]));
+  });
+
   test('collection - empty yaml', () async {
     expect(() => AppstreamCollection.fromYaml(''), throwsFormatException);
   });
@@ -324,6 +353,7 @@ Summary:
     expect(component.keywords, isEmpty);
     expect(component.screenshots, isEmpty);
     expect(component.compulsoryForDesktops, isEmpty);
+    expect(component.provides, isEmpty);
   });
 
   test('collection - optional fields - yaml', () async {
@@ -588,6 +618,37 @@ Screenshots:
                 type: AppstreamImageType.source,
                 url: 'https://example.com/screenshot2.jpg')
           ], isDefault: true)
+        ]));
+  });
+
+  test('collection - provides - yaml', () async {
+    var collection = AppstreamCollection.fromYaml("""---
+File: DEP-11
+Version: '0.12'
+Origin: ubuntu-hirsute-main
+---
+Type: console-application
+ID: com.example.Hello
+Package: hello
+Name:
+  C: Hello World
+Summary:
+  C: A simple example application
+Provides:
+  mimetypes:
+  - text/html
+  - image/png
+  binaries:
+  - hello
+""");
+    expect(collection.components, hasLength(1));
+    var component = collection.components[0];
+    expect(
+        component.provides,
+        equals([
+          AppstreamProvidesMediatype('text/html'),
+          AppstreamProvidesMediatype('image/png'),
+          AppstreamProvidesBinary('hello')
         ]));
   });
 }
