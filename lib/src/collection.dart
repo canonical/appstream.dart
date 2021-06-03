@@ -3,6 +3,7 @@ import 'package:yaml/yaml.dart';
 
 import 'component.dart';
 import 'icon.dart';
+import 'launchable.dart';
 import 'provides.dart';
 import 'screenshot.dart';
 import 'url.dart';
@@ -130,6 +131,26 @@ class AppstreamCollection {
         urls.add(AppstreamUrl(url.text, type: type));
       }
 
+      var launchables = <AppstreamLaunchable>[];
+      for (var launchable
+          in elements.where((e) => e.name.local == 'launchable')) {
+        switch (launchable.getAttribute('type')) {
+          case 'desktop-id':
+            launchables.add(AppstreamLaunchableDesktopId(launchable.text));
+            break;
+          case 'service':
+            launchables.add(AppstreamLaunchableService(launchable.text));
+            break;
+          case 'cockpit-manifest':
+            launchables
+                .add(AppstreamLaunchableCockpitManifest(launchable.text));
+            break;
+          case 'url':
+            launchables.add(AppstreamLaunchableUrl(launchable.text));
+            break;
+        }
+      }
+
       var categories = <String>[];
       var categoriesElement = component.getElement('categories');
       if (categoriesElement != null) {
@@ -251,6 +272,7 @@ class AppstreamCollection {
           projectGroup: projectGroup,
           icons: icons,
           urls: urls,
+          launchables: launchables,
           categories: categories,
           keywords: keywords,
           screenshots: screenshots,
@@ -382,6 +404,38 @@ class AppstreamCollection {
             throw FormatException('Missing/unknown Url type');
           }
           urls.add(AppstreamUrl(url[typeName], type: type));
+        }
+      }
+
+      var launchables = <AppstreamLaunchable>[];
+      var launchable = component['Launchable'];
+      if (launchable != null) {
+        if (!(launchable is YamlMap)) {
+          throw FormatException('Invaid Launchable type');
+        }
+        for (var typeName in launchable.keys) {
+          var launchableList = launchable[typeName];
+          if (!(launchableList is YamlList)) {
+            throw FormatException('Invaid Launchable type');
+          }
+          switch (typeName) {
+            case 'desktop-id':
+              launchables.addAll(
+                  launchableList.map((l) => AppstreamLaunchableDesktopId(l)));
+              break;
+            case 'service':
+              launchables.addAll(
+                  launchableList.map((l) => AppstreamLaunchableService(l)));
+              break;
+            case 'cockpit-manifest':
+              launchables.addAll(launchableList
+                  .map((l) => AppstreamLaunchableCockpitManifest(l)));
+              break;
+            case 'url':
+              launchables
+                  .addAll(launchableList.map((l) => AppstreamLaunchableUrl(l)));
+              break;
+          }
         }
       }
 
@@ -543,6 +597,7 @@ class AppstreamCollection {
           projectGroup: projectGroup,
           icons: icons,
           urls: urls,
+          launchables: launchables,
           categories: categories,
           keywords: keywords,
           screenshots: screenshots,

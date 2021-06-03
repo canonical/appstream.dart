@@ -1,4 +1,5 @@
 import 'icon.dart';
+import 'launchable.dart';
 import 'provides.dart';
 import 'screenshot.dart';
 import 'url.dart';
@@ -40,6 +41,7 @@ class AppstreamComponent {
   final List<AppstreamScreenshot> screenshots;
   final List<String> compulsoryForDesktops;
   final List<AppstreamProvides> provides;
+  final List<AppstreamLaunchable> launchables;
 
   const AppstreamComponent(
       {required this.id,
@@ -57,9 +59,10 @@ class AppstreamComponent {
       this.keywords = const {},
       this.screenshots = const [],
       this.compulsoryForDesktops = const [],
-      this.provides = const []});
+      this.provides = const [],
+      this.launchables = const []});
 
   @override
   String toString() =>
-      "$runtimeType(id: $id, type: $type, package: $package, name: $name, summary: $summary, description: $description, developerName: '$developerName', projectLicense: $projectLicense, projectGroup: $projectGroup, icons: $icons, urls: $urls, categories: $categories, keywords: $keywords, screenshots: $screenshots, compulsoryForDesktops: $compulsoryForDesktops, provides: $provides)";
+      "$runtimeType(id: $id, type: $type, package: $package, name: $name, summary: $summary, description: $description, developerName: '$developerName', projectLicense: $projectLicense, projectGroup: $projectGroup, icons: $icons, urls: $urls, categories: $categories, keywords: $keywords, screenshots: $screenshots, compulsoryForDesktops: $compulsoryForDesktops, provides: $provides, launchables: $launchables)";
 }

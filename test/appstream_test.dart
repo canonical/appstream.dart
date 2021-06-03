@@ -138,6 +138,32 @@ void main() {
         ]));
   });
 
+  test('collection - launchables - xml', () async {
+    var collection = AppstreamCollection.fromXml('''<components>
+  <version>0.12</version>
+  <origin>ubuntu-hirsute-main</origin>
+  <component type="console-application">
+    <id>com.example.Hello</id>
+    <pkgname>hello</pkgname>
+    <name>Hello World</name>
+    <summary>A simple example application</summary>
+    <launchable type="desktop-id">com.example.Hello1</launchable>
+    <launchable type="desktop-id">com.example.Hello2</launchable>
+    <launchable type="url">https://example.com/launch</launchable>
+  </component>
+</components>
+''');
+    expect(collection.components, hasLength(1));
+    var component = collection.components[0];
+    expect(
+        component.launchables,
+        equals([
+          AppstreamLaunchableDesktopId('com.example.Hello1'),
+          AppstreamLaunchableDesktopId('com.example.Hello2'),
+          AppstreamLaunchableUrl('https://example.com/launch')
+        ]));
+  });
+
   test('collection - categories - xml', () async {
     var collection = AppstreamCollection.fromXml('''<components>
   <version>0.12</version>
@@ -468,6 +494,37 @@ Url:
           AppstreamUrl('https://example.com/help', type: AppstreamUrlType.help),
           AppstreamUrl('https://example.com/contact',
               type: AppstreamUrlType.contact)
+        ]));
+  });
+
+  test('collection - launchables - yaml', () async {
+    var collection = AppstreamCollection.fromYaml("""---
+File: DEP-11
+Version: '0.12'
+Origin: ubuntu-hirsute-main
+---
+Type: console-application
+ID: com.example.Hello
+Package: hello
+Name:
+  C: Hello World
+Summary:
+  C: A simple example application
+Launchable:
+  desktop-id:
+    - com.example.Hello1
+    - com.example.Hello2
+  url:
+    - https://example.com/launch
+""");
+    expect(collection.components, hasLength(1));
+    var component = collection.components[0];
+    expect(
+        component.launchables,
+        equals([
+          AppstreamLaunchableDesktopId('com.example.Hello1'),
+          AppstreamLaunchableDesktopId('com.example.Hello2'),
+          AppstreamLaunchableUrl('https://example.com/launch')
         ]));
   });
 
