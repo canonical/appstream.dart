@@ -5,6 +5,7 @@ import 'component.dart';
 import 'icon.dart';
 import 'launchable.dart';
 import 'provides.dart';
+import 'release.dart';
 import 'screenshot.dart';
 import 'url.dart';
 
@@ -48,25 +49,7 @@ class AppstreamCollection {
       if (typeName == null) {
         throw FormatException('Missing component type');
       }
-      var type = {
-            'generic': AppstreamComponentType.generic,
-            'desktop-application': AppstreamComponentType.desktopApplication,
-            'console-application': AppstreamComponentType.consoleApplication,
-            'web-application': AppstreamComponentType.webApplication,
-            'addon': AppstreamComponentType.addon,
-            'font': AppstreamComponentType.font,
-            'codec': AppstreamComponentType.codec,
-            'inputMethod': AppstreamComponentType.inputMethod,
-            'firmware': AppstreamComponentType.firmware,
-            'driver': AppstreamComponentType.driver,
-            'localization': AppstreamComponentType.localization,
-            'service': AppstreamComponentType.service,
-            'repository': AppstreamComponentType.repository,
-            'operating-system': AppstreamComponentType.operatingSystem,
-            'icon-theme': AppstreamComponentType.iconTheme,
-            'runtime': AppstreamComponentType.runtime
-          }[typeName] ??
-          AppstreamComponentType.unknown;
+      var type = _parseComponentType(typeName);
 
       var id = component.getElement('id');
       if (id == null) {
@@ -116,19 +99,11 @@ class AppstreamCollection {
 
       var urls = <AppstreamUrl>[];
       for (var url in elements.where((e) => e.name.local == 'url')) {
-        var type = {
-          'homepage': AppstreamUrlType.homepage,
-          'bugtracker': AppstreamUrlType.bugtracker,
-          'faq': AppstreamUrlType.faq,
-          'help': AppstreamUrlType.help,
-          'donation': AppstreamUrlType.donation,
-          'translate': AppstreamUrlType.translate,
-          'contact': AppstreamUrlType.contact
-        }[url.getAttribute('type')];
-        if (type == null) {
-          throw FormatException('Missing/unknown Url type');
+        var typeName = url.getAttribute('type');
+        if (typeName == null) {
+          throw FormatException('Missing Url type');
         }
-        urls.add(AppstreamUrl(url.text, type: type));
+        urls.add(AppstreamUrl(url.text, type: _parseUrlType(typeName)));
       }
 
       var launchables = <AppstreamLaunchable>[];
@@ -213,6 +188,65 @@ class AppstreamCollection {
           .map((e) => e.text)
           .toList();
 
+      var releases = <AppstreamRelease>[];
+      var releasesElement = component.getElement('releases');
+      if (releasesElement != null) {
+        for (var release in releasesElement.children
+            .whereType<XmlElement>()
+            .where((e) => e.name.local == 'release')) {
+          var version = release.getAttribute('version');
+          DateTime? date;
+          var dateAttribute = release.getAttribute('date');
+          var unixTimestamp = release.getAttribute('timestamp');
+          if (unixTimestamp != null) {
+            date = DateTime.fromMillisecondsSinceEpoch(
+                int.parse(unixTimestamp) * 1000,
+                isUtc: true);
+          } else if (dateAttribute != null) {
+            date = DateTime.parse(dateAttribute);
+          }
+          AppstreamReleaseType? type;
+          var typeName = release.getAttribute('type');
+          if (typeName != null) {
+            type = _parseReleaseType(typeName);
+          }
+          AppstreamReleaseUrgency? urgency;
+          var urgencyName = release.getAttribute('urgency');
+          if (urgencyName != null) {
+            urgency = _parseReleaseUrgency(urgencyName);
+          }
+          var description = _getXmlTranslatedString(release, 'description');
+          var urlElement = release.getElement('url');
+          var url = urlElement?.text;
+
+          var issues = <AppstreamIssue>[];
+          var issuesElement = release.getElement('issues');
+          if (issuesElement != null) {
+            for (var issue in issuesElement.children
+                .whereType<XmlElement>()
+                .where((e) => e.name.local == 'issue')) {
+              AppstreamIssueType? type;
+              var typeName = issue.getAttribute('type');
+              if (typeName != null) {
+                type = _parseIssueType(typeName);
+              }
+              var url = issue.getAttribute('url');
+              issues.add(AppstreamIssue(issue.text,
+                  type: type ?? AppstreamIssueType.generic, url: url));
+            }
+          }
+
+          releases.add(AppstreamRelease(
+              version: version,
+              date: date,
+              type: type ?? AppstreamReleaseType.stable,
+              urgency: urgency ?? AppstreamReleaseUrgency.medium,
+              description: description,
+              url: url,
+              issues: issues));
+        }
+      }
+
       var provides = <AppstreamProvides>[];
       var providesElement = component.getElement('provides');
       if (providesElement != null) {
@@ -277,6 +311,7 @@ class AppstreamCollection {
           keywords: keywords,
           screenshots: screenshots,
           compulsoryForDesktops: compulsoryForDesktops,
+          releases: releases,
           provides: provides));
     }
 
@@ -321,25 +356,7 @@ class AppstreamCollection {
       if (typeName == null) {
         throw FormatException('Missing component type');
       }
-      var type = {
-            'generic': AppstreamComponentType.generic,
-            'desktop-application': AppstreamComponentType.desktopApplication,
-            'console-application': AppstreamComponentType.consoleApplication,
-            'web-application': AppstreamComponentType.webApplication,
-            'addon': AppstreamComponentType.addon,
-            'font': AppstreamComponentType.font,
-            'codec': AppstreamComponentType.codec,
-            'inputMethod': AppstreamComponentType.inputMethod,
-            'firmware': AppstreamComponentType.firmware,
-            'driver': AppstreamComponentType.driver,
-            'localization': AppstreamComponentType.localization,
-            'service': AppstreamComponentType.service,
-            'repository': AppstreamComponentType.repository,
-            'operating-system': AppstreamComponentType.operatingSystem,
-            'icon-theme': AppstreamComponentType.iconTheme,
-            'runtime': AppstreamComponentType.runtime
-          }[typeName] ??
-          AppstreamComponentType.unknown;
+      var type = _parseComponentType(typeName);
       var package = component['Package'];
       if (package == null) {
         throw FormatException('Missing component package');
@@ -391,19 +408,7 @@ class AppstreamCollection {
       var url = component['Url'];
       if (url != null) {
         for (var typeName in url.keys) {
-          var type = {
-            'homepage': AppstreamUrlType.homepage,
-            'bugtracker': AppstreamUrlType.bugtracker,
-            'faq': AppstreamUrlType.faq,
-            'help': AppstreamUrlType.help,
-            'donation': AppstreamUrlType.donation,
-            'translate': AppstreamUrlType.translate,
-            'contact': AppstreamUrlType.contact
-          }[typeName];
-          if (type == null) {
-            throw FormatException('Missing/unknown Url type');
-          }
-          urls.add(AppstreamUrl(url[typeName], type: type));
+          urls.add(AppstreamUrl(url[typeName], type: _parseUrlType(typeName)));
         }
       }
 
@@ -524,6 +529,75 @@ class AppstreamCollection {
             .addAll(compulsoryForDesktopsComponent.cast<String>());
       }
 
+      var releases = <AppstreamRelease>[];
+      var releasesComponent = component['Releases'];
+      if (releasesComponent != null) {
+        if (!(releasesComponent is YamlList)) {
+          throw FormatException('Invaid Releases type');
+        }
+        for (var release in releasesComponent) {
+          if (!(release is YamlMap)) {
+            throw FormatException('Invaid release type');
+          }
+          var version = release['version'];
+          DateTime? date;
+          var dateAttribute = release['date'];
+          var unixTimestamp = release['unix-timestamp'];
+          if (unixTimestamp != null) {
+            date = DateTime.fromMillisecondsSinceEpoch(unixTimestamp * 1000,
+                isUtc: true);
+          } else if (dateAttribute != null) {
+            date = DateTime.parse(dateAttribute);
+          }
+          AppstreamReleaseType? type;
+          var typeName = release['type'];
+          if (typeName != null) {
+            type = _parseReleaseType(typeName);
+          }
+          AppstreamReleaseUrgency? urgency;
+          var urgencyName = release['urgency'];
+          if (urgencyName != null) {
+            urgency = _parseReleaseUrgency(urgencyName);
+          }
+          var description = release['description'];
+          var url = release['url'];
+          var issues = <AppstreamIssue>[];
+          var issuesComponent = release['issues'];
+          if (issuesComponent != null) {
+            if (!(issuesComponent is YamlList)) {
+              throw FormatException('Invaid issues type');
+            }
+            for (var issue in issuesComponent) {
+              if (!(issue is YamlMap)) {
+                throw FormatException('Invaid issue type');
+              }
+              var id = issue['id'];
+              if (id == null) {
+                throw FormatException('Issue missing id');
+              }
+              AppstreamIssueType? type;
+              var typeName = issue['type'];
+              if (typeName != null) {
+                type = _parseIssueType(typeName);
+              }
+              var url = issue['url'];
+              issues.add(AppstreamIssue(id,
+                  type: type ?? AppstreamIssueType.generic, url: url));
+            }
+          }
+          releases.add(AppstreamRelease(
+              version: version,
+              date: date,
+              type: type ?? AppstreamReleaseType.stable,
+              urgency: urgency ?? AppstreamReleaseUrgency.medium,
+              description: description != null
+                  ? _parseYamlTranslatedString(description)
+                  : const {},
+              url: url,
+              issues: issues));
+        }
+      }
+
       var provides = <AppstreamProvides>[];
       var providesComponent = component['Provides'];
       if (providesComponent != null) {
@@ -602,6 +676,7 @@ class AppstreamCollection {
           keywords: keywords,
           screenshots: screenshots,
           compulsoryForDesktops: compulsoryForDesktops,
+          releases: releases,
           provides: provides));
     }
 
@@ -647,4 +722,77 @@ String _makeUrl(String? mediaBaseUrl, String url) {
   }
 
   return mediaBaseUrl + '/' + url;
+}
+
+AppstreamComponentType _parseComponentType(String typeName) {
+  return {
+        'generic': AppstreamComponentType.generic,
+        'desktop-application': AppstreamComponentType.desktopApplication,
+        'console-application': AppstreamComponentType.consoleApplication,
+        'web-application': AppstreamComponentType.webApplication,
+        'addon': AppstreamComponentType.addon,
+        'font': AppstreamComponentType.font,
+        'codec': AppstreamComponentType.codec,
+        'inputMethod': AppstreamComponentType.inputMethod,
+        'firmware': AppstreamComponentType.firmware,
+        'driver': AppstreamComponentType.driver,
+        'localization': AppstreamComponentType.localization,
+        'service': AppstreamComponentType.service,
+        'repository': AppstreamComponentType.repository,
+        'operating-system': AppstreamComponentType.operatingSystem,
+        'icon-theme': AppstreamComponentType.iconTheme,
+        'runtime': AppstreamComponentType.runtime
+      }[typeName] ??
+      AppstreamComponentType.unknown;
+}
+
+AppstreamUrlType _parseUrlType(String typeName) {
+  var type = {
+    'homepage': AppstreamUrlType.homepage,
+    'bugtracker': AppstreamUrlType.bugtracker,
+    'faq': AppstreamUrlType.faq,
+    'help': AppstreamUrlType.help,
+    'donation': AppstreamUrlType.donation,
+    'translate': AppstreamUrlType.translate,
+    'contact': AppstreamUrlType.contact
+  }[typeName];
+  if (type == null) {
+    throw FormatException("Unknown url type '$typeName'");
+  }
+  return type;
+}
+
+AppstreamReleaseType _parseReleaseType(String typeName) {
+  var type = {
+    'stable': AppstreamReleaseType.stable,
+    'development': AppstreamReleaseType.development
+  }[typeName];
+  if (type == null) {
+    throw FormatException("Unknown release type '$typeName'");
+  }
+  return type;
+}
+
+AppstreamReleaseUrgency _parseReleaseUrgency(String urgencyName) {
+  var urgency = {
+    'low': AppstreamReleaseUrgency.low,
+    'medium': AppstreamReleaseUrgency.medium,
+    'high': AppstreamReleaseUrgency.high,
+    'critical': AppstreamReleaseUrgency.critical
+  }[urgencyName];
+  if (urgency == null) {
+    throw FormatException("Unknown release urgency '$urgencyName'");
+  }
+  return urgency;
+}
+
+AppstreamIssueType _parseIssueType(String typeName) {
+  var type = {
+    'generic': AppstreamIssueType.generic,
+    'cve': AppstreamIssueType.cve
+  }[typeName];
+  if (type == null) {
+    throw FormatException("Unknown issue type '$typeName'");
+  }
+  return type;
 }

@@ -298,6 +298,54 @@ void main() {
         ]));
   });
 
+  test('collection - releases - xml', () async {
+    var collection = AppstreamCollection.fromXml('''<components>
+  <version>0.12</version>
+  <origin>ubuntu-hirsute-main</origin>
+  <component type="console-application">
+    <id>com.example.Hello</id>
+    <pkgname>hello</pkgname>
+    <name>Hello World</name>
+    <summary>A simple example application</summary>
+    <releases>
+      <release version="1.2" date="2014-04-12" urgency="high">
+        <description>This stable release fixes bugs.</description>
+        <url>https://example.com/releases/version-1.2.html</url>
+        <issues>
+          <issue url="https://github.com/example/example/issues/123">#123</issue>
+          <issue type="cve">CVE-2019-123456</issue>
+        </issues>
+      </release>
+      <release version="1.1" type="development" date="2013-10-20"/>
+      <release version="1.0" timestamp="1345939200"/>
+    </releases>
+  </component>
+</components>
+''');
+    expect(collection.components, hasLength(1));
+    var component = collection.components[0];
+    expect(
+        component.releases,
+        equals([
+          AppstreamRelease(
+              version: '1.2',
+              date: DateTime(2014, 4, 12),
+              urgency: AppstreamReleaseUrgency.high,
+              description: {'C': 'This stable release fixes bugs.'},
+              url: 'https://example.com/releases/version-1.2.html',
+              issues: [
+                AppstreamIssue('#123',
+                    url: 'https://github.com/example/example/issues/123'),
+                AppstreamIssue('CVE-2019-123456', type: AppstreamIssueType.cve)
+              ]),
+          AppstreamRelease(
+              version: '1.1',
+              type: AppstreamReleaseType.development,
+              date: DateTime(2013, 10, 20)),
+          AppstreamRelease(version: '1.0', date: DateTime.utc(2012, 8, 26))
+        ]));
+  });
+
   test('collection - provides - xml', () async {
     var collection = AppstreamCollection.fromXml('''<components>
   <version>0.12</version>
@@ -675,6 +723,61 @@ Screenshots:
                 type: AppstreamImageType.source,
                 url: 'https://example.com/screenshot2.jpg')
           ], isDefault: true)
+        ]));
+  });
+
+  test('collection - releases - yaml', () async {
+    var collection = AppstreamCollection.fromYaml("""---
+File: DEP-11
+Version: '0.12'
+Origin: ubuntu-hirsute-main
+---
+Type: console-application
+ID: com.example.Hello
+Package: hello
+Name:
+  C: Hello World
+Summary:
+  C: A simple example application
+Releases:
+- version: '1.2'
+  date: 2014-04-12
+  urgency: high
+  description:
+    C: This stable release fixes bugs.
+  url: https://example.com/releases/version-1.2.html
+  issues:
+  - id: '#123'
+    url: https://github.com/example/example/issues/123
+  - id: CVE-2019-123456
+    type: cve
+- version: '1.1'
+  type: development
+  date: 2013-10-20
+- version: '1.0'
+  unix-timestamp: 1345939200
+""");
+    expect(collection.components, hasLength(1));
+    var component = collection.components[0];
+    expect(
+        component.releases,
+        equals([
+          AppstreamRelease(
+              version: '1.2',
+              date: DateTime(2014, 4, 12),
+              urgency: AppstreamReleaseUrgency.high,
+              description: {'C': 'This stable release fixes bugs.'},
+              url: 'https://example.com/releases/version-1.2.html',
+              issues: [
+                AppstreamIssue('#123',
+                    url: 'https://github.com/example/example/issues/123'),
+                AppstreamIssue('CVE-2019-123456', type: AppstreamIssueType.cve)
+              ]),
+          AppstreamRelease(
+              version: '1.1',
+              type: AppstreamReleaseType.development,
+              date: DateTime(2013, 10, 20)),
+          AppstreamRelease(version: '1.0', date: DateTime.utc(2012, 8, 26))
         ]));
   });
 

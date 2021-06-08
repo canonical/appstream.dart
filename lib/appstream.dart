@@ -4,5 +4,6 @@ export 'src/icon.dart';
 export 'src/launchable.dart';
 export 'src/pool.dart';
 export 'src/provides.dart';
+export 'src/release.dart';
 export 'src/screenshot.dart';
 export 'src/url.dart';
