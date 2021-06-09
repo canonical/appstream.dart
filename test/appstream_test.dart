@@ -51,6 +51,8 @@ void main() {
     expect(component.screenshots, isEmpty);
     expect(component.compulsoryForDesktops, isEmpty);
     expect(component.provides, isEmpty);
+    expect(component.releases, isEmpty);
+    expect(component.languages, isEmpty);
   });
 
   test('collection - optional fields - xml', () async {
@@ -374,6 +376,32 @@ void main() {
         ]));
   });
 
+  test('collection - languages - xml', () async {
+    var collection = AppstreamCollection.fromXml('''<components>
+  <version>0.12</version>
+  <origin>ubuntu-hirsute-main</origin>
+  <component type="console-application">
+    <id>com.example.Hello</id>
+    <pkgname>hello</pkgname>
+    <name>Hello World</name>
+    <summary>A simple example application</summary>
+    <languages>
+      <lang>en</lang>
+      <lang percentage="42">de</lang>
+    </languages>
+  </component>
+</components>
+''');
+    expect(collection.components, hasLength(1));
+    var component = collection.components[0];
+    expect(
+        component.languages,
+        equals([
+          AppstreamLanguage('en'),
+          AppstreamLanguage('de', percentage: 42)
+        ]));
+  });
+
   test('collection - empty yaml', () async {
     expect(() => AppstreamCollection.fromYaml(''), throwsFormatException);
   });
@@ -428,6 +456,8 @@ Summary:
     expect(component.screenshots, isEmpty);
     expect(component.compulsoryForDesktops, isEmpty);
     expect(component.provides, isEmpty);
+    expect(component.releases, isEmpty);
+    expect(component.languages, isEmpty);
   });
 
   test('collection - optional fields - yaml', () async {
@@ -809,6 +839,34 @@ Provides:
           AppstreamProvidesMediatype('text/html'),
           AppstreamProvidesMediatype('image/png'),
           AppstreamProvidesBinary('hello')
+        ]));
+  });
+
+  test('collection - languages - yaml', () async {
+    var collection = AppstreamCollection.fromYaml("""---
+File: DEP-11
+Version: '0.12'
+Origin: ubuntu-hirsute-main
+---
+Type: console-application
+ID: com.example.Hello
+Package: hello
+Name:
+  C: Hello World
+Summary:
+  C: A simple example application
+Languages:
+  - locale: en
+  - locale: de
+    percentage: 42
+""");
+    expect(collection.components, hasLength(1));
+    var component = collection.components[0];
+    expect(
+        component.languages,
+        equals([
+          AppstreamLanguage('en'),
+          AppstreamLanguage('de', percentage: 42)
         ]));
   });
 }
