@@ -307,6 +307,26 @@ class AppstreamCollection {
         }
       }
 
+      var contentRatings = <String, Map<String, AppstreamContentRating>>{};
+      for (var contentRating
+          in elements.where((e) => e.name.local == 'content_rating')) {
+        var type = contentRating.getAttribute('type');
+        if (type == null) {
+          throw FormatException('Missing content rating type');
+        }
+        var ratings = <String, AppstreamContentRating>{};
+        for (var contentAttribute in contentRating.children
+            .whereType<XmlElement>()
+            .where((e) => e.name.local == 'content_attribute')) {
+          var id = contentAttribute.getAttribute('id');
+          if (id == null) {
+            throw FormatException('Missing content attribute id');
+          }
+          ratings[id] = _parseContentRating(contentAttribute.text);
+        }
+        contentRatings[type] = ratings;
+      }
+
       components.add(AppstreamComponent(
           id: id.text,
           type: type,
@@ -326,7 +346,8 @@ class AppstreamCollection {
           compulsoryForDesktops: compulsoryForDesktops,
           releases: releases,
           provides: provides,
-          languages: languages));
+          languages: languages,
+          contentRatings: contentRatings));
     }
 
     return AppstreamCollection(
@@ -691,6 +712,19 @@ class AppstreamCollection {
         }
       }
 
+      var contentRatings = <String, Map<String, AppstreamContentRating>>{};
+      var contentRatingComponent = component['ContentRating'];
+      if (contentRatingComponent != null) {
+        if (!(contentRatingComponent is YamlMap)) {
+          throw FormatException('Invaid ContentRating type');
+        }
+        for (var type in contentRatingComponent.keys) {
+          contentRatings[type] = contentRatingComponent[type]
+              .map<String, AppstreamContentRating>((key, value) =>
+                  MapEntry(key as String, _parseContentRating(value)));
+        }
+      }
+
       components.add(AppstreamComponent(
           id: id,
           type: type,
@@ -712,7 +746,8 @@ class AppstreamCollection {
           compulsoryForDesktops: compulsoryForDesktops,
           releases: releases,
           provides: provides,
-          languages: languages));
+          languages: languages,
+          contentRatings: contentRatings));
     }
 
     return AppstreamCollection(
@@ -830,4 +865,17 @@ AppstreamIssueType _parseIssueType(String typeName) {
     throw FormatException("Unknown issue type '$typeName'");
   }
   return type;
+}
+
+AppstreamContentRating _parseContentRating(String ratingName) {
+  var rating = {
+    'none': AppstreamContentRating.none,
+    'mild': AppstreamContentRating.mild,
+    'moderate': AppstreamContentRating.moderate,
+    'intense': AppstreamContentRating.intense
+  }[ratingName];
+  if (rating == null) {
+    throw FormatException("Unknown content rating '$ratingName'");
+  }
+  return rating;
 }

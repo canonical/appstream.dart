@@ -53,6 +53,7 @@ void main() {
     expect(component.provides, isEmpty);
     expect(component.releases, isEmpty);
     expect(component.languages, isEmpty);
+    expect(component.contentRatings, isEmpty);
   });
 
   test('collection - optional fields - xml', () async {
@@ -402,6 +403,34 @@ void main() {
         ]));
   });
 
+  test('collection - content-rating - xml', () async {
+    var collection = AppstreamCollection.fromXml('''<components>
+  <version>0.12</version>
+  <origin>ubuntu-hirsute-main</origin>
+  <component type="console-application">
+    <id>com.example.Hello</id>
+    <pkgname>hello</pkgname>
+    <name>Hello World</name>
+    <summary>A simple example application</summary>
+    <content_rating type="oars-1.0">
+      <content_attribute id="drugs-alcohol">moderate</content_attribute>
+      <content_attribute id="language-humor">mild</content_attribute>
+    </content_rating>
+  </component>
+</components>
+''');
+    expect(collection.components, hasLength(1));
+    var component = collection.components[0];
+    expect(
+        component.contentRatings,
+        equals({
+          'oars-1.0': {
+            'drugs-alcohol': AppstreamContentRating.moderate,
+            'language-humor': AppstreamContentRating.mild
+          }
+        }));
+  });
+
   test('collection - empty yaml', () async {
     expect(() => AppstreamCollection.fromYaml(''), throwsFormatException);
   });
@@ -458,6 +487,7 @@ Summary:
     expect(component.provides, isEmpty);
     expect(component.releases, isEmpty);
     expect(component.languages, isEmpty);
+    expect(component.contentRatings, isEmpty);
   });
 
   test('collection - optional fields - yaml', () async {
@@ -868,5 +898,35 @@ Languages:
           AppstreamLanguage('en'),
           AppstreamLanguage('de', percentage: 42)
         ]));
+  });
+
+  test('collection - content-rating - yaml', () async {
+    var collection = AppstreamCollection.fromYaml("""---
+File: DEP-11
+Version: '0.12'
+Origin: ubuntu-hirsute-main
+---
+Type: console-application
+ID: com.example.Hello
+Package: hello
+Name:
+  C: Hello World
+Summary:
+  C: A simple example application
+ContentRating:
+  oars-1.0:
+    drugs-alcohol: moderate
+    language-humor: mild
+""");
+    expect(collection.components, hasLength(1));
+    var component = collection.components[0];
+    expect(
+        component.contentRatings,
+        equals({
+          'oars-1.0': {
+            'drugs-alcohol': AppstreamContentRating.moderate,
+            'language-humor': AppstreamContentRating.mild
+          }
+        }));
   });
 }

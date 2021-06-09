@@ -26,6 +26,8 @@ enum AppstreamComponentType {
   runtime
 }
 
+enum AppstreamContentRating { none, mild, moderate, intense }
+
 class AppstreamComponent {
   final String id;
   final AppstreamComponentType type;
@@ -46,6 +48,7 @@ class AppstreamComponent {
   final List<AppstreamProvides> provides;
   final List<AppstreamLaunchable> launchables;
   final List<AppstreamLanguage> languages;
+  final Map<String, Map<String, AppstreamContentRating>> contentRatings;
 
   const AppstreamComponent(
       {required this.id,
@@ -66,9 +69,10 @@ class AppstreamComponent {
       this.releases = const [],
       this.provides = const [],
       this.launchables = const [],
-      this.languages = const []});
+      this.languages = const [],
+      this.contentRatings = const {}});
 
   @override
   String toString() =>
-      "$runtimeType(id: $id, type: $type, package: $package, name: $name, summary: $summary, description: $description, developerName: '$developerName', projectLicense: $projectLicense, projectGroup: $projectGroup, icons: $icons, urls: $urls, categories: $categories, keywords: $keywords, screenshots: $screenshots, compulsoryForDesktops: $compulsoryForDesktops, release: $releases, provides: $provides, launchables: $launchables, languages: $languages)";
+      "$runtimeType(id: $id, type: $type, package: $package, name: $name, summary: $summary, description: $description, developerName: '$developerName', projectLicense: $projectLicense, projectGroup: $projectGroup, icons: $icons, urls: $urls, categories: $categories, keywords: $keywords, screenshots: $screenshots, compulsoryForDesktops: $compulsoryForDesktops, release: $releases, provides: $provides, launchables: $launchables, languages: $languages, contentRatings: $contentRatings)";
 }
