@@ -46,7 +46,7 @@ void main() {
     expect(component.name, equals({'C': 'Hello World'}));
     expect(component.summary, equals({'C': 'A simple example application'}));
     expect(component.description, isEmpty);
-    expect(component.developerName, isNull);
+    expect(component.developerName, isEmpty);
     expect(component.projectLicense, isNull);
     expect(component.projectGroup, isNull);
     expect(component.icons, isEmpty);
@@ -82,7 +82,7 @@ void main() {
     var component = collection.components[0];
     expect(component.description,
         equals({'C': '<p>The <b>best</b> thing since sliced bread</p>'}));
-    expect(component.developerName, equals('The Developer'));
+    expect(component.developerName, equals({'C': 'The Developer'}));
     expect(component.projectLicense, equals('GPL-3'));
     expect(component.projectGroup, equals('GNOME'));
     expect(component.compulsoryForDesktops, equals(['GNOME', 'KDE']));
@@ -488,7 +488,7 @@ Summary:
     expect(component.name, equals({'C': 'Hello World'}));
     expect(component.summary, equals({'C': 'A simple example application'}));
     expect(component.description, isEmpty);
-    expect(component.developerName, isNull);
+    expect(component.developerName, isEmpty);
     expect(component.projectLicense, isNull);
     expect(component.projectGroup, isNull);
     expect(component.icons, isEmpty);
@@ -519,7 +519,8 @@ Summary:
 Description:
   C: >-
     <p>The <b>best</b> thing since sliced bread</p>
-DeveloperName: The Developer
+DeveloperName:
+  C: The Developer
 ProjectLicense: GPL-3
 ProjectGroup: GNOME
 CompulsoryForDesktops:
@@ -530,7 +531,7 @@ CompulsoryForDesktops:
     var component = collection.components[0];
     expect(component.description,
         equals({'C': '<p>The <b>best</b> thing since sliced bread</p>'}));
-    expect(component.developerName, equals('The Developer'));
+    expect(component.developerName, equals({'C': 'The Developer'}));
     expect(component.projectLicense, equals('GPL-3'));
     expect(component.projectGroup, equals('GNOME'));
     expect(component.compulsoryForDesktops, equals(['GNOME', 'KDE']));

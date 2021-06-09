@@ -64,7 +64,7 @@ class AppstreamCollection {
       var name = _getXmlTranslatedString(component, 'name');
       var summary = _getXmlTranslatedString(component, 'summary');
       var description = _getXmlTranslatedString(component, 'description');
-      var developerName = component.getElement('developer_name')?.text;
+      var developerName = _getXmlTranslatedString(component, 'developer_name');
       var projectLicense = component.getElement('project_license')?.text;
       var projectGroup = component.getElement('project_group')?.text;
 
@@ -737,7 +737,9 @@ class AppstreamCollection {
           description: description != null
               ? _parseYamlTranslatedString(description)
               : const {},
-          developerName: developerName,
+          developerName: developerName != null
+              ? _parseYamlTranslatedString(developerName)
+              : const {},
           projectLicense: projectLicense,
           projectGroup: projectGroup,
           icons: icons,
