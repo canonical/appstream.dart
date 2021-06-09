@@ -21,6 +21,12 @@ void main() {
     expect(collection.components, isEmpty);
   });
 
+  test('collection - architecture - xml', () async {
+    var collection = AppstreamCollection.fromXml(
+        '<components version="0.12" origin="ubuntu-hirsute-main" architecture="arm64"/>');
+    expect(collection.architecture, equals('arm64'));
+  });
+
   test('collection - single - xml', () async {
     var collection = AppstreamCollection.fromXml(
         '''<components version="0.12" origin="ubuntu-hirsute-main">
@@ -438,6 +444,16 @@ Origin: ubuntu-hirsute-main
     expect(collection.architecture, isNull);
     expect(collection.priority, isNull);
     expect(collection.components, isEmpty);
+  });
+
+  test('collection - architecture - yaml', () async {
+    var collection = AppstreamCollection.fromYaml("""---
+File: DEP-11
+Version: '0.12'
+Origin: ubuntu-hirsute-main
+Architecture: arm64
+""");
+    expect(collection.architecture, equals('arm64'));
   });
 
   test('collection - priority - yaml', () async {

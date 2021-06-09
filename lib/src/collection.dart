@@ -41,6 +41,7 @@ class AppstreamCollection {
     if (origin == null) {
       throw FormatException('Missing repository origin');
     }
+    var architecture = root.getAttribute('architecture');
 
     var components = <AppstreamComponent>[];
     for (var component in root.children
@@ -351,7 +352,10 @@ class AppstreamCollection {
     }
 
     return AppstreamCollection(
-        version: version, origin: origin, components: components);
+        version: version,
+        origin: origin,
+        architecture: architecture,
+        components: components);
   }
 
   factory AppstreamCollection.fromYaml(String yaml) {
