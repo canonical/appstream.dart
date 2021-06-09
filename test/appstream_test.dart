@@ -13,7 +13,7 @@ void main() {
 
   test('collection - empty - xml', () async {
     var collection = AppstreamCollection.fromXml(
-        '<components><version>0.12</version><origin>ubuntu-hirsute-main</origin></components>');
+        '<components version="0.12" origin="ubuntu-hirsute-main"/>');
     expect(collection.version, equals('0.12'));
     expect(collection.origin, equals('ubuntu-hirsute-main'));
     expect(collection.architecture, isNull);
@@ -22,9 +22,8 @@ void main() {
   });
 
   test('collection - single - xml', () async {
-    var collection = AppstreamCollection.fromXml('''<components>
-  <version>0.12</version>
-  <origin>ubuntu-hirsute-main</origin>
+    var collection = AppstreamCollection.fromXml(
+        '''<components version="0.12" origin="ubuntu-hirsute-main">
   <component type="console-application">
     <id>com.example.Hello</id>
     <pkgname>hello</pkgname>
@@ -57,9 +56,8 @@ void main() {
   });
 
   test('collection - optional fields - xml', () async {
-    var collection = AppstreamCollection.fromXml('''<components>
-  <version>0.12</version>
-  <origin>ubuntu-hirsute-main</origin>
+    var collection = AppstreamCollection.fromXml(
+        '''<components version="0.12" origin="ubuntu-hirsute-main">
   <component type="console-application">
     <id>com.example.Hello</id>
     <pkgname>hello</pkgname>
@@ -85,9 +83,8 @@ void main() {
   });
 
   test('collection - icons - xml', () async {
-    var collection = AppstreamCollection.fromXml('''<components>
-  <version>0.12</version>
-  <origin>ubuntu-hirsute-main</origin>
+    var collection = AppstreamCollection.fromXml(
+        '''<components version="0.12" origin="ubuntu-hirsute-main">
   <component type="console-application">
     <id>com.example.Hello</id>
     <pkgname>hello</pkgname>
@@ -115,9 +112,8 @@ void main() {
   });
 
   test('collection - urls - xml', () async {
-    var collection = AppstreamCollection.fromXml('''<components>
-  <version>0.12</version>
-  <origin>ubuntu-hirsute-main</origin>
+    var collection = AppstreamCollection.fromXml(
+        '''<components version="0.12" origin="ubuntu-hirsute-main">
   <component type="console-application">
     <id>com.example.Hello</id>
     <pkgname>hello</pkgname>
@@ -142,9 +138,8 @@ void main() {
   });
 
   test('collection - launchables - xml', () async {
-    var collection = AppstreamCollection.fromXml('''<components>
-  <version>0.12</version>
-  <origin>ubuntu-hirsute-main</origin>
+    var collection = AppstreamCollection.fromXml(
+        '''<components version="0.12" origin="ubuntu-hirsute-main">
   <component type="console-application">
     <id>com.example.Hello</id>
     <pkgname>hello</pkgname>
@@ -168,9 +163,8 @@ void main() {
   });
 
   test('collection - categories - xml', () async {
-    var collection = AppstreamCollection.fromXml('''<components>
-  <version>0.12</version>
-  <origin>ubuntu-hirsute-main</origin>
+    var collection = AppstreamCollection.fromXml(
+        '''<components version="0.12" origin="ubuntu-hirsute-main">
   <component type="console-application">
     <id>com.example.Hello</id>
     <pkgname>hello</pkgname>
@@ -189,9 +183,8 @@ void main() {
   });
 
   test('collection - keywords - xml', () async {
-    var collection = AppstreamCollection.fromXml('''<components>
-  <version>0.12</version>
-  <origin>ubuntu-hirsute-main</origin>
+    var collection = AppstreamCollection.fromXml(
+        '''<components version="0.12" origin="ubuntu-hirsute-main">
   <component type="console-application">
     <id>com.example.Hello</id>
     <pkgname>hello</pkgname>
@@ -219,9 +212,8 @@ void main() {
   });
 
   test('collection - screenshot - xml', () async {
-    var collection = AppstreamCollection.fromXml('''<components>
-  <version>0.12</version>
-  <origin>ubuntu-hirsute-main</origin>
+    var collection = AppstreamCollection.fromXml(
+        '''<components version="0.12" origin="ubuntu-hirsute-main">
   <component type="console-application">
     <id>com.example.Hello</id>
     <pkgname>hello</pkgname>
@@ -265,9 +257,8 @@ void main() {
   });
 
   test('collection - screenshots - xml', () async {
-    var collection = AppstreamCollection.fromXml('''<components>
-  <version>0.12</version>
-  <origin>ubuntu-hirsute-main</origin>
+    var collection = AppstreamCollection.fromXml(
+        '''<components version="0.12" origin="ubuntu-hirsute-main">
   <component type="console-application">
     <id>com.example.Hello</id>
     <pkgname>hello</pkgname>
@@ -302,9 +293,8 @@ void main() {
   });
 
   test('collection - releases - xml', () async {
-    var collection = AppstreamCollection.fromXml('''<components>
-  <version>0.12</version>
-  <origin>ubuntu-hirsute-main</origin>
+    var collection = AppstreamCollection.fromXml(
+        '''<components version="0.12" origin="ubuntu-hirsute-main">
   <component type="console-application">
     <id>com.example.Hello</id>
     <pkgname>hello</pkgname>
@@ -350,9 +340,8 @@ void main() {
   });
 
   test('collection - provides - xml', () async {
-    var collection = AppstreamCollection.fromXml('''<components>
-  <version>0.12</version>
-  <origin>ubuntu-hirsute-main</origin>
+    var collection = AppstreamCollection.fromXml(
+        '''<components version="0.12" origin="ubuntu-hirsute-main">
   <component type="console-application">
     <id>com.example.Hello</id>
     <pkgname>hello</pkgname>
@@ -378,9 +367,8 @@ void main() {
   });
 
   test('collection - languages - xml', () async {
-    var collection = AppstreamCollection.fromXml('''<components>
-  <version>0.12</version>
-  <origin>ubuntu-hirsute-main</origin>
+    var collection = AppstreamCollection.fromXml(
+        '''<components version="0.12" origin="ubuntu-hirsute-main">
   <component type="console-application">
     <id>com.example.Hello</id>
     <pkgname>hello</pkgname>
@@ -404,9 +392,8 @@ void main() {
   });
 
   test('collection - content-rating - xml', () async {
-    var collection = AppstreamCollection.fromXml('''<components>
-  <version>0.12</version>
-  <origin>ubuntu-hirsute-main</origin>
+    var collection = AppstreamCollection.fromXml(
+        '''<components version="0.12" origin="ubuntu-hirsute-main">
   <component type="console-application">
     <id>com.example.Hello</id>
     <pkgname>hello</pkgname>

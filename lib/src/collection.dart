@@ -33,11 +33,11 @@ class AppstreamCollection {
       throw FormatException("XML document doesn't contain components tag");
     }
 
-    var version = root.getElement('version');
+    var version = root.getAttribute('version');
     if (version == null) {
       throw FormatException('Missing AppStream version');
     }
-    var origin = root.getElement('origin');
+    var origin = root.getAttribute('origin');
     if (origin == null) {
       throw FormatException('Missing repository origin');
     }
@@ -351,7 +351,7 @@ class AppstreamCollection {
     }
 
     return AppstreamCollection(
-        version: version.text, origin: origin.text, components: components);
+        version: version, origin: origin, components: components);
   }
 
   factory AppstreamCollection.fromYaml(String yaml) {
