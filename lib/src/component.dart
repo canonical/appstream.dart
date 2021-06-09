@@ -6,6 +6,7 @@ import 'release.dart';
 import 'screenshot.dart';
 import 'url.dart';
 
+/// Types of Appstream component.
 enum AppstreamComponentType {
   unknown,
   generic,
@@ -26,30 +27,72 @@ enum AppstreamComponentType {
   runtime
 }
 
+/// Rating applied to an aspect of a component, e.g. the language used within it.
 enum AppstreamContentRating { none, mild, moderate, intense }
 
+/// Metadata about a component (application, font etc).
 class AppstreamComponent {
+  /// Unique ID for this component.
   final String id;
+
+  /// Type of component.
   final AppstreamComponentType type;
+
+  /// The name of the package this component is provided by.
   final String package;
+
+  /// Human readable name of the component, keyed by language.
   final Map<String, String> name;
+
+  /// Short summary of the component, keyed by language.
   final Map<String, String> summary;
+
+  /// Long description of the component, keyed by language.
   final Map<String, String> description;
+
+  /// The developer or project responsible for this project, keyed by langauge.
   final Map<String, String> developerName;
+
+  /// The license this project is under
   final String? projectLicense;
+
+  /// Umbrella project this component is part of, e.g. 'GNOME'.
   final String? projectGroup;
+
+  /// Icons for this component.
   final List<AppstreamIcon> icons;
+
+  /// Web links for this component.
   final List<AppstreamUrl> urls;
+
+  /// Categories this component fits.
   final List<String> categories;
+
+  /// Search keywords for this component, keyed by language.
   final Map<String, List<String>> keywords;
+
+  /// Screenshots of this component.
   final List<AppstreamScreenshot> screenshots;
+
+  /// Desktops that require this component, e.g. 'GNOME'
   final List<String> compulsoryForDesktops;
+
+  /// Releases for this component.
   final List<AppstreamRelease> releases;
+
+  /// Things this component provides.
   final List<AppstreamProvides> provides;
+
+  /// Things that can be launched from this component.
   final List<AppstreamLaunchable> launchables;
+
+  /// Languages this component is available in.
   final List<AppstreamLanguage> languages;
+
+  /// Content ratings for this package, keyed by content rating system name. e.g. {'oars-1.0': {'drugs-alcohol': AppstreamContentRating.moderate, 'language-humor': AppstreamContentRating.mild}}
   final Map<String, Map<String, AppstreamContentRating>> contentRatings;
 
+  /// Creates a new Appstream component.
   const AppstreamComponent(
       {required this.id,
       required this.type,

@@ -1,8 +1,11 @@
+/// Metadata about something that can be launched from a component.
 class AppstreamLaunchable {
   const AppstreamLaunchable();
 }
 
+/// Metadata about an application that can be launched via a desktop file.
 class AppstreamLaunchableDesktopId extends AppstreamLaunchable {
+  /// The ID of a desktop file, e.g. 'myapp.desktop'.
   final String desktopId;
 
   const AppstreamLaunchableDesktopId(this.desktopId);
@@ -15,7 +18,9 @@ class AppstreamLaunchableDesktopId extends AppstreamLaunchable {
   String toString() => '$runtimeType($desktopId)';
 }
 
+/// Metadata about a service that can be launched from a component.
 class AppstreamLaunchableService extends AppstreamLaunchable {
+  /// The name of the service, e.g. 'myservice'.
   final String serviceName;
 
   const AppstreamLaunchableService(this.serviceName);
@@ -28,7 +33,9 @@ class AppstreamLaunchableService extends AppstreamLaunchable {
   String toString() => '$runtimeType($serviceName)';
 }
 
+/// Metadata about a [Cockpit package](https://cockpit-project.org/guide/latest/packages.html) that can be launched from a component.
 class AppstreamLaunchableCockpitManifest extends AppstreamLaunchable {
+  /// A [Cockpit package name](https://cockpit-project.org/guide/latest/packages.html).
   final String packageName;
 
   const AppstreamLaunchableCockpitManifest(this.packageName);
@@ -42,7 +49,9 @@ class AppstreamLaunchableCockpitManifest extends AppstreamLaunchable {
   String toString() => '$runtimeType($packageName)';
 }
 
+/// Metadata for components that are web applications.
 class AppstreamLaunchableUrl extends AppstreamLaunchable {
+  /// A URL for this application, e.g. 'https://example.com/myapp'.
   final String url;
 
   const AppstreamLaunchableUrl(this.url);

@@ -1,8 +1,11 @@
+/// Metadata about an icon.
 class AppstreamIcon {
   const AppstreamIcon();
 }
 
+/// Metadata for an icon in the stock set.
 class AppstreamStockIcon extends AppstreamIcon {
+  /// The name of the icon, e.g. 'firefox'.
   final String name;
 
   const AppstreamStockIcon(this.name);
@@ -14,9 +17,15 @@ class AppstreamStockIcon extends AppstreamIcon {
   String toString() => "$runtimeType('$name')";
 }
 
+/// Metadata for an icon installed in the icon cache.
 class AppstreamCachedIcon extends AppstreamIcon {
+  /// Name of the icon, e.g. 'firefox.png'.
   final String name;
+
+  /// Width of the icon in pixels.
   final int? width;
+
+  /// Height of the icon in pixels.
   final int? height;
 
   const AppstreamCachedIcon(this.name, {this.width, this.height});
@@ -32,9 +41,15 @@ class AppstreamCachedIcon extends AppstreamIcon {
   String toString() => "$runtimeType('$name', width: $width, height: $height)";
 }
 
+/// Metadata for an icon installed on the local system.
 class AppstreamLocalIcon extends AppstreamIcon {
+  /// The file containing the icon, e.g. '/usr/share/my_app/my_icon.png'.
   final String filename;
+
+  /// Width of the icon in pixels.
   final int? width;
+
+  /// Height of the icon in pixels.
   final int? height;
 
   const AppstreamLocalIcon(this.filename, {this.width, this.height});
@@ -51,9 +66,15 @@ class AppstreamLocalIcon extends AppstreamIcon {
       "$runtimeType('$filename', width: $width, height: $height)";
 }
 
+/// Metadata for an icon accessed via a URL.
 class AppstreamRemoteIcon extends AppstreamIcon {
+  /// The URL for the icon file. e.g. 'https://example.com/my_icon.png'
   final String url;
+
+  /// Width of the icon in pixels.
   final int? width;
+
+  /// Height of the icon in pixels.
   final int? height;
 
   const AppstreamRemoteIcon(this.url, {this.width, this.height});

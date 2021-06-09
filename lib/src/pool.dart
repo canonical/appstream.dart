@@ -4,9 +4,12 @@ import 'dart:io';
 import 'collection.dart';
 import 'component.dart';
 
+/// Metadata for all the components known about on this system.
 class AppstreamPool {
+  /// The components in this pool.
   final components = <AppstreamComponent>[];
 
+  /// Load the pool.
   Future<void> load() async {
     var xmlPaths = await _listFiles('/var/lib/app-info', ['.xml', '.xml.gz']);
     var collectionFutures = <Future<AppstreamCollection>>[];
