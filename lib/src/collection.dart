@@ -376,8 +376,7 @@ class AppstreamCollection {
     if (origin == null) {
       throw FormatException('Missing repository origin');
     }
-    var priorityString = headerMap['Priority'];
-    var priority = priorityString != null ? int.parse(priorityString) : null;
+    var priority = headerMap['Priority'];
     var mediaBaseUrl = headerMap['MediaBaseUrl'];
     var architecture = headerMap['Architecture'];
     var components = <AppstreamComponent>[];
