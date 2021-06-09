@@ -1,4 +1,5 @@
 import 'icon.dart';
+import 'language.dart';
 import 'launchable.dart';
 import 'provides.dart';
 import 'release.dart';
@@ -44,6 +45,7 @@ class AppstreamComponent {
   final List<AppstreamRelease> releases;
   final List<AppstreamProvides> provides;
   final List<AppstreamLaunchable> launchables;
+  final List<AppstreamLanguage> languages;
 
   const AppstreamComponent(
       {required this.id,
@@ -63,9 +65,10 @@ class AppstreamComponent {
       this.compulsoryForDesktops = const [],
       this.releases = const [],
       this.provides = const [],
-      this.launchables = const []});
+      this.launchables = const [],
+      this.languages = const []});
 
   @override
   String toString() =>
-      "$runtimeType(id: $id, type: $type, package: $package, name: $name, summary: $summary, description: $description, developerName: '$developerName', projectLicense: $projectLicense, projectGroup: $projectGroup, icons: $icons, urls: $urls, categories: $categories, keywords: $keywords, screenshots: $screenshots, compulsoryForDesktops: $compulsoryForDesktops, release: $releases, provides: $provides, launchables: $launchables)";
+      "$runtimeType(id: $id, type: $type, package: $package, name: $name, summary: $summary, description: $description, developerName: '$developerName', projectLicense: $projectLicense, projectGroup: $projectGroup, icons: $icons, urls: $urls, categories: $categories, keywords: $keywords, screenshots: $screenshots, compulsoryForDesktops: $compulsoryForDesktops, release: $releases, provides: $provides, launchables: $launchables, languages: $languages)";
 }

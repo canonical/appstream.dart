@@ -3,6 +3,7 @@ import 'package:yaml/yaml.dart';
 
 import 'component.dart';
 import 'icon.dart';
+import 'language.dart';
 import 'launchable.dart';
 import 'provides.dart';
 import 'release.dart';
@@ -294,6 +295,18 @@ class AppstreamCollection {
         }
       }
 
+      var languages = <AppstreamLanguage>[];
+      var languagesElement = component.getElement('languages');
+      if (languagesElement != null) {
+        for (var language in languagesElement.children
+            .whereType<XmlElement>()
+            .where((e) => e.name.local == 'lang')) {
+          var percentage = language.getAttribute('percentage');
+          languages.add(AppstreamLanguage(language.text,
+              percentage: percentage != null ? int.parse(percentage) : null));
+        }
+      }
+
       components.add(AppstreamComponent(
           id: id.text,
           type: type,
@@ -312,7 +325,8 @@ class AppstreamCollection {
           screenshots: screenshots,
           compulsoryForDesktops: compulsoryForDesktops,
           releases: releases,
-          provides: provides));
+          provides: provides,
+          languages: languages));
     }
 
     return AppstreamCollection(
@@ -657,6 +671,26 @@ class AppstreamCollection {
         }
       }
 
+      var languages = <AppstreamLanguage>[];
+      var languagesComponent = component['Languages'];
+      if (languagesComponent != null) {
+        if (!(languagesComponent is YamlList)) {
+          throw FormatException('Invaid Languages type');
+        }
+
+        for (var language in languagesComponent) {
+          if (!(language is YamlMap)) {
+            throw FormatException('Invaid language type');
+          }
+          var locale = language['locale'];
+          if (locale == null) {
+            throw FormatException('Missing language locale');
+          }
+          var percentage = language['percentage'];
+          languages.add(AppstreamLanguage(locale, percentage: percentage));
+        }
+      }
+
       components.add(AppstreamComponent(
           id: id,
           type: type,
@@ -677,7 +711,8 @@ class AppstreamCollection {
           screenshots: screenshots,
           compulsoryForDesktops: compulsoryForDesktops,
           releases: releases,
-          provides: provides));
+          provides: provides,
+          languages: languages));
     }
 
     return AppstreamCollection(
