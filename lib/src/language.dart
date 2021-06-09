@@ -1,5 +1,9 @@
+/// Metadata about language support for a component.
 class AppstreamLanguage {
+  /// The locale this language is for, e.g. 'en'
   final String locale;
+
+  /// The percentage of translated text available for this language.
   final int? percentage;
 
   const AppstreamLanguage(this.locale, {this.percentage});

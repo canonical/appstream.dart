@@ -2,11 +2,14 @@ enum AppstreamFirmwareType { runtime, flashed }
 
 enum AppstreamDBusType { user, system }
 
+/// Metadata about a thing an Appstream component provides.
 class AppstreamProvides {
   const AppstreamProvides();
 }
 
+/// Metadata about an media type this component can handle.
 class AppstreamProvidesMediatype extends AppstreamProvides {
+  /// The media type, e.g. 'image/png'.
   final String mediaType;
 
   const AppstreamProvidesMediatype(this.mediaType);
@@ -19,7 +22,9 @@ class AppstreamProvidesMediatype extends AppstreamProvides {
   String toString() => '$runtimeType($mediaType)';
 }
 
+/// Metadata about a library an Appstream component provides.
 class AppstreamProvidesLibrary extends AppstreamProvides {
+  /// The name of the library, e.g. 'libawesome.so.1'
   final String libraryName;
 
   const AppstreamProvidesLibrary(this.libraryName);
@@ -32,7 +37,9 @@ class AppstreamProvidesLibrary extends AppstreamProvides {
   String toString() => '$runtimeType($libraryName)';
 }
 
+/// Metadata about a binary an Appstream component provides.
 class AppstreamProvidesBinary extends AppstreamProvides {
+  /// The name of the binary, e.g. 'my_app'.
   final String binaryName;
 
   const AppstreamProvidesBinary(this.binaryName);
@@ -45,7 +52,9 @@ class AppstreamProvidesBinary extends AppstreamProvides {
   String toString() => '$runtimeType($binaryName)';
 }
 
+/// Metadata about a font an Appstream component provides.
 class AppstreamProvidesFont extends AppstreamProvides {
+  /// The name of the font, e.g. 'Ubuntu Bold'.
   final String fontName;
 
   const AppstreamProvidesFont(this.fontName);
@@ -58,7 +67,9 @@ class AppstreamProvidesFont extends AppstreamProvides {
   String toString() => '$runtimeType($fontName)';
 }
 
+/// Metadata about hardware an Appstream component can handle.
 class AppstreamProvidesModalias extends AppstreamProvides {
+  /// A modalias glob, e.g. 'usb:v25FBp0160d*'
   final String modalias;
 
   const AppstreamProvidesModalias(this.modalias);
@@ -71,8 +82,12 @@ class AppstreamProvidesModalias extends AppstreamProvides {
   String toString() => '$runtimeType($modalias)';
 }
 
+/// Metadata about firmware an Appstream component provides.
 class AppstreamProvidesFirmware extends AppstreamProvides {
+  /// The type of firmware.
   final AppstreamFirmwareType type;
+
+  /// The name of the firmware.
   final String name;
 
   const AppstreamProvidesFirmware(this.type, this.name);
@@ -87,7 +102,9 @@ class AppstreamProvidesFirmware extends AppstreamProvides {
   String toString() => "$runtimeType($type, '$name')";
 }
 
+/// Metadata about a Python 2 module an Appstream component provides.
 class AppstreamProvidesPython2 extends AppstreamProvides {
+  /// Name of a Python 2 module, e.g. 'mymodule'.
   final String moduleName;
 
   const AppstreamProvidesPython2(this.moduleName);
@@ -100,7 +117,9 @@ class AppstreamProvidesPython2 extends AppstreamProvides {
   String toString() => '$runtimeType($moduleName)';
 }
 
+/// Metadata about a Python 3 module an Appstream component provides.
 class AppstreamProvidesPython3 extends AppstreamProvides {
+  /// Name of a Python 2 module, e.g. 'mymodule3'.
   final String moduleName;
 
   const AppstreamProvidesPython3(this.moduleName);
@@ -113,8 +132,12 @@ class AppstreamProvidesPython3 extends AppstreamProvides {
   String toString() => '$runtimeType($moduleName)';
 }
 
+/// Metadata about a D-Bus name an Appstream component provides.
 class AppstreamProvidesDBus extends AppstreamProvides {
+  /// The bus this name is on.
   final AppstreamDBusType busType;
+
+  /// The name used on the bus, e.g. 'com.example.MyService'.
   final String busName;
 
   const AppstreamProvidesDBus(this.busType, this.busName);
@@ -129,7 +152,9 @@ class AppstreamProvidesDBus extends AppstreamProvides {
   String toString() => '$runtimeType($busType, $busName)';
 }
 
+/// Metadata about another Appstream component that can be relaced.
 class AppstreamProvidesId extends AppstreamProvides {
+  /// The ID of the component that can be replaced.
   final String id;
 
   const AppstreamProvidesId(this.id);

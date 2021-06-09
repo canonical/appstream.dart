@@ -10,13 +10,24 @@ import 'release.dart';
 import 'screenshot.dart';
 import 'url.dart';
 
+/// A collection of Appstream components.
 class AppstreamCollection {
+  /// The Appstream version these components comply with.
   final String version;
+
+  /// The repository these components come from, e.g. 'ubuntu-hirsute-main'
   final String origin;
+
+  /// The architecture these components are for, e.g. 'arm64'.
   final String? architecture;
+
+  /// The priorization of this metadata file over other metadata.
   final int? priority;
+
+  /// The components in this collection.
   final List<AppstreamComponent> components;
 
+  /// Creates a new Appstream collection.
   AppstreamCollection(
       {this.version = '0.14',
       required this.origin,
@@ -25,6 +36,7 @@ class AppstreamCollection {
       Iterable<AppstreamComponent> components = const []})
       : components = List<AppstreamComponent>.from(components);
 
+  /// Decodes an Appstream collection in XML format.
   factory AppstreamCollection.fromXml(String xml) {
     var document = XmlDocument.parse(xml);
 
@@ -366,6 +378,7 @@ class AppstreamCollection {
         components: components);
   }
 
+  /// Decodes an Appstream collection in YAML format.
   factory AppstreamCollection.fromYaml(String yaml) {
     var yamlDocuments = loadYamlDocuments(yaml);
     if (yamlDocuments.isEmpty) {
