@@ -35,7 +35,7 @@ class AppstreamComponent {
   final Map<String, String> name;
   final Map<String, String> summary;
   final Map<String, String> description;
-  final String? developerName;
+  final Map<String, String> developerName;
   final String? projectLicense;
   final String? projectGroup;
   final List<AppstreamIcon> icons;
@@ -57,7 +57,7 @@ class AppstreamComponent {
       required this.name,
       required this.summary,
       this.description = const {},
-      this.developerName,
+      this.developerName = const {},
       this.projectLicense,
       this.projectGroup,
       this.icons = const [],
