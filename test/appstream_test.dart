@@ -453,6 +453,16 @@ Origin: ubuntu-hirsute-main
     expect(collection.components, isEmpty);
   });
 
+  test('collection - priority - yaml', () async {
+    var collection = AppstreamCollection.fromYaml("""---
+File: DEP-11
+Version: '0.12'
+Origin: ubuntu-hirsute-main
+Priority: 42
+""");
+    expect(collection.priority, equals(42));
+  });
+
   test('collection - single - yaml', () async {
     var collection = AppstreamCollection.fromYaml("""---
 File: DEP-11
