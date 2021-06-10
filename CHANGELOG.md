@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1
+
+* Add missing documentation on AppstreamFirmwareType and AppstreamDBusType.
+* Update package description.
+
 ## 0.2.0
 
 * Use enums in provides.
