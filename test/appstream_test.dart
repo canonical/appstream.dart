@@ -356,7 +356,15 @@ void main() {
     <provides>
       <mediatype>text/html</mediatype>
       <mediatype>image/png</mediatype>
+      <library>libhello.so.1</library>
       <binary>hello</binary>
+      <font>Hello</font>
+      <modalias>usb:*</modalias>
+      <firmware type="runtime">hello.fw</firmware>
+      <python2>modhello</python2>
+      <python3>modhello3</python3>
+      <dbus type="system">com.example.Service</dbus>
+      <id>com.example.SimpleHello</id>
     </provides>
   </component>
 </components>
@@ -368,7 +376,16 @@ void main() {
         equals([
           AppstreamProvidesMediatype('text/html'),
           AppstreamProvidesMediatype('image/png'),
-          AppstreamProvidesBinary('hello')
+          AppstreamProvidesLibrary('libhello.so.1'),
+          AppstreamProvidesBinary('hello'),
+          AppstreamProvidesFont('Hello'),
+          AppstreamProvidesModalias('usb:*'),
+          AppstreamProvidesFirmware(AppstreamFirmwareType.runtime, 'hello.fw'),
+          AppstreamProvidesPython2('modhello'),
+          AppstreamProvidesPython3('modhello3'),
+          AppstreamProvidesDBus(
+              AppstreamDBusType.system, 'com.example.Service'),
+          AppstreamProvidesId('com.example.SimpleHello')
         ]));
   });
 
@@ -869,11 +886,29 @@ Name:
 Summary:
   C: A simple example application
 Provides:
-  mimetypes:
+  mediatypes:
   - text/html
   - image/png
+  libraries:
+  - libhello.so.1
   binaries:
   - hello
+  fonts:
+  - name: Hello
+  modaliases:
+  - usb:*
+  firmware:
+  - type: runtime
+    file: hello.fw
+  python2:
+  - modhello
+  python3:
+  - modhello3
+  dbus:
+  - type: system
+    service: com.example.Service
+  ids:
+  - com.example.SimpleHello
 """);
     expect(collection.components, hasLength(1));
     var component = collection.components[0];
@@ -882,7 +917,16 @@ Provides:
         equals([
           AppstreamProvidesMediatype('text/html'),
           AppstreamProvidesMediatype('image/png'),
-          AppstreamProvidesBinary('hello')
+          AppstreamProvidesLibrary('libhello.so.1'),
+          AppstreamProvidesBinary('hello'),
+          AppstreamProvidesFont('Hello'),
+          AppstreamProvidesModalias('usb:*'),
+          AppstreamProvidesFirmware(AppstreamFirmwareType.runtime, 'hello.fw'),
+          AppstreamProvidesPython2('modhello'),
+          AppstreamProvidesPython3('modhello3'),
+          AppstreamProvidesDBus(
+              AppstreamDBusType.system, 'com.example.Service'),
+          AppstreamProvidesId('com.example.SimpleHello')
         ]));
   });
 
