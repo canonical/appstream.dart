@@ -1,5 +1,7 @@
+/// A firmware type.
 enum AppstreamFirmwareType { runtime, flashed }
 
+/// A DBus bus.
 enum AppstreamDBusType { user, system }
 
 /// Metadata about a thing an Appstream component provides.
