@@ -1,6 +1,7 @@
 [![Pub Package](https://img.shields.io/pub/v/appstream.svg)](https://pub.dev/packages/appstream)
 
-A parser for [Appstream](https://www.freedesktop.org/software/appstream) files.
+A parser for [Appstream](https://www.freedesktop.org/software/appstream) data.
+This package allows Dart applications to access package metadata on Linux systems.
 
 ```dart
 import 'package:appstream/appstream.dart';

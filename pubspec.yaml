@@ -2,7 +2,8 @@ name: appstream
 version: 0.2.0
 
 description:
-  A parser for Appstream files.
+  A parser for Appstream data.
+  This package allows Dart applications to access package metadata on Linux systems.
 
 homepage: https://github.com/canonical/appstream.dart
 
