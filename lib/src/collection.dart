@@ -270,9 +270,16 @@ class AppstreamCollection {
               provides.add(AppstreamProvidesModalias(element.text));
               break;
             case 'firmware':
-              var type = element.getAttribute('type');
-              if (type == null) {
+              var typeName = element.getAttribute('type');
+              if (typeName == null) {
                 throw FormatException('Missing firmware type');
+              }
+              var type = {
+                'runtime': AppstreamFirmwareType.runtime,
+                'flashed': AppstreamFirmwareType.flashed
+              }[typeName];
+              if (type == null) {
+                throw FormatException('Unknown firmware type $typeName');
               }
               provides.add(AppstreamProvidesFirmware(type, element.text));
               break;
@@ -287,7 +294,8 @@ class AppstreamCollection {
               if (type == null) {
                 throw FormatException('Missing DBus bus type');
               }
-              provides.add(AppstreamProvidesDBus(type, element.text));
+              provides.add(
+                  AppstreamProvidesDBus(_parseDBusType(type), element.text));
               break;
             case 'id':
               provides.add(AppstreamProvidesId(element.text));
@@ -659,24 +667,66 @@ class AppstreamCollection {
               provides.addAll(values.map((e) => AppstreamProvidesBinary(e)));
               break;
             case 'fonts':
-              provides.addAll(values.map((e) => AppstreamProvidesFont(e)));
+              for (var fontComponent in values) {
+                if (!(fontComponent is YamlMap)) {
+                  throw FormatException('Invalid font provides');
+                }
+                var name = fontComponent['name'];
+                if (name == null) {
+                  throw FormatException('Missing font name');
+                }
+                provides.add(AppstreamProvidesFont(name));
+              }
               break;
             case 'firmware':
               for (var firmwareComponent in values) {
                 if (!(firmwareComponent is YamlMap)) {
-                  throw FormatException('Invaid firmware provides');
+                  throw FormatException('Invalid firmware provides');
                 }
                 var type = firmwareComponent['type'];
                 switch (type) {
                   case 'runtime':
+                    var file = firmwareComponent['file'];
+                    if (file == null) {
+                      throw FormatException('Missing firmware file');
+                    }
                     provides.add(AppstreamProvidesFirmware(
-                        type, firmwareComponent['file']));
+                        AppstreamFirmwareType.runtime, file));
                     break;
                   case 'flashed':
+                    var guid = firmwareComponent['guid'];
+                    if (guid == null) {
+                      throw FormatException('Missing firmware guid');
+                    }
                     provides.add(AppstreamProvidesFirmware(
-                        type, firmwareComponent['guid']));
+                        AppstreamFirmwareType.flashed, guid));
                     break;
                 }
+              }
+              break;
+            case 'python2':
+              for (var moduleName in values) {
+                provides.add(AppstreamProvidesPython2(moduleName));
+              }
+              break;
+            case 'python3':
+              for (var moduleName in values) {
+                provides.add(AppstreamProvidesPython3(moduleName));
+              }
+              break;
+            case 'python3':
+              for (var moduleName in values) {
+                provides.add(AppstreamProvidesPython3(moduleName));
+              }
+              break;
+            case 'python3':
+              for (var moduleName in values) {
+                provides.add(AppstreamProvidesPython3(moduleName));
+              }
+              break;
+            case 'modaliases':
+              for (var modalias in values) {
+                provides.add(AppstreamProvidesModalias(modalias));
               }
               break;
             case 'dbus':
@@ -684,8 +734,16 @@ class AppstreamCollection {
                 if (!(dbusComponent is YamlMap)) {
                   throw FormatException('Invaid dbus provides');
                 }
-                provides.add(AppstreamProvidesDBus(
-                    dbusComponent['type'], dbusComponent['service']));
+                var type = dbusComponent['type'];
+                if (type == null) {
+                  throw FormatException('Missing DBus bus type');
+                }
+                var service = dbusComponent['service'];
+                if (service == null) {
+                  throw FormatException('Missing DBus service name');
+                }
+                provides
+                    .add(AppstreamProvidesDBus(_parseDBusType(type), service));
               }
               break;
             case 'ids':
@@ -868,6 +926,17 @@ AppstreamIssueType _parseIssueType(String typeName) {
   }[typeName];
   if (type == null) {
     throw FormatException("Unknown issue type '$typeName'");
+  }
+  return type;
+}
+
+AppstreamDBusType _parseDBusType(String typeName) {
+  var type = {
+    'user': AppstreamDBusType.user,
+    'system': AppstreamDBusType.system
+  }[typeName];
+  if (type == null) {
+    throw FormatException("Unknown DBus type '$typeName'");
   }
   return type;
 }

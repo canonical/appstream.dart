@@ -1,3 +1,7 @@
+enum AppstreamFirmwareType { runtime, flashed }
+
+enum AppstreamDBusType { user, system }
+
 class AppstreamProvides {
   const AppstreamProvides();
 }
@@ -68,7 +72,7 @@ class AppstreamProvidesModalias extends AppstreamProvides {
 }
 
 class AppstreamProvidesFirmware extends AppstreamProvides {
-  final String type;
+  final AppstreamFirmwareType type;
   final String name;
 
   const AppstreamProvidesFirmware(this.type, this.name);
@@ -110,7 +114,7 @@ class AppstreamProvidesPython3 extends AppstreamProvides {
 }
 
 class AppstreamProvidesDBus extends AppstreamProvides {
-  final String busType;
+  final AppstreamDBusType busType;
   final String busName;
 
   const AppstreamProvidesDBus(this.busType, this.busName);
