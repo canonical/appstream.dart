@@ -417,9 +417,6 @@ class AppstreamCollection {
       }
       var type = _parseComponentType(typeName);
       var package = component['Package'];
-      if (package == null) {
-        throw FormatException('Missing component package');
-      }
       var name = component['Name'];
       if (name == null) {
         throw FormatException('Missing component name');

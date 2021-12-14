@@ -39,7 +39,7 @@ class AppstreamComponent {
   final AppstreamComponentType type;
 
   /// The name of the package this component is provided by.
-  final String package;
+  final String? package;
 
   /// Human readable name of the component, keyed by language.
   final Map<String, String> name;
