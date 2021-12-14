@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.2
+
+* Correctly parse release URLs.
+* Package is optional for components.
+* Fix inputmethod type name incorrect.
+
 ## 0.2.1
 
 * Add missing documentation on AppstreamFirmwareType and AppstreamDBusType.
