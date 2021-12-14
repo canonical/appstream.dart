@@ -879,7 +879,7 @@ AppstreamComponentType _parseComponentType(String typeName) {
         'addon': AppstreamComponentType.addon,
         'font': AppstreamComponentType.font,
         'codec': AppstreamComponentType.codec,
-        'inputMethod': AppstreamComponentType.inputMethod,
+        'inputmethod': AppstreamComponentType.inputMethod,
         'firmware': AppstreamComponentType.firmware,
         'driver': AppstreamComponentType.driver,
         'localization': AppstreamComponentType.localization,
