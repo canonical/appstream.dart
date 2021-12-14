@@ -616,7 +616,7 @@ class AppstreamCollection {
             urgency = _parseReleaseUrgency(urgencyName);
           }
           var description = release['description'];
-          var url = release['url'];
+          var url = release['url']?['details'];
           var issues = <AppstreamIssue>[];
           var issuesComponent = release['issues'];
           if (issuesComponent != null) {
