@@ -836,7 +836,8 @@ Releases:
   urgency: high
   description:
     C: This stable release fixes bugs.
-  url: https://example.com/releases/version-1.2.html
+  url:
+    details: https://example.com/releases/version-1.2.html
   issues:
   - id: '#123'
     url: https://github.com/example/example/issues/123
