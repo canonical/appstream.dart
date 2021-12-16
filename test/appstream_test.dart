@@ -844,7 +844,7 @@ Releases:
 - version: '1.1'
   type: development
   date: 2013-10-20
-- version: '1.0'
+- version: 1.0
   unix-timestamp: 1345939200
 """);
     expect(collection.components, hasLength(1));

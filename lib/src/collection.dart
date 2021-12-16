@@ -643,7 +643,7 @@ class AppstreamCollection {
             }
           }
           releases.add(AppstreamRelease(
-              version: version,
+              version: _parseYamlVersion(version),
               date: date,
               type: type ?? AppstreamReleaseType.stable,
               urgency: urgency ?? AppstreamReleaseUrgency.medium,
@@ -825,7 +825,7 @@ class AppstreamCollection {
     }
 
     return AppstreamCollection(
-        version: version,
+        version: _parseYamlVersion(version),
         origin: origin,
         architecture: architecture,
         priority: priority,
@@ -834,6 +834,14 @@ class AppstreamCollection {
 
   @override
   String toString() => "$runtimeType(version: $version, origin: '$origin')";
+}
+
+String _parseYamlVersion(dynamic value) {
+  if (value is double) {
+    return value.toString();
+  } else {
+    return value as String;
+  }
 }
 
 Map<String, String> _parseYamlTranslatedString(dynamic value) {
