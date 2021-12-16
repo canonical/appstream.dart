@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.3
+
+* Handle empty URLs.
+* Handle versions being encoded as Yaml doubles.
+
 ## 0.2.2
 
 * Correctly parse release URLs.
