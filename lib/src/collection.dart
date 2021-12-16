@@ -464,7 +464,8 @@ class AppstreamCollection {
       var url = component['Url'];
       if (url != null) {
         for (var typeName in url.keys) {
-          urls.add(AppstreamUrl(url[typeName], type: _parseUrlType(typeName)));
+          urls.add(
+              AppstreamUrl(url[typeName] ?? '', type: _parseUrlType(typeName)));
         }
       }
 

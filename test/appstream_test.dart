@@ -127,7 +127,7 @@ void main() {
     <summary>A simple example application</summary>
     <url type="homepage">https://example.com</url>
     <url type="help">https://example.com/help</url>
-    <url type="contact">https://example.com/contact</url>
+    <url type="contact"></url>
   </component>
 </components>
 ''');
@@ -138,8 +138,7 @@ void main() {
         equals([
           AppstreamUrl('https://example.com', type: AppstreamUrlType.homepage),
           AppstreamUrl('https://example.com/help', type: AppstreamUrlType.help),
-          AppstreamUrl('https://example.com/contact',
-              type: AppstreamUrlType.contact)
+          AppstreamUrl('', type: AppstreamUrlType.contact)
         ]));
   });
 
@@ -622,7 +621,7 @@ Summary:
 Url:
   homepage: https://example.com
   help: https://example.com/help
-  contact: https://example.com/contact
+  contact:
 """);
     expect(collection.components, hasLength(1));
     var component = collection.components[0];
@@ -631,8 +630,7 @@ Url:
         equals([
           AppstreamUrl('https://example.com', type: AppstreamUrlType.homepage),
           AppstreamUrl('https://example.com/help', type: AppstreamUrlType.help),
-          AppstreamUrl('https://example.com/contact',
-              type: AppstreamUrlType.contact)
+          AppstreamUrl('', type: AppstreamUrlType.contact)
         ]));
   });
 
