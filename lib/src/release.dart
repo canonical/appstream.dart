@@ -31,6 +31,9 @@ class AppstreamIssue {
       other.url == url;
 
   @override
+  int get hashCode => type.hashCode | id.hashCode | url.hashCode;
+
+  @override
   String toString() => "$runtimeType('$id', type: $type, url: $url)";
 }
 
@@ -76,6 +79,16 @@ class AppstreamRelease {
       mapsEqual(other.description, description) &&
       other.url == url &&
       listsEqual(other.issues, issues);
+
+  @override
+  int get hashCode =>
+      version.hashCode |
+      date.hashCode |
+      type.hashCode |
+      urgency.hashCode |
+      description.hashCode |
+      url.hashCode |
+      issues.hashCode;
 
   @override
   String toString() =>

@@ -37,6 +37,14 @@ class AppstreamImage {
       other.lang == lang;
 
   @override
+  int get hashCode =>
+      type.hashCode |
+      url.hashCode |
+      width.hashCode |
+      height.hashCode |
+      lang.hashCode;
+
+  @override
   String toString() =>
       "$runtimeType(type: $type, url: '$url', width: $width, height: $height, lang: $lang)";
 }
@@ -63,6 +71,9 @@ class AppstreamScreenshot {
       listsEqual(other.images, images) &&
       mapsEqual(other.caption, caption) &&
       other.isDefault == isDefault;
+
+  @override
+  int get hashCode => images.hashCode | caption.hashCode | isDefault.hashCode;
 
   @override
   String toString() =>

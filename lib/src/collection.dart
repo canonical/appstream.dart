@@ -385,7 +385,7 @@ class AppstreamCollection {
       throw FormatException('Empty YAML file');
     }
     var header = yamlDocuments[0];
-    if (!(header.contents is YamlMap)) {
+    if (header.contents is! YamlMap) {
       throw FormatException('Invalid DEP-11 header');
     }
     var headerMap = (header.contents as YamlMap);
@@ -472,12 +472,12 @@ class AppstreamCollection {
       var launchables = <AppstreamLaunchable>[];
       var launchable = component['Launchable'];
       if (launchable != null) {
-        if (!(launchable is YamlMap)) {
+        if (launchable is! YamlMap) {
           throw FormatException('Invaid Launchable type');
         }
         for (var typeName in launchable.keys) {
           var launchableList = launchable[typeName];
-          if (!(launchableList is YamlList)) {
+          if (launchableList is! YamlList) {
             throw FormatException('Invaid Launchable type');
           }
           switch (typeName) {
@@ -504,7 +504,7 @@ class AppstreamCollection {
       var categories = <String>[];
       var categoriesComponent = component['Categories'];
       if (categoriesComponent != null) {
-        if (!(categoriesComponent is YamlList)) {
+        if (categoriesComponent is! YamlList) {
           throw FormatException('Invaid Categories type');
         }
         categories.addAll(categoriesComponent.cast<String>());
@@ -513,7 +513,7 @@ class AppstreamCollection {
       var keywords = <String, List<String>>{};
       var keywordsComponent = component['Keywords'];
       if (keywordsComponent != null) {
-        if (!(keywordsComponent is YamlMap)) {
+        if (keywordsComponent is! YamlMap) {
           throw FormatException('Invaid Keywords type');
         }
         keywords = keywordsComponent.map(
@@ -523,7 +523,7 @@ class AppstreamCollection {
       var screenshots = <AppstreamScreenshot>[];
       var screenshotsComponent = component['Screenshots'];
       if (screenshotsComponent != null) {
-        if (!(screenshotsComponent is YamlList)) {
+        if (screenshotsComponent is! YamlList) {
           throw FormatException('Invaid Screenshots type');
         }
         for (var screenshot in screenshotsComponent) {
@@ -532,7 +532,7 @@ class AppstreamCollection {
           var images = <AppstreamImage>[];
           var thumbnails = screenshot['thumbnails'];
           if (thumbnails != null) {
-            if (!(thumbnails is YamlList)) {
+            if (thumbnails is! YamlList) {
               throw FormatException('Invaid thumbnails type');
             }
             for (var thumbnail in thumbnails) {
@@ -579,7 +579,7 @@ class AppstreamCollection {
       var compulsoryForDesktops = <String>[];
       var compulsoryForDesktopsComponent = component['CompulsoryForDesktops'];
       if (compulsoryForDesktopsComponent != null) {
-        if (!(compulsoryForDesktopsComponent is YamlList)) {
+        if (compulsoryForDesktopsComponent is! YamlList) {
           throw FormatException('Invaid CompulsoryForDesktops type');
         }
         compulsoryForDesktops
@@ -589,11 +589,11 @@ class AppstreamCollection {
       var releases = <AppstreamRelease>[];
       var releasesComponent = component['Releases'];
       if (releasesComponent != null) {
-        if (!(releasesComponent is YamlList)) {
+        if (releasesComponent is! YamlList) {
           throw FormatException('Invaid Releases type');
         }
         for (var release in releasesComponent) {
-          if (!(release is YamlMap)) {
+          if (release is! YamlMap) {
             throw FormatException('Invaid release type');
           }
           var version = release['version'];
@@ -621,11 +621,11 @@ class AppstreamCollection {
           var issues = <AppstreamIssue>[];
           var issuesComponent = release['issues'];
           if (issuesComponent != null) {
-            if (!(issuesComponent is YamlList)) {
+            if (issuesComponent is! YamlList) {
               throw FormatException('Invaid issues type');
             }
             for (var issue in issuesComponent) {
-              if (!(issue is YamlMap)) {
+              if (issue is! YamlMap) {
                 throw FormatException('Invaid issue type');
               }
               var id = issue['id'];
@@ -658,12 +658,12 @@ class AppstreamCollection {
       var provides = <AppstreamProvides>[];
       var providesComponent = component['Provides'];
       if (providesComponent != null) {
-        if (!(providesComponent is YamlMap)) {
+        if (providesComponent is! YamlMap) {
           throw FormatException('Invaid Provides type');
         }
         for (var type in providesComponent.keys) {
           var values = providesComponent[type];
-          if (!(values is YamlList)) {
+          if (values is! YamlList) {
             throw FormatException('Invaid $type provides');
           }
           switch (type) {
@@ -679,7 +679,7 @@ class AppstreamCollection {
               break;
             case 'fonts':
               for (var fontComponent in values) {
-                if (!(fontComponent is YamlMap)) {
+                if (fontComponent is! YamlMap) {
                   throw FormatException('Invalid font provides');
                 }
                 var name = fontComponent['name'];
@@ -691,7 +691,7 @@ class AppstreamCollection {
               break;
             case 'firmware':
               for (var firmwareComponent in values) {
-                if (!(firmwareComponent is YamlMap)) {
+                if (firmwareComponent is! YamlMap) {
                   throw FormatException('Invalid firmware provides');
                 }
                 var type = firmwareComponent['type'];
@@ -725,16 +725,6 @@ class AppstreamCollection {
                 provides.add(AppstreamProvidesPython3(moduleName));
               }
               break;
-            case 'python3':
-              for (var moduleName in values) {
-                provides.add(AppstreamProvidesPython3(moduleName));
-              }
-              break;
-            case 'python3':
-              for (var moduleName in values) {
-                provides.add(AppstreamProvidesPython3(moduleName));
-              }
-              break;
             case 'modaliases':
               for (var modalias in values) {
                 provides.add(AppstreamProvidesModalias(modalias));
@@ -742,7 +732,7 @@ class AppstreamCollection {
               break;
             case 'dbus':
               for (var dbusComponent in values) {
-                if (!(dbusComponent is YamlMap)) {
+                if (dbusComponent is! YamlMap) {
                   throw FormatException('Invaid dbus provides');
                 }
                 var type = dbusComponent['type'];
@@ -767,12 +757,12 @@ class AppstreamCollection {
       var languages = <AppstreamLanguage>[];
       var languagesComponent = component['Languages'];
       if (languagesComponent != null) {
-        if (!(languagesComponent is YamlList)) {
+        if (languagesComponent is! YamlList) {
           throw FormatException('Invaid Languages type');
         }
 
         for (var language in languagesComponent) {
-          if (!(language is YamlMap)) {
+          if (language is! YamlMap) {
             throw FormatException('Invaid language type');
           }
           var locale = language['locale'];
@@ -787,7 +777,7 @@ class AppstreamCollection {
       var contentRatings = <String, Map<String, AppstreamContentRating>>{};
       var contentRatingComponent = component['ContentRating'];
       if (contentRatingComponent != null) {
-        if (!(contentRatingComponent is YamlMap)) {
+        if (contentRatingComponent is! YamlMap) {
           throw FormatException('Invaid ContentRating type');
         }
         for (var type in contentRatingComponent.keys) {

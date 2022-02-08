@@ -15,6 +15,9 @@ class AppstreamLaunchableDesktopId extends AppstreamLaunchable {
       other is AppstreamLaunchableDesktopId && other.desktopId == desktopId;
 
   @override
+  int get hashCode => desktopId.hashCode;
+
+  @override
   String toString() => '$runtimeType($desktopId)';
 }
 
@@ -28,6 +31,9 @@ class AppstreamLaunchableService extends AppstreamLaunchable {
   @override
   bool operator ==(other) =>
       other is AppstreamLaunchableService && other.serviceName == serviceName;
+
+  @override
+  int get hashCode => serviceName.hashCode;
 
   @override
   String toString() => '$runtimeType($serviceName)';
@@ -46,6 +52,9 @@ class AppstreamLaunchableCockpitManifest extends AppstreamLaunchable {
       other.packageName == packageName;
 
   @override
+  int get hashCode => packageName.hashCode;
+
+  @override
   String toString() => '$runtimeType($packageName)';
 }
 
@@ -59,6 +68,9 @@ class AppstreamLaunchableUrl extends AppstreamLaunchable {
   @override
   bool operator ==(other) =>
       other is AppstreamLaunchableUrl && other.url == url;
+
+  @override
+  int get hashCode => url.hashCode;
 
   @override
   String toString() => '$runtimeType($url)';

@@ -14,6 +14,9 @@ class AppstreamStockIcon extends AppstreamIcon {
   bool operator ==(other) => other is AppstreamStockIcon && other.name == name;
 
   @override
+  int get hashCode => name.hashCode;
+
+  @override
   String toString() => "$runtimeType('$name')";
 }
 
@@ -36,6 +39,9 @@ class AppstreamCachedIcon extends AppstreamIcon {
       other.name == name &&
       other.width == width &&
       other.height == height;
+
+  @override
+  int get hashCode => name.hashCode | width.hashCode | height.hashCode;
 
   @override
   String toString() => "$runtimeType('$name', width: $width, height: $height)";
@@ -62,6 +68,9 @@ class AppstreamLocalIcon extends AppstreamIcon {
       other.height == height;
 
   @override
+  int get hashCode => filename.hashCode | width.hashCode | height.hashCode;
+
+  @override
   String toString() =>
       "$runtimeType('$filename', width: $width, height: $height)";
 }
@@ -85,6 +94,9 @@ class AppstreamRemoteIcon extends AppstreamIcon {
       other.url == url &&
       other.width == width &&
       other.height == height;
+
+  @override
+  int get hashCode => url.hashCode | width.hashCode | height.hashCode;
 
   @override
   String toString() => "$runtimeType('$url', width: $width, height: $height)";

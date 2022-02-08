@@ -15,5 +15,8 @@ class AppstreamLanguage {
       other.percentage == percentage;
 
   @override
-  String toString() => "$runtimeType($locale, percentage: $percentage)";
+  int get hashCode => locale.hashCode | percentage.hashCode;
+
+  @override
+  String toString() => '$runtimeType($locale, percentage: $percentage)';
 }

@@ -249,7 +249,7 @@ void main() {
                 url: 'https://example.com/thumbnail-small.jpg',
                 width: 256,
                 height: 192,
-                lang: "en_NZ"),
+                lang: 'en_NZ'),
             AppstreamImage(
                 type: AppstreamImageType.source,
                 url: 'https://example.com/screenshot.jpg',
@@ -764,7 +764,7 @@ Screenshots:
                 url: 'https://example.com/images/thumbnail-small.jpg',
                 width: 256,
                 height: 192,
-                lang: "en_NZ"),
+                lang: 'en_NZ'),
             AppstreamImage(
                 type: AppstreamImageType.source,
                 url: 'https://example.com/images/screenshot.jpg',

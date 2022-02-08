@@ -21,6 +21,9 @@ class AppstreamProvidesMediatype extends AppstreamProvides {
       other is AppstreamProvidesMediatype && other.mediaType == mediaType;
 
   @override
+  int get hashCode => mediaType.hashCode;
+
+  @override
   String toString() => '$runtimeType($mediaType)';
 }
 
@@ -34,6 +37,9 @@ class AppstreamProvidesLibrary extends AppstreamProvides {
   @override
   bool operator ==(other) =>
       other is AppstreamProvidesLibrary && other.libraryName == libraryName;
+
+  @override
+  int get hashCode => libraryName.hashCode;
 
   @override
   String toString() => '$runtimeType($libraryName)';
@@ -51,6 +57,9 @@ class AppstreamProvidesBinary extends AppstreamProvides {
       other is AppstreamProvidesBinary && other.binaryName == binaryName;
 
   @override
+  int get hashCode => binaryName.hashCode;
+
+  @override
   String toString() => '$runtimeType($binaryName)';
 }
 
@@ -66,6 +75,9 @@ class AppstreamProvidesFont extends AppstreamProvides {
       other is AppstreamProvidesFont && other.fontName == fontName;
 
   @override
+  int get hashCode => fontName.hashCode;
+
+  @override
   String toString() => '$runtimeType($fontName)';
 }
 
@@ -79,6 +91,9 @@ class AppstreamProvidesModalias extends AppstreamProvides {
   @override
   bool operator ==(other) =>
       other is AppstreamProvidesModalias && other.modalias == modalias;
+
+  @override
+  int get hashCode => modalias.hashCode;
 
   @override
   String toString() => '$runtimeType($modalias)';
@@ -101,6 +116,9 @@ class AppstreamProvidesFirmware extends AppstreamProvides {
       other.name == name;
 
   @override
+  int get hashCode => type.hashCode | name.hashCode;
+
+  @override
   String toString() => "$runtimeType($type, '$name')";
 }
 
@@ -116,12 +134,15 @@ class AppstreamProvidesPython2 extends AppstreamProvides {
       other is AppstreamProvidesPython2 && other.moduleName == moduleName;
 
   @override
+  int get hashCode => moduleName.hashCode;
+
+  @override
   String toString() => '$runtimeType($moduleName)';
 }
 
 /// Metadata about a Python 3 module an Appstream component provides.
 class AppstreamProvidesPython3 extends AppstreamProvides {
-  /// Name of a Python 2 module, e.g. 'mymodule3'.
+  /// Name of a Python 3 module, e.g. 'mymodule3'.
   final String moduleName;
 
   const AppstreamProvidesPython3(this.moduleName);
@@ -129,6 +150,9 @@ class AppstreamProvidesPython3 extends AppstreamProvides {
   @override
   bool operator ==(other) =>
       other is AppstreamProvidesPython3 && other.moduleName == moduleName;
+
+  @override
+  int get hashCode => moduleName.hashCode;
 
   @override
   String toString() => '$runtimeType($moduleName)';
@@ -151,6 +175,9 @@ class AppstreamProvidesDBus extends AppstreamProvides {
       other.busName == busName;
 
   @override
+  int get hashCode => busType.hashCode | busName.hashCode;
+
+  @override
   String toString() => '$runtimeType($busType, $busName)';
 }
 
@@ -163,6 +190,9 @@ class AppstreamProvidesId extends AppstreamProvides {
 
   @override
   bool operator ==(other) => other is AppstreamProvidesId && other.id == id;
+
+  @override
+  int get hashCode => id.hashCode;
 
   @override
   String toString() => '$runtimeType($id)';

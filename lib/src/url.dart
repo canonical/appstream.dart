@@ -24,5 +24,8 @@ class AppstreamUrl {
       other is AppstreamUrl && other.type == type && other.url == url;
 
   @override
+  int get hashCode => type.hashCode | url.hashCode;
+
+  @override
   String toString() => '$runtimeType($url, type: $type)';
 }
