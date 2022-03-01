@@ -37,12 +37,7 @@ class AppstreamImage {
       other.lang == lang;
 
   @override
-  int get hashCode =>
-      type.hashCode |
-      url.hashCode |
-      width.hashCode |
-      height.hashCode |
-      lang.hashCode;
+  int get hashCode => Object.hash(type, url, width, height, lang);
 
   @override
   String toString() =>
@@ -73,7 +68,7 @@ class AppstreamScreenshot {
       other.isDefault == isDefault;
 
   @override
-  int get hashCode => images.hashCode | caption.hashCode | isDefault.hashCode;
+  int get hashCode => Object.hash(images, caption, isDefault);
 
   @override
   String toString() =>

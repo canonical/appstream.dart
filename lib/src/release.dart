@@ -31,7 +31,7 @@ class AppstreamIssue {
       other.url == url;
 
   @override
-  int get hashCode => type.hashCode | id.hashCode | url.hashCode;
+  int get hashCode => Object.hash(type, id, url);
 
   @override
   String toString() => "$runtimeType('$id', type: $type, url: $url)";
@@ -82,13 +82,7 @@ class AppstreamRelease {
 
   @override
   int get hashCode =>
-      version.hashCode |
-      date.hashCode |
-      type.hashCode |
-      urgency.hashCode |
-      description.hashCode |
-      url.hashCode |
-      issues.hashCode;
+      Object.hash(version, date, type, urgency, description, url, issues);
 
   @override
   String toString() =>

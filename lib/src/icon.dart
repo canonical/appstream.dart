@@ -41,7 +41,7 @@ class AppstreamCachedIcon extends AppstreamIcon {
       other.height == height;
 
   @override
-  int get hashCode => name.hashCode | width.hashCode | height.hashCode;
+  int get hashCode => Object.hash(name, width, height);
 
   @override
   String toString() => "$runtimeType('$name', width: $width, height: $height)";
@@ -68,7 +68,7 @@ class AppstreamLocalIcon extends AppstreamIcon {
       other.height == height;
 
   @override
-  int get hashCode => filename.hashCode | width.hashCode | height.hashCode;
+  int get hashCode => Object.hash(filename, width, height);
 
   @override
   String toString() =>
@@ -96,7 +96,7 @@ class AppstreamRemoteIcon extends AppstreamIcon {
       other.height == height;
 
   @override
-  int get hashCode => url.hashCode | width.hashCode | height.hashCode;
+  int get hashCode => Object.hash(url, width, height);
 
   @override
   String toString() => "$runtimeType('$url', width: $width, height: $height)";

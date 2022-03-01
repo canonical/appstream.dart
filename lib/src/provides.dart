@@ -116,7 +116,7 @@ class AppstreamProvidesFirmware extends AppstreamProvides {
       other.name == name;
 
   @override
-  int get hashCode => type.hashCode | name.hashCode;
+  int get hashCode => Object.hash(type, name);
 
   @override
   String toString() => "$runtimeType($type, '$name')";
@@ -175,7 +175,7 @@ class AppstreamProvidesDBus extends AppstreamProvides {
       other.busName == busName;
 
   @override
-  int get hashCode => busType.hashCode | busName.hashCode;
+  int get hashCode => Object.hash(busType, busName);
 
   @override
   String toString() => '$runtimeType($busType, $busName)';
