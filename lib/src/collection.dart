@@ -863,7 +863,7 @@ String _makeUrl(String? mediaBaseUrl, String url) {
     return url;
   }
 
-  return mediaBaseUrl + '/' + url;
+  return '$mediaBaseUrl/$url';
 }
 
 AppstreamComponentType _parseComponentType(String typeName) {
