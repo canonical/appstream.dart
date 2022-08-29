@@ -17,14 +17,6 @@ dependencies:
   xml: ^5.1.1
   yaml: ^3.1.0
 
-# Appstream YAML is broken on Ubuntu - disable an assertion.
-# https://github.com/ximion/appstream-generator/issues/92
-dependency_overrides:
- yaml:
-   git:
-       url: git@github.com:robert-ancell/yaml.git
-       ref: allow-duplicate-keys
-
 dev_dependencies:
   lints: ^2.0.0
   test: ^1.16.8
