@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.5
+
+* Update xml dependency to version 6.1.x.
+* Update lints package to version 2.
+
 ## 0.2.4
 
 * Only list as supporting Linux.
