@@ -539,7 +539,14 @@ class AppstreamCollection {
           throw FormatException('Invaid Keywords type');
         }
         keywords = keywordsComponent.map(
-            (lang, keywordList) => MapEntry(lang, keywordList.cast<String>()));
+          (lang, keywordList) => MapEntry(
+            lang,
+            keywordList.nodes
+                .where((e) => e.value != null)
+                .map<String>((e) => e.value.toString())
+                .toList(),
+          ),
+        );
       }
 
       var screenshots = <AppstreamScreenshot>[];
