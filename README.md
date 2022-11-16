@@ -9,7 +9,7 @@ import 'package:appstream/appstream.dart';
 var pool = AppstreamPool();
 await pool.load();
 for (var component in pool.components) {
-  print(pool.components);
+  print(component);
 }
 ```
 
