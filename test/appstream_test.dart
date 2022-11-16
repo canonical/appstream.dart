@@ -449,6 +449,26 @@ void main() {
         throwsFormatException);
   });
 
+  test('collection - yaml with duplicate mapping keys', () async {
+    var collection = AppstreamCollection.fromYaml("""---
+File: DEP-11
+Version: '0.12'
+Origin: ubuntu-hirsute-main
+---
+Type: console-application
+ID: com.example.Hello
+Package: hello
+Name:
+  C: Hello World
+Summary:
+  C: A simple example application
+ContentRating:
+  oars-1.1: {}
+  oars-1.1: {}
+""");
+    expect(collection.components, isEmpty);
+  });
+
   test('collection - empty - yaml', () async {
     var collection = AppstreamCollection.fromYaml("""---
 File: DEP-11

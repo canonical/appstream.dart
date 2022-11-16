@@ -378,9 +378,31 @@ class AppstreamCollection {
         components: components);
   }
 
+  // Very dumb removal of invalid YAML documents.
+  // See https://github.com/canonical/appstream.dart/issues/15.
+  // Fixing these documents would be much costlier and error-prone,
+  // hence this simplistic approach to just filter out invalid documents.
+  static String _removeInvalidDocuments(String yaml) {
+    String processNode(String document) {
+      try {
+        loadYamlDocument(document);
+        return document;
+      } on YamlException {
+        return '';
+      }
+    }
+
+    final documentSeparator = '\n---\n';
+    final documents = yaml.split(documentSeparator);
+    for (var i = 0; i < documents.length; ++i) {
+      documents[i] = processNode(documents[i]);
+    }
+    return documents.where((e) => e.isNotEmpty).join(documentSeparator);
+  }
+
   /// Decodes an Appstream collection in YAML format.
   factory AppstreamCollection.fromYaml(String yaml) {
-    var yamlDocuments = loadYamlDocuments(yaml);
+    var yamlDocuments = loadYamlDocuments(_removeInvalidDocuments(yaml));
     if (yamlDocuments.isEmpty) {
       throw FormatException('Empty YAML file');
     }
