@@ -738,6 +738,39 @@ Keywords:
         }));
   });
 
+  test('collection - keywords (null values) - yaml', () async {
+    // Test for https://github.com/canonical/appstream.dart/issues/22
+    var collection = AppstreamCollection.fromYaml("""---
+File: DEP-11
+Version: '0.12'
+Origin: ubuntu-hirsute-main
+---
+Type: console-application
+ID: com.example.Hello
+Package: hello
+Name:
+  C: Hello World
+Summary:
+  C: A simple example application
+Keywords:
+  C:
+    - Hello
+    - Welcome
+  de_DE:
+    - Hallo
+    - 
+    - Wilkommen
+""");
+    expect(collection.components, hasLength(1));
+    var component = collection.components[0];
+    expect(
+        component.keywords,
+        equals({
+          'C': ['Hello', 'Welcome'],
+          'de_DE': ['Hallo', 'Wilkommen']
+        }));
+  });
+
   test('collection - screenshot - yaml', () async {
     var collection = AppstreamCollection.fromYaml("""---
 File: DEP-11
