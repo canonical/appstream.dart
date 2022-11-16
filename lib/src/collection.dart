@@ -495,12 +495,12 @@ class AppstreamCollection {
       var launchable = component['Launchable'];
       if (launchable != null) {
         if (launchable is! YamlMap) {
-          throw FormatException('Invaid Launchable type');
+          throw FormatException('Invalid Launchable type');
         }
         for (var typeName in launchable.keys) {
           var launchableList = launchable[typeName];
           if (launchableList is! YamlList) {
-            throw FormatException('Invaid Launchable type');
+            throw FormatException('Invalid Launchable type');
           }
           switch (typeName) {
             case 'desktop-id':
@@ -527,7 +527,7 @@ class AppstreamCollection {
       var categoriesComponent = component['Categories'];
       if (categoriesComponent != null) {
         if (categoriesComponent is! YamlList) {
-          throw FormatException('Invaid Categories type');
+          throw FormatException('Invalid Categories type');
         }
         categories.addAll(categoriesComponent.cast<String>());
       }
@@ -536,7 +536,7 @@ class AppstreamCollection {
       var keywordsComponent = component['Keywords'];
       if (keywordsComponent != null) {
         if (keywordsComponent is! YamlMap) {
-          throw FormatException('Invaid Keywords type');
+          throw FormatException('Invalid Keywords type');
         }
         keywords = keywordsComponent.map(
             (lang, keywordList) => MapEntry(lang, keywordList.cast<String>()));
@@ -546,7 +546,7 @@ class AppstreamCollection {
       var screenshotsComponent = component['Screenshots'];
       if (screenshotsComponent != null) {
         if (screenshotsComponent is! YamlList) {
-          throw FormatException('Invaid Screenshots type');
+          throw FormatException('Invalid Screenshots type');
         }
         for (var screenshot in screenshotsComponent) {
           var isDefault = screenshot['default'] ?? 'false' == 'true';
@@ -555,7 +555,7 @@ class AppstreamCollection {
           var thumbnails = screenshot['thumbnails'];
           if (thumbnails != null) {
             if (thumbnails is! YamlList) {
-              throw FormatException('Invaid thumbnails type');
+              throw FormatException('Invalid thumbnails type');
             }
             for (var thumbnail in thumbnails) {
               var url = thumbnail['url'];
@@ -602,7 +602,7 @@ class AppstreamCollection {
       var compulsoryForDesktopsComponent = component['CompulsoryForDesktops'];
       if (compulsoryForDesktopsComponent != null) {
         if (compulsoryForDesktopsComponent is! YamlList) {
-          throw FormatException('Invaid CompulsoryForDesktops type');
+          throw FormatException('Invalid CompulsoryForDesktops type');
         }
         compulsoryForDesktops
             .addAll(compulsoryForDesktopsComponent.cast<String>());
@@ -612,11 +612,11 @@ class AppstreamCollection {
       var releasesComponent = component['Releases'];
       if (releasesComponent != null) {
         if (releasesComponent is! YamlList) {
-          throw FormatException('Invaid Releases type');
+          throw FormatException('Invalid Releases type');
         }
         for (var release in releasesComponent) {
           if (release is! YamlMap) {
-            throw FormatException('Invaid release type');
+            throw FormatException('Invalid release type');
           }
           var version = release['version'];
           DateTime? date;
@@ -644,11 +644,11 @@ class AppstreamCollection {
           var issuesComponent = release['issues'];
           if (issuesComponent != null) {
             if (issuesComponent is! YamlList) {
-              throw FormatException('Invaid issues type');
+              throw FormatException('Invalid issues type');
             }
             for (var issue in issuesComponent) {
               if (issue is! YamlMap) {
-                throw FormatException('Invaid issue type');
+                throw FormatException('Invalid issue type');
               }
               var id = issue['id'];
               if (id == null) {
@@ -681,12 +681,12 @@ class AppstreamCollection {
       var providesComponent = component['Provides'];
       if (providesComponent != null) {
         if (providesComponent is! YamlMap) {
-          throw FormatException('Invaid Provides type');
+          throw FormatException('Invalid Provides type');
         }
         for (var type in providesComponent.keys) {
           var values = providesComponent[type];
           if (values is! YamlList) {
-            throw FormatException('Invaid $type provides');
+            throw FormatException('Invalid $type provides');
           }
           switch (type) {
             case 'mediatypes':
@@ -755,7 +755,7 @@ class AppstreamCollection {
             case 'dbus':
               for (var dbusComponent in values) {
                 if (dbusComponent is! YamlMap) {
-                  throw FormatException('Invaid dbus provides');
+                  throw FormatException('Invalid dbus provides');
                 }
                 var type = dbusComponent['type'];
                 if (type == null) {
@@ -780,12 +780,12 @@ class AppstreamCollection {
       var languagesComponent = component['Languages'];
       if (languagesComponent != null) {
         if (languagesComponent is! YamlList) {
-          throw FormatException('Invaid Languages type');
+          throw FormatException('Invalid Languages type');
         }
 
         for (var language in languagesComponent) {
           if (language is! YamlMap) {
-            throw FormatException('Invaid language type');
+            throw FormatException('Invalid language type');
           }
           var locale = language['locale'];
           if (locale == null) {
@@ -800,7 +800,7 @@ class AppstreamCollection {
       var contentRatingComponent = component['ContentRating'];
       if (contentRatingComponent != null) {
         if (contentRatingComponent is! YamlMap) {
-          throw FormatException('Invaid ContentRating type');
+          throw FormatException('Invalid ContentRating type');
         }
         for (var type in contentRatingComponent.keys) {
           contentRatings[type] = contentRatingComponent[type]
