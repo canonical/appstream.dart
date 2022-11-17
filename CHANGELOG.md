@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.6
+
+* Filter out null keywords.
+* Fix the simple code example in the README.
+* Fix a typo in error messages (s/Invaid/Invalid/g).
+* Filter out invalid YAML documents (because of duplicate mapping keys).
+
 ## 0.2.5
 
 * Update xml dependency to version 6.1.x.
