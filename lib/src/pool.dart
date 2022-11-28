@@ -44,27 +44,25 @@ class AppstreamPool {
         .toList();
   }
 
-  static Future<AppstreamCollection> _loadXmlCollection(String path) async {
+  static Future<AppstreamCollection> _loadCollection(
+      void Function(_IsolateArguments args) entryPoint, String path) async {
     ReceivePort port = ReceivePort();
     final isolate = await Isolate.spawn<_IsolateArguments>(
-        _loadXmlCollectionInIsolate, _IsolateArguments(port.sendPort, path));
+        entryPoint, _IsolateArguments(port.sendPort, path));
     final collection = await port.first;
     isolate.kill(priority: Isolate.immediate);
     return collection;
   }
+
+  static Future<AppstreamCollection> _loadXmlCollection(String path) =>
+      _loadCollection(_loadXmlCollectionInIsolate, path);
 
   static void _loadXmlCollectionInIsolate(_IsolateArguments args) async {
     args.port.send(AppstreamCollection.fromXml(await _loadFile(args.path)));
   }
 
-  static Future<AppstreamCollection> _loadYamlCollection(String path) async {
-    ReceivePort port = ReceivePort();
-    final isolate = await Isolate.spawn<_IsolateArguments>(
-        _loadYamlCollectionInIsolate, _IsolateArguments(port.sendPort, path));
-    final collection = await port.first;
-    isolate.kill(priority: Isolate.immediate);
-    return collection;
-  }
+  static Future<AppstreamCollection> _loadYamlCollection(String path) =>
+      _loadCollection(_loadYamlCollectionInIsolate, path);
 
   static void _loadYamlCollectionInIsolate(_IsolateArguments args) async {
     args.port.send(AppstreamCollection.fromYaml(await _loadFile(args.path)));
