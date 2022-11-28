@@ -1,8 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'collection.dart';
 import 'component.dart';
+
+class _IsolateArguments {
+  const _IsolateArguments(this.port, this.path);
+  final SendPort port;
+  final String path;
+}
 
 /// Metadata for all the components known about on this system.
 class AppstreamPool {
@@ -27,7 +34,7 @@ class AppstreamPool {
     }
   }
 
-  Future<List<String>> _listFiles(
+  static Future<List<String>> _listFiles(
       String path, Iterable<String> suffixes) async {
     var dir = Directory(path);
     return await dir
@@ -37,15 +44,33 @@ class AppstreamPool {
         .toList();
   }
 
-  Future<AppstreamCollection> _loadXmlCollection(String path) async {
-    return AppstreamCollection.fromXml(await _loadFile(path));
+  static Future<AppstreamCollection> _loadXmlCollection(String path) async {
+    ReceivePort port = ReceivePort();
+    final isolate = await Isolate.spawn<_IsolateArguments>(
+        _loadXmlCollectionInIsolate, _IsolateArguments(port.sendPort, path));
+    final collection = await port.first;
+    isolate.kill(priority: Isolate.immediate);
+    return collection;
   }
 
-  Future<AppstreamCollection> _loadYamlCollection(String path) async {
-    return AppstreamCollection.fromYaml(await _loadFile(path));
+  static void _loadXmlCollectionInIsolate(_IsolateArguments args) async {
+    args.port.send(AppstreamCollection.fromXml(await _loadFile(args.path)));
   }
 
-  Future<String> _loadFile(String path) async {
+  static Future<AppstreamCollection> _loadYamlCollection(String path) async {
+    ReceivePort port = ReceivePort();
+    final isolate = await Isolate.spawn<_IsolateArguments>(
+        _loadYamlCollectionInIsolate, _IsolateArguments(port.sendPort, path));
+    final collection = await port.first;
+    isolate.kill(priority: Isolate.immediate);
+    return collection;
+  }
+
+  static void _loadYamlCollectionInIsolate(_IsolateArguments args) async {
+    args.port.send(AppstreamCollection.fromYaml(await _loadFile(args.path)));
+  }
+
+  static Future<String> _loadFile(String path) async {
     var stream = File(path).openRead();
     if (path.endsWith('.gz')) {
       stream = gzip.decoder.bind(stream);
