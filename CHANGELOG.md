@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.7
+
+* Read and parse XML/YAML files using isolates to avoid blocking the main event loop.
+
 ## 0.2.6
 
 * Filter out null keywords.
