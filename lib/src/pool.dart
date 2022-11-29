@@ -5,8 +5,8 @@ import 'dart:isolate';
 import 'collection.dart';
 import 'component.dart';
 
-class _IsolateArguments {
-  const _IsolateArguments(this.port, this.path);
+class _LoadCollectionArguments {
+  const _LoadCollectionArguments(this.port, this.path);
   final SendPort port;
   final String path;
 }
@@ -45,10 +45,11 @@ class AppstreamPool {
   }
 
   static Future<AppstreamCollection> _loadCollection(
-      void Function(_IsolateArguments args) entryPoint, String path) async {
+      void Function(_LoadCollectionArguments args) entryPoint,
+      String path) async {
     ReceivePort port = ReceivePort();
-    final isolate = await Isolate.spawn<_IsolateArguments>(
-        entryPoint, _IsolateArguments(port.sendPort, path));
+    final isolate = await Isolate.spawn<_LoadCollectionArguments>(
+        entryPoint, _LoadCollectionArguments(port.sendPort, path));
     final collection = await port.first;
     isolate.kill(priority: Isolate.immediate);
     return collection;
@@ -57,14 +58,15 @@ class AppstreamPool {
   static Future<AppstreamCollection> _loadXmlCollection(String path) =>
       _loadCollection(_loadXmlCollectionInIsolate, path);
 
-  static void _loadXmlCollectionInIsolate(_IsolateArguments args) async {
+  static void _loadXmlCollectionInIsolate(_LoadCollectionArguments args) async {
     args.port.send(AppstreamCollection.fromXml(await _loadFile(args.path)));
   }
 
   static Future<AppstreamCollection> _loadYamlCollection(String path) =>
       _loadCollection(_loadYamlCollectionInIsolate, path);
 
-  static void _loadYamlCollectionInIsolate(_IsolateArguments args) async {
+  static void _loadYamlCollectionInIsolate(
+      _LoadCollectionArguments args) async {
     args.port.send(AppstreamCollection.fromYaml(await _loadFile(args.path)));
   }
 
