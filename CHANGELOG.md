@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.8
+
+* Load catalogs from the new 'swcatalog' dir.
+* Load catalogs from `/usr/share` and `/var/cache` as well as `/var/lib`.
+* Handle missing catalog dirs.
+
 ## 0.2.7
 
 * Read and parse XML/YAML files using isolates to avoid blocking the main event loop.
