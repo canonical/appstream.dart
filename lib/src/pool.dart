@@ -18,15 +18,35 @@ class AppstreamPool {
 
   /// Load the pool.
   Future<void> load() async {
-    var xmlPaths = await _listFiles('/var/lib/app-info', ['.xml', '.xml.gz']);
-    var collectionFutures = <Future<AppstreamCollection>>[];
-    for (var path in xmlPaths) {
-      collectionFutures.add(_loadXmlCollection(path));
+    final catalogDirPrefixes = ['/usr/share', '/var/lib', '/var/cache'];
+
+    var catalogDirs = [];
+    for (var prefix in catalogDirPrefixes) {
+      var catalogPath = '$prefix/swcatalog';
+      var catalogLegacyPath = '$prefix/app-info';
+
+      // Only use the legacy path if it's not a symlink to the current path.
+      var ignoreLegacyPath = false;
+      var legacyLink = Link(catalogLegacyPath);
+      ignoreLegacyPath =
+          await legacyLink.exists() && await legacyLink.target() == catalogPath;
+
+      catalogDirs.add(catalogPath);
+      if (!ignoreLegacyPath) {
+        catalogDirs.add(catalogLegacyPath);
+      }
     }
-    var yamlPaths =
-        await _listFiles('/var/lib/app-info/yaml', ['.yml', '.yml.gz']);
-    for (var path in yamlPaths) {
-      collectionFutures.add(_loadYamlCollection(path));
+
+    var collectionFutures = <Future<AppstreamCollection>>[];
+    for (var dir in catalogDirs) {
+      var xmlPaths = await _listFiles(dir, ['.xml', '.xml.gz']);
+      for (var path in xmlPaths) {
+        collectionFutures.add(_loadXmlCollection(path));
+      }
+      var yamlPaths = await _listFiles('$dir/yaml', ['.yml', '.yml.gz']);
+      for (var path in yamlPaths) {
+        collectionFutures.add(_loadYamlCollection(path));
+      }
     }
     var collections = await Future.wait(collectionFutures);
     for (var collection in collections) {
@@ -37,11 +57,15 @@ class AppstreamPool {
   static Future<List<String>> _listFiles(
       String path, Iterable<String> suffixes) async {
     var dir = Directory(path);
-    return await dir
-        .list()
-        .where((e) => e is File)
-        .map((e) => (e as File).path)
-        .toList();
+    try {
+      return await dir
+          .list()
+          .where((e) => e is File)
+          .map((e) => (e as File).path)
+          .toList();
+    } on FileSystemException {
+      return [];
+    }
   }
 
   static Future<AppstreamCollection> _loadCollection(
