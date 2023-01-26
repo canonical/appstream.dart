@@ -100,8 +100,6 @@ class AppstreamPool {
       stream = gzip.decoder.bind(stream);
     }
 
-    return await utf8.decoder
-        .bind(stream)
-        .fold('', (prev, element) => prev + element);
+    return await utf8.decoder.bind(stream).join();
   }
 }
