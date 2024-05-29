@@ -77,8 +77,8 @@ class AppstreamCollection {
       var summary = _getXmlTranslatedString(component, 'summary');
       var description = _getXmlTranslatedString(component, 'description');
       var developerName = _getXmlTranslatedString(component, 'developer_name');
-      var projectLicense = component.getElement('project_license')?.text;
-      var projectGroup = component.getElement('project_group')?.text;
+      var projectLicense = component.getElement('project_license')?.innerText;
+      var projectGroup = component.getElement('project_group')?.innerText;
 
       var elements = component.children.whereType<XmlElement>();
 
@@ -94,19 +94,19 @@ class AppstreamCollection {
         var height = h != null ? int.parse(h) : null;
         switch (type) {
           case 'stock':
-            icons.add(AppstreamStockIcon(icon.text));
+            icons.add(AppstreamStockIcon(icon.innerText));
             break;
           case 'cached':
-            icons.add(
-                AppstreamCachedIcon(icon.text, width: width, height: height));
+            icons.add(AppstreamCachedIcon(icon.innerText,
+                width: width, height: height));
             break;
           case 'local':
-            icons.add(
-                AppstreamLocalIcon(icon.text, width: width, height: height));
+            icons.add(AppstreamLocalIcon(icon.innerText,
+                width: width, height: height));
             break;
           case 'remote':
-            icons.add(
-                AppstreamRemoteIcon(icon.text, width: width, height: height));
+            icons.add(AppstreamRemoteIcon(icon.innerText,
+                width: width, height: height));
             break;
         }
       }
@@ -117,7 +117,7 @@ class AppstreamCollection {
         if (typeName == null) {
           throw FormatException('Missing Url type');
         }
-        urls.add(AppstreamUrl(url.text, type: _parseUrlType(typeName)));
+        urls.add(AppstreamUrl(url.innerText, type: _parseUrlType(typeName)));
       }
 
       var launchables = <AppstreamLaunchable>[];
@@ -125,17 +125,17 @@ class AppstreamCollection {
           in elements.where((e) => e.name.local == 'launchable')) {
         switch (launchable.getAttribute('type')) {
           case 'desktop-id':
-            launchables.add(AppstreamLaunchableDesktopId(launchable.text));
+            launchables.add(AppstreamLaunchableDesktopId(launchable.innerText));
             break;
           case 'service':
-            launchables.add(AppstreamLaunchableService(launchable.text));
+            launchables.add(AppstreamLaunchableService(launchable.innerText));
             break;
           case 'cockpit-manifest':
             launchables
-                .add(AppstreamLaunchableCockpitManifest(launchable.text));
+                .add(AppstreamLaunchableCockpitManifest(launchable.innerText));
             break;
           case 'url':
-            launchables.add(AppstreamLaunchableUrl(launchable.text));
+            launchables.add(AppstreamLaunchableUrl(launchable.innerText));
             break;
         }
       }
@@ -146,7 +146,7 @@ class AppstreamCollection {
         categories = categoriesElement.children
             .whereType<XmlElement>()
             .where((e) => e.name.local == 'category')
-            .map((e) => e.text)
+            .map((e) => e.innerText)
             .toList();
       }
 
@@ -157,7 +157,7 @@ class AppstreamCollection {
         keywords[lang] = keywordsElement.children
             .whereType<XmlElement>()
             .where((e) => e.name.local == 'keyword')
-            .map((e) => e.text)
+            .map((e) => e.innerText)
             .toList();
       }
 
@@ -188,7 +188,7 @@ class AppstreamCollection {
           var lang = imageElement.getAttribute('xml:lang');
           images.add(AppstreamImage(
               type: type,
-              url: imageElement.text,
+              url: imageElement.innerText,
               width: width,
               height: height,
               lang: lang));
@@ -199,7 +199,7 @@ class AppstreamCollection {
 
       var compulsoryForDesktops = elements
           .where((e) => e.name.local == 'compulsory_for_desktop')
-          .map((e) => e.text)
+          .map((e) => e.innerText)
           .toList();
 
       var releases = <AppstreamRelease>[];
@@ -231,7 +231,7 @@ class AppstreamCollection {
           }
           var description = _getXmlTranslatedString(release, 'description');
           var urlElement = release.getElement('url');
-          var url = urlElement?.text;
+          var url = urlElement?.innerText;
 
           var issues = <AppstreamIssue>[];
           var issuesElement = release.getElement('issues');
@@ -245,7 +245,7 @@ class AppstreamCollection {
                 type = _parseIssueType(typeName);
               }
               var url = issue.getAttribute('url');
-              issues.add(AppstreamIssue(issue.text,
+              issues.add(AppstreamIssue(issue.innerText,
                   type: type ?? AppstreamIssueType.generic, url: url));
             }
           }
@@ -267,19 +267,19 @@ class AppstreamCollection {
         for (var element in providesElement.children.whereType<XmlElement>()) {
           switch (element.name.local) {
             case 'mediatype':
-              provides.add(AppstreamProvidesMediatype(element.text));
+              provides.add(AppstreamProvidesMediatype(element.innerText));
               break;
             case 'library':
-              provides.add(AppstreamProvidesLibrary(element.text));
+              provides.add(AppstreamProvidesLibrary(element.innerText));
               break;
             case 'binary':
-              provides.add(AppstreamProvidesBinary(element.text));
+              provides.add(AppstreamProvidesBinary(element.innerText));
               break;
             case 'font':
-              provides.add(AppstreamProvidesFont(element.text));
+              provides.add(AppstreamProvidesFont(element.innerText));
               break;
             case 'modalias':
-              provides.add(AppstreamProvidesModalias(element.text));
+              provides.add(AppstreamProvidesModalias(element.innerText));
               break;
             case 'firmware':
               var typeName = element.getAttribute('type');
@@ -293,24 +293,24 @@ class AppstreamCollection {
               if (type == null) {
                 throw FormatException('Unknown firmware type $typeName');
               }
-              provides.add(AppstreamProvidesFirmware(type, element.text));
+              provides.add(AppstreamProvidesFirmware(type, element.innerText));
               break;
             case 'python2':
-              provides.add(AppstreamProvidesPython2(element.text));
+              provides.add(AppstreamProvidesPython2(element.innerText));
               break;
             case 'python3':
-              provides.add(AppstreamProvidesPython3(element.text));
+              provides.add(AppstreamProvidesPython3(element.innerText));
               break;
             case 'dbus':
               var type = element.getAttribute('type');
               if (type == null) {
                 throw FormatException('Missing DBus bus type');
               }
-              provides.add(
-                  AppstreamProvidesDBus(_parseDBusType(type), element.text));
+              provides.add(AppstreamProvidesDBus(
+                  _parseDBusType(type), element.innerText));
               break;
             case 'id':
-              provides.add(AppstreamProvidesId(element.text));
+              provides.add(AppstreamProvidesId(element.innerText));
               break;
           }
         }
@@ -323,7 +323,7 @@ class AppstreamCollection {
             .whereType<XmlElement>()
             .where((e) => e.name.local == 'lang')) {
           var percentage = language.getAttribute('percentage');
-          languages.add(AppstreamLanguage(language.text,
+          languages.add(AppstreamLanguage(language.innerText,
               percentage: percentage != null ? int.parse(percentage) : null));
         }
       }
@@ -343,15 +343,15 @@ class AppstreamCollection {
           if (id == null) {
             throw FormatException('Missing content attribute id');
           }
-          ratings[id] = _parseContentRating(contentAttribute.text);
+          ratings[id] = _parseContentRating(contentAttribute.innerText);
         }
         contentRatings[type] = ratings;
       }
 
       components.add(AppstreamComponent(
-          id: id.text,
+          id: id.innerText,
           type: type,
-          package: package.text,
+          package: package.innerText,
           name: name,
           summary: summary,
           description: description,
