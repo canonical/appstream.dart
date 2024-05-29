@@ -6,7 +6,9 @@ enum AppstreamUrlType {
   help,
   donation,
   translate,
-  contact
+  contact,
+  vcsBrowser,
+  contribute
 }
 
 /// A URL for more information about an Appstream component.

@@ -925,7 +925,9 @@ AppstreamUrlType _parseUrlType(String typeName) {
     'help': AppstreamUrlType.help,
     'donation': AppstreamUrlType.donation,
     'translate': AppstreamUrlType.translate,
-    'contact': AppstreamUrlType.contact
+    'contact': AppstreamUrlType.contact,
+    'vcs-browser': AppstreamUrlType.vcsBrowser,
+    'contribute': AppstreamUrlType.contribute
   }[typeName];
   if (type == null) {
     throw FormatException("Unknown url type '$typeName'");
