@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.9
+
+* Add `vcsBrowser` and `contribute` URL types
+* Replace deprecated `text` property of `XmlElement` with `innerText`
+
 ## 0.2.8
 
 * Load catalogs from the new 'swcatalog' dir.
