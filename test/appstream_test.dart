@@ -899,6 +899,7 @@ Releases:
   date: 2013-10-20
 - version: 1.0
   unix-timestamp: 1345939200
+- unix-timestamp: 1234567890
 """);
     expect(collection.components, hasLength(1));
     var component = collection.components[0];
@@ -920,7 +921,8 @@ Releases:
               version: '1.1',
               type: AppstreamReleaseType.development,
               date: DateTime(2013, 10, 20)),
-          AppstreamRelease(version: '1.0', date: DateTime.utc(2012, 8, 26))
+          AppstreamRelease(version: '1.0', date: DateTime.utc(2012, 8, 26)),
+          AppstreamRelease(date: DateTime.utc(2009, 2, 13, 23, 31, 30)),
         ]));
   });
 

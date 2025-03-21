@@ -844,7 +844,7 @@ class AppstreamCollection {
     }
 
     return AppstreamCollection(
-        version: _parseYamlVersion(version),
+        version: _parseYamlVersion(version)!,
         origin: origin,
         architecture: architecture,
         priority: priority,
@@ -855,11 +855,11 @@ class AppstreamCollection {
   String toString() => "$runtimeType(version: $version, origin: '$origin')";
 }
 
-String _parseYamlVersion(dynamic value) {
+String? _parseYamlVersion(dynamic value) {
   if (value is double) {
     return value.toString();
   } else {
-    return value as String;
+    return value as String?;
   }
 }
 
