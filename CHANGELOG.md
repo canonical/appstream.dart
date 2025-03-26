@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.10
+
+* Fixed YAML parsing to support appstream releases with missing version information
+
 ## 0.2.9
 
 * Add `vcsBrowser` and `contribute` URL types
