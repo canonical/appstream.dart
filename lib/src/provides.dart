@@ -2,7 +2,7 @@
 enum AppstreamFirmwareType { runtime, flashed }
 
 /// A DBus bus.
-enum AppstreamDBusType { user, system }
+enum AppstreamDBusType { user, session, system }
 
 /// Metadata about a thing an Appstream component provides.
 class AppstreamProvides {
