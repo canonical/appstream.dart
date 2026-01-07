@@ -69,10 +69,8 @@ class AppstreamCollection {
       if (id == null) {
         throw FormatException('Missing component ID');
       }
-      var package = component.getElement('pkgname');
-      if (package == null) {
-        throw FormatException('Missing component package');
-      }
+      var pkg = component.getElement('pkgname');
+      var package = pkg?.innerText;
       var name = _getXmlTranslatedString(component, 'name');
       var summary = _getXmlTranslatedString(component, 'summary');
       var description = _getXmlTranslatedString(component, 'description');
@@ -351,7 +349,7 @@ class AppstreamCollection {
       components.add(AppstreamComponent(
           id: id.innerText,
           type: type,
-          package: package.innerText,
+          package: package,
           name: name,
           summary: summary,
           description: description,
