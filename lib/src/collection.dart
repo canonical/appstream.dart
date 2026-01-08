@@ -60,10 +60,10 @@ class AppstreamCollection {
         .whereType<XmlElement>()
         .where((e) => e.name.local == 'component')) {
       var typeName = component.getAttribute('type');
-      if (typeName == null) {
-        throw FormatException('Missing component type');
-      }
-      var type = _parseComponentType(typeName);
+
+      var type = typeName != null
+          ? _parseComponentType(typeName)
+          : AppstreamComponentType.unknown;
 
       var id = component.getElement('id');
       if (id == null) {
@@ -434,10 +434,11 @@ class AppstreamCollection {
         throw FormatException('Missing component ID');
       }
       var typeName = component['Type'];
-      if (typeName == null) {
-        throw FormatException('Missing component type');
-      }
-      var type = _parseComponentType(typeName);
+
+      var type = typeName != null
+          ? _parseComponentType(typeName)
+          : AppstreamComponentType.unknown;
+
       var package = component['Package'];
       var name = component['Name'];
       if (name == null) {
