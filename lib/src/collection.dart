@@ -358,6 +358,17 @@ class AppstreamCollection {
         bundles.add(AppstreamBundle(bundleElement.innerText, type: type));
       }
 
+      var custom = <Map<String, String>>[];
+      var customElement = component.getElement('custom');
+      if (customElement != null) {
+        for (var item in customElement.children) {
+          var key = item.getAttribute('key');
+          if (key != null) {
+            custom.add({key: item.innerText});
+          }
+        }
+      }
+
       components.add(AppstreamComponent(
           id: id.innerText,
           type: type,
@@ -379,6 +390,7 @@ class AppstreamCollection {
           provides: provides,
           languages: languages,
           bundles: bundles,
+          custom: custom,
           contentRatings: contentRatings));
     }
 
@@ -849,6 +861,18 @@ class AppstreamCollection {
         }
       }
 
+      var custom = <Map<String, String>>[];
+      var customComponent = component['Custom'];
+      if (customComponent is YamlList) {
+        for (var entry in customComponent) {
+          if (entry is YamlMap) {
+            final key = entry.keys.first;
+            final value = entry.values.first;
+            custom.add({key: value});
+          }
+        }
+      }
+
       components.add(AppstreamComponent(
           id: id,
           type: type,
@@ -874,6 +898,7 @@ class AppstreamCollection {
           provides: provides,
           languages: languages,
           bundles: bundles,
+          custom: custom,
           contentRatings: contentRatings));
     }
 

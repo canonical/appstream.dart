@@ -95,6 +95,9 @@ class AppstreamComponent {
   /// Content ratings for this package, keyed by content rating system name. e.g. {'oars-1.0': {'drugs-alcohol': AppstreamContentRating.moderate, 'language-humor': AppstreamContentRating.mild}}
   final Map<String, Map<String, AppstreamContentRating>> contentRatings;
 
+  /// Custom attributes a component could provide
+  final List<Map<String, String>> custom;
+
   /// Creates a new Appstream component.
   const AppstreamComponent(
       {required this.id,
@@ -117,6 +120,7 @@ class AppstreamComponent {
       this.launchables = const [],
       this.languages = const [],
       this.bundles = const [],
+      this.custom = const [],
       this.contentRatings = const {}});
 
   @override
