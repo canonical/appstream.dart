@@ -1,3 +1,4 @@
+import 'bundle.dart';
 import 'icon.dart';
 import 'language.dart';
 import 'launchable.dart';
@@ -89,6 +90,8 @@ class AppstreamComponent {
   /// Languages this component is available in.
   final List<AppstreamLanguage> languages;
 
+  final List<AppstreamBundle> bundles;
+
   /// Content ratings for this package, keyed by content rating system name. e.g. {'oars-1.0': {'drugs-alcohol': AppstreamContentRating.moderate, 'language-humor': AppstreamContentRating.mild}}
   final Map<String, Map<String, AppstreamContentRating>> contentRatings;
 
@@ -113,9 +116,10 @@ class AppstreamComponent {
       this.provides = const [],
       this.launchables = const [],
       this.languages = const [],
+      this.bundles = const [],
       this.contentRatings = const {}});
 
   @override
   String toString() =>
-      "$runtimeType(id: $id, type: $type, package: $package, name: $name, summary: $summary, description: $description, developerName: '$developerName', projectLicense: $projectLicense, projectGroup: $projectGroup, icons: $icons, urls: $urls, categories: $categories, keywords: $keywords, screenshots: $screenshots, compulsoryForDesktops: $compulsoryForDesktops, release: $releases, provides: $provides, launchables: $launchables, languages: $languages, contentRatings: $contentRatings)";
+      "$runtimeType(id: $id, type: $type, package: $package, name: $name, summary: $summary, description: $description, developerName: '$developerName', projectLicense: $projectLicense, projectGroup: $projectGroup, icons: $icons, urls: $urls, categories: $categories, keywords: $keywords, screenshots: $screenshots, compulsoryForDesktops: $compulsoryForDesktops, release: $releases, provides: $provides, launchables: $launchables, languages: $languages, contentRatings: $contentRatings, bundles: $bundles)";
 }
