@@ -876,7 +876,8 @@ Map<String, String> _getXmlTranslatedString(XmlElement parent, String name) {
   for (var element in parent.children
       .whereType<XmlElement>()
       .where((e) => e.name.local == name)) {
-    var lang = element.getAttribute('lang') ?? 'C';
+    var lang =
+        element.getAttribute('lang') ?? element.getAttribute('xml:lang') ?? 'C';
     value[lang] = element.innerXml;
   }
 
