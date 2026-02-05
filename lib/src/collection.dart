@@ -161,8 +161,17 @@ class AppstreamCollection {
       }
 
       var screenshots = <AppstreamScreenshot>[];
-      for (var screenshot
-          in elements.where((e) => e.name.local == 'screenshot')) {
+      Iterable<XmlElement> screenshotElements;
+      var screenshotsElement = component.getElement('screenshots');
+      if (screenshotsElement != null) {
+        screenshotElements = screenshotsElement.children
+            .whereType<XmlElement>()
+            .where((e) => e.name.local == 'screenshot');
+      } else {
+        screenshotElements =
+            elements.where((e) => e.name.local == 'screenshot');
+      }
+      for (var screenshot in screenshotElements) {
         var isDefault = screenshot.getAttribute('type') == 'default';
         var caption = _getXmlTranslatedString(screenshot, 'caption');
         var images = <AppstreamImage>[];
