@@ -1,3 +1,4 @@
+export 'src/bundle.dart';
 export 'src/collection.dart';
 export 'src/component.dart';
 export 'src/icon.dart';

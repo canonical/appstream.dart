@@ -1,6 +1,7 @@
 import 'package:xml/xml.dart';
 import 'package:yaml/yaml.dart';
 
+import 'bundle.dart';
 import 'component.dart';
 import 'icon.dart';
 import 'language.dart';
@@ -346,6 +347,17 @@ class AppstreamCollection {
         contentRatings[type] = ratings;
       }
 
+      var bundles = <AppstreamBundle>[];
+      var bundleElement = component.getElement('bundle');
+      if (bundleElement != null) {
+        var typeName = bundleElement.getAttribute('type');
+
+        var type = typeName != null
+            ? _parseBundleType(typeName)
+            : AppstreamBundleType.unknown;
+        bundles.add(AppstreamBundle(bundleElement.innerText, type: type));
+      }
+
       components.add(AppstreamComponent(
           id: id.innerText,
           type: type,
@@ -366,6 +378,7 @@ class AppstreamCollection {
           releases: releases,
           provides: provides,
           languages: languages,
+          bundles: bundles,
           contentRatings: contentRatings));
     }
 
@@ -815,6 +828,27 @@ class AppstreamCollection {
         }
       }
 
+      var bundles = <AppstreamBundle>[];
+      var bundlesComponent = component['Bundles'];
+      if (bundlesComponent != null) {
+        if (bundlesComponent is! YamlList) {
+          throw FormatException('Invalid Bundle type');
+        }
+        for (var bundle in bundlesComponent) {
+          if (bundle is! YamlMap) {
+            throw FormatException('Invalid bundle type');
+          }
+          var typeName = bundle['type'];
+          if (typeName == null) {
+            throw FormatException('Missing bundle type');
+          }
+          var type = typeName != null
+              ? _parseBundleType(typeName)
+              : AppstreamBundleType.unknown;
+          bundles.add(AppstreamBundle(bundle['id'], type: type));
+        }
+      }
+
       components.add(AppstreamComponent(
           id: id,
           type: type,
@@ -839,6 +873,7 @@ class AppstreamCollection {
           releases: releases,
           provides: provides,
           languages: languages,
+          bundles: bundles,
           contentRatings: contentRatings));
     }
 
@@ -978,6 +1013,24 @@ AppstreamDBusType _parseDBusType(String typeName) {
   }[typeName];
   if (type == null) {
     throw FormatException("Unknown DBus type '$typeName'");
+  }
+  return type;
+}
+
+AppstreamBundleType _parseBundleType(String typeName) {
+  var type = {
+    'package': AppstreamBundleType.package,
+    'limba': AppstreamBundleType.limba,
+    'flatpak': AppstreamBundleType.flatpak,
+    'appimage': AppstreamBundleType.appimage,
+    'snap': AppstreamBundleType.snap,
+    'tarball': AppstreamBundleType.tarball,
+    'cabinet': AppstreamBundleType.cabinet,
+    'linglong': AppstreamBundleType.linglong,
+    'sysupdate': AppstreamBundleType.sysupdate,
+  }[typeName];
+  if (type == null) {
+    throw FormatException("Unknown bundle type '$typeName'");
   }
   return type;
 }

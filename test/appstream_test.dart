@@ -440,6 +440,27 @@ void main() {
         }));
   });
 
+  test('collection - bundles - xml', () async {
+    var collection = AppstreamCollection.fromXml(
+        '''<components version="0.12" origin="ubuntu-hirsute-main">
+  <component type="console-application">
+    <id>com.example.Hello</id>
+    <pkgname>hello</pkgname>
+    <name>Hello World</name>
+    <summary>A simple example application</summary>
+    <bundle type="limba">foobar-1.0.2</bundle>
+  </component>
+</components>
+''');
+    expect(collection.components, hasLength(1));
+    var component = collection.components[0];
+    expect(
+        component.bundles,
+        equals([
+          AppstreamBundle('foobar-1.0.2', type: AppstreamBundleType.limba),
+        ]));
+  });
+
   test('collection - empty yaml', () async {
     expect(() => AppstreamCollection.fromYaml(''), throwsFormatException);
   });
@@ -1040,5 +1061,31 @@ ContentRating:
             'language-humor': AppstreamContentRating.mild
           }
         }));
+  });
+
+  test('collection - bundles - yaml', () async {
+    var collection = AppstreamCollection.fromYaml("""---
+File: DEP-11
+Version: '0.12'
+Origin: ubuntu-hirsute-main
+---
+Type: console-application
+ID: com.example.Hello
+Package: hello
+Name:
+  C: Hello World
+Summary:
+  C: A simple example application
+Bundles:
+  - type: limba
+    id: foobar-1.0.2
+""");
+    expect(collection.components, hasLength(1));
+    var component = collection.components[0];
+    expect(
+        component.bundles,
+        equals([
+          AppstreamBundle('foobar-1.0.2', type: AppstreamBundleType.limba),
+        ]));
   });
 }
