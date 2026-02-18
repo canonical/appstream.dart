@@ -1,126 +1,126 @@
+import 'package:appstream/src/bundle.dart';
+import 'package:appstream/src/component.dart';
+import 'package:appstream/src/icon.dart';
+import 'package:appstream/src/language.dart';
+import 'package:appstream/src/launchable.dart';
+import 'package:appstream/src/provides.dart';
+import 'package:appstream/src/release.dart';
+import 'package:appstream/src/screenshot.dart';
+import 'package:appstream/src/url.dart';
 import 'package:xml/xml.dart';
 import 'package:yaml/yaml.dart';
 
-import 'bundle.dart';
-import 'component.dart';
-import 'icon.dart';
-import 'language.dart';
-import 'launchable.dart';
-import 'provides.dart';
-import 'release.dart';
-import 'screenshot.dart';
-import 'url.dart';
-
 /// A collection of Appstream components.
 class AppstreamCollection {
-  /// The Appstream version these components comply with.
-  final String version;
-
-  /// The repository these components come from, e.g. 'ubuntu-hirsute-main'
-  final String origin;
-
-  /// The architecture these components are for, e.g. 'arm64'.
-  final String? architecture;
-
-  /// The priorization of this metadata file over other metadata.
-  final int? priority;
-
-  /// The components in this collection.
-  final List<AppstreamComponent> components;
-
   /// Creates a new Appstream collection.
-  AppstreamCollection(
-      {this.version = '0.14',
-      required this.origin,
-      this.architecture,
-      this.priority,
-      Iterable<AppstreamComponent> components = const []})
-      : components = List<AppstreamComponent>.from(components);
+  AppstreamCollection({
+    required this.origin,
+    this.version = '0.14',
+    this.architecture,
+    this.priority,
+    Iterable<AppstreamComponent> components = const [],
+  }) : components = List<AppstreamComponent>.from(components);
 
   /// Decodes an Appstream collection in XML format.
   factory AppstreamCollection.fromXml(String xml) {
-    var document = XmlDocument.parse(xml);
+    final document = XmlDocument.parse(xml);
 
-    var root = document.getElement('components');
+    final root = document.getElement('components');
     if (root == null) {
       throw FormatException("XML document doesn't contain components tag");
     }
 
-    var version = root.getAttribute('version');
+    final version = root.getAttribute('version');
     if (version == null) {
       throw FormatException('Missing AppStream version');
     }
-    var origin = root.getAttribute('origin');
+    final origin = root.getAttribute('origin');
     if (origin == null) {
       throw FormatException('Missing repository origin');
     }
-    var architecture = root.getAttribute('architecture');
+    final architecture = root.getAttribute('architecture');
 
-    var components = <AppstreamComponent>[];
-    for (var component in root.children
+    final components = <AppstreamComponent>[];
+    for (final component in root.children
         .whereType<XmlElement>()
         .where((e) => e.name.local == 'component')) {
-      var typeName = component.getAttribute('type');
+      final typeName = component.getAttribute('type');
 
-      var type = typeName != null
+      final type = typeName != null
           ? _parseComponentType(typeName)
           : AppstreamComponentType.unknown;
 
-      var id = component.getElement('id');
+      final id = component.getElement('id');
       if (id == null) {
         throw FormatException('Missing component ID');
       }
-      var pkg = component.getElement('pkgname');
-      var package = pkg?.innerText;
-      var name = _getXmlTranslatedString(component, 'name');
-      var summary = _getXmlTranslatedString(component, 'summary');
-      var description = _getXmlTranslatedString(component, 'description');
-      var developerName = _getXmlTranslatedString(component, 'developer_name');
-      var projectLicense = component.getElement('project_license')?.innerText;
-      var projectGroup = component.getElement('project_group')?.innerText;
+      final pkg = component.getElement('pkgname');
+      final package = pkg?.innerText;
+      final name = _getXmlTranslatedString(component, 'name');
+      final summary = _getXmlTranslatedString(component, 'summary');
+      final description = _getXmlTranslatedString(component, 'description');
+      final developerName =
+          _getXmlTranslatedString(component, 'developer_name');
+      final projectLicense = component.getElement('project_license')?.innerText;
+      final projectGroup = component.getElement('project_group')?.innerText;
 
-      var elements = component.children.whereType<XmlElement>();
+      final elements = component.children.whereType<XmlElement>();
 
-      var icons = <AppstreamIcon>[];
-      for (var icon in elements.where((e) => e.name.local == 'icon')) {
-        var type = icon.getAttribute('type');
+      final icons = <AppstreamIcon>[];
+      for (final icon in elements.where((e) => e.name.local == 'icon')) {
+        final type = icon.getAttribute('type');
         if (type == null) {
           throw FormatException('Missing icon type');
         }
-        var w = icon.getAttribute('width');
-        var width = w != null ? int.parse(w) : null;
-        var h = icon.getAttribute('height');
-        var height = h != null ? int.parse(h) : null;
+        final w = icon.getAttribute('width');
+        final width = w != null ? int.parse(w) : null;
+        final h = icon.getAttribute('height');
+        final height = h != null ? int.parse(h) : null;
         switch (type) {
           case 'stock':
             icons.add(AppstreamStockIcon(icon.innerText));
             break;
           case 'cached':
-            icons.add(AppstreamCachedIcon(icon.innerText,
-                width: width, height: height));
+            icons.add(
+              AppstreamCachedIcon(
+                icon.innerText,
+                width: width,
+                height: height,
+              ),
+            );
             break;
           case 'local':
-            icons.add(AppstreamLocalIcon(icon.innerText,
-                width: width, height: height));
+            icons.add(
+              AppstreamLocalIcon(
+                icon.innerText,
+                width: width,
+                height: height,
+              ),
+            );
             break;
           case 'remote':
-            icons.add(AppstreamRemoteIcon(icon.innerText,
-                width: width, height: height));
+            icons.add(
+              AppstreamRemoteIcon(
+                icon.innerText,
+                width: width,
+                height: height,
+              ),
+            );
             break;
         }
       }
 
-      var urls = <AppstreamUrl>[];
-      for (var url in elements.where((e) => e.name.local == 'url')) {
-        var typeName = url.getAttribute('type');
+      final urls = <AppstreamUrl>[];
+      for (final url in elements.where((e) => e.name.local == 'url')) {
+        final typeName = url.getAttribute('type');
         if (typeName == null) {
           throw FormatException('Missing Url type');
         }
         urls.add(AppstreamUrl(url.innerText, type: _parseUrlType(typeName)));
       }
 
-      var launchables = <AppstreamLaunchable>[];
-      for (var launchable
+      final launchables = <AppstreamLaunchable>[];
+      for (final launchable
           in elements.where((e) => e.name.local == 'launchable')) {
         switch (launchable.getAttribute('type')) {
           case 'desktop-id':
@@ -140,7 +140,7 @@ class AppstreamCollection {
       }
 
       var categories = <String>[];
-      var categoriesElement = component.getElement('categories');
+      final categoriesElement = component.getElement('categories');
       if (categoriesElement != null) {
         categories = categoriesElement.children
             .whereType<XmlElement>()
@@ -149,10 +149,10 @@ class AppstreamCollection {
             .toList();
       }
 
-      var keywords = <String, List<String>>{};
-      for (var keywordsElement
+      final keywords = <String, List<String>>{};
+      for (final keywordsElement
           in elements.where((e) => e.name.local == 'keywords')) {
-        var lang = keywordsElement.getAttribute('xml:lang') ?? 'C';
+        final lang = keywordsElement.getAttribute('xml:lang') ?? 'C';
         keywords[lang] = keywordsElement.children
             .whereType<XmlElement>()
             .where((e) => e.name.local == 'keyword')
@@ -160,9 +160,9 @@ class AppstreamCollection {
             .toList();
       }
 
-      var screenshots = <AppstreamScreenshot>[];
+      final screenshots = <AppstreamScreenshot>[];
       Iterable<XmlElement> screenshotElements;
-      var screenshotsElement = component.getElement('screenshots');
+      final screenshotsElement = component.getElement('screenshots');
       if (screenshotsElement != null) {
         screenshotElements = screenshotsElement.children
             .whereType<XmlElement>()
@@ -171,108 +171,126 @@ class AppstreamCollection {
         screenshotElements =
             elements.where((e) => e.name.local == 'screenshot');
       }
-      for (var screenshot in screenshotElements) {
-        var isDefault = screenshot.getAttribute('type') == 'default';
-        var caption = _getXmlTranslatedString(screenshot, 'caption');
-        var images = <AppstreamImage>[];
-        for (var imageElement in screenshot.children
+      for (final screenshot in screenshotElements) {
+        final isDefault = screenshot.getAttribute('type') == 'default';
+        final caption = _getXmlTranslatedString(screenshot, 'caption');
+        final images = <AppstreamImage>[];
+        for (final imageElement in screenshot.children
             .whereType<XmlElement>()
             .where((e) => e.name.local == 'image')) {
-          var typeName = imageElement.getAttribute('type');
+          final typeName = imageElement.getAttribute('type');
           if (typeName == null) {
             throw FormatException('Missing image type');
           }
-          var type = {
+          final type = {
             'source': AppstreamImageType.source,
-            'thumbnail': AppstreamImageType.thumbnail
+            'thumbnail': AppstreamImageType.thumbnail,
           }[typeName];
           if (type == null) {
             throw FormatException('Unknown image type');
           }
-          var w = imageElement.getAttribute('width');
-          var width = w != null ? int.parse(w) : null;
-          var h = imageElement.getAttribute('height');
-          var height = h != null ? int.parse(h) : null;
-          var lang = imageElement.getAttribute('xml:lang');
-          images.add(AppstreamImage(
+          final w = imageElement.getAttribute('width');
+          final width = w != null ? int.parse(w) : null;
+          final h = imageElement.getAttribute('height');
+          final height = h != null ? int.parse(h) : null;
+          final lang = imageElement.getAttribute('xml:lang');
+          images.add(
+            AppstreamImage(
               type: type,
               url: imageElement.innerText,
               width: width,
               height: height,
-              lang: lang));
+              lang: lang,
+            ),
+          );
         }
-        screenshots.add(AppstreamScreenshot(
-            images: images, caption: caption, isDefault: isDefault));
+        screenshots.add(
+          AppstreamScreenshot(
+            images: images,
+            caption: caption,
+            isDefault: isDefault,
+          ),
+        );
       }
 
-      var compulsoryForDesktops = elements
+      final compulsoryForDesktops = elements
           .where((e) => e.name.local == 'compulsory_for_desktop')
           .map((e) => e.innerText)
           .toList();
 
-      var releases = <AppstreamRelease>[];
-      var releasesElement = component.getElement('releases');
+      final releases = <AppstreamRelease>[];
+      final releasesElement = component.getElement('releases');
       if (releasesElement != null) {
-        for (var release in releasesElement.children
+        for (final release in releasesElement.children
             .whereType<XmlElement>()
             .where((e) => e.name.local == 'release')) {
-          var version = release.getAttribute('version');
+          final version = release.getAttribute('version');
           DateTime? date;
-          var dateAttribute = release.getAttribute('date');
-          var unixTimestamp = release.getAttribute('timestamp');
+          final dateAttribute = release.getAttribute('date');
+          final unixTimestamp = release.getAttribute('timestamp');
           if (unixTimestamp != null) {
             date = DateTime.fromMillisecondsSinceEpoch(
-                int.parse(unixTimestamp) * 1000,
-                isUtc: true);
+              int.parse(unixTimestamp) * 1000,
+              isUtc: true,
+            );
           } else if (dateAttribute != null) {
             date = DateTime.parse(dateAttribute);
           }
           AppstreamReleaseType? type;
-          var typeName = release.getAttribute('type');
+          final typeName = release.getAttribute('type');
           if (typeName != null) {
             type = _parseReleaseType(typeName);
           }
           AppstreamReleaseUrgency? urgency;
-          var urgencyName = release.getAttribute('urgency');
+          final urgencyName = release.getAttribute('urgency');
           if (urgencyName != null) {
             urgency = _parseReleaseUrgency(urgencyName);
           }
-          var description = _getXmlTranslatedString(release, 'description');
-          var urlElement = release.getElement('url');
-          var url = urlElement?.innerText;
+          final description = _getXmlTranslatedString(release, 'description');
+          final urlElement = release.getElement('url');
+          final url = urlElement?.innerText;
 
-          var issues = <AppstreamIssue>[];
-          var issuesElement = release.getElement('issues');
+          final issues = <AppstreamIssue>[];
+          final issuesElement = release.getElement('issues');
           if (issuesElement != null) {
-            for (var issue in issuesElement.children
+            for (final issue in issuesElement.children
                 .whereType<XmlElement>()
                 .where((e) => e.name.local == 'issue')) {
               AppstreamIssueType? type;
-              var typeName = issue.getAttribute('type');
+              final typeName = issue.getAttribute('type');
               if (typeName != null) {
                 type = _parseIssueType(typeName);
               }
-              var url = issue.getAttribute('url');
-              issues.add(AppstreamIssue(issue.innerText,
-                  type: type ?? AppstreamIssueType.generic, url: url));
+              final url = issue.getAttribute('url');
+              issues.add(
+                AppstreamIssue(
+                  issue.innerText,
+                  type: type ?? AppstreamIssueType.generic,
+                  url: url,
+                ),
+              );
             }
           }
 
-          releases.add(AppstreamRelease(
+          releases.add(
+            AppstreamRelease(
               version: version,
               date: date,
               type: type ?? AppstreamReleaseType.stable,
               urgency: urgency ?? AppstreamReleaseUrgency.medium,
               description: description,
               url: url,
-              issues: issues));
+              issues: issues,
+            ),
+          );
         }
       }
 
-      var provides = <AppstreamProvides>[];
-      var providesElement = component.getElement('provides');
+      final provides = <AppstreamProvides>[];
+      final providesElement = component.getElement('provides');
       if (providesElement != null) {
-        for (var element in providesElement.children.whereType<XmlElement>()) {
+        for (final element
+            in providesElement.children.whereType<XmlElement>()) {
           switch (element.name.local) {
             case 'mediatype':
               provides.add(AppstreamProvidesMediatype(element.innerText));
@@ -290,13 +308,13 @@ class AppstreamCollection {
               provides.add(AppstreamProvidesModalias(element.innerText));
               break;
             case 'firmware':
-              var typeName = element.getAttribute('type');
+              final typeName = element.getAttribute('type');
               if (typeName == null) {
                 throw FormatException('Missing firmware type');
               }
-              var type = {
+              final type = {
                 'runtime': AppstreamFirmwareType.runtime,
-                'flashed': AppstreamFirmwareType.flashed
+                'flashed': AppstreamFirmwareType.flashed,
               }[typeName];
               if (type == null) {
                 throw FormatException('Unknown firmware type $typeName');
@@ -310,12 +328,16 @@ class AppstreamCollection {
               provides.add(AppstreamProvidesPython3(element.innerText));
               break;
             case 'dbus':
-              var type = element.getAttribute('type');
+              final type = element.getAttribute('type');
               if (type == null) {
                 throw FormatException('Missing DBus bus type');
               }
-              provides.add(AppstreamProvidesDBus(
-                  _parseDBusType(type), element.innerText));
+              provides.add(
+                AppstreamProvidesDBus(
+                  _parseDBusType(type),
+                  element.innerText,
+                ),
+              );
               break;
             case 'id':
               provides.add(AppstreamProvidesId(element.innerText));
@@ -324,30 +346,34 @@ class AppstreamCollection {
         }
       }
 
-      var languages = <AppstreamLanguage>[];
-      var languagesElement = component.getElement('languages');
+      final languages = <AppstreamLanguage>[];
+      final languagesElement = component.getElement('languages');
       if (languagesElement != null) {
-        for (var language in languagesElement.children
+        for (final language in languagesElement.children
             .whereType<XmlElement>()
             .where((e) => e.name.local == 'lang')) {
-          var percentage = language.getAttribute('percentage');
-          languages.add(AppstreamLanguage(language.innerText,
-              percentage: percentage != null ? int.parse(percentage) : null));
+          final percentage = language.getAttribute('percentage');
+          languages.add(
+            AppstreamLanguage(
+              language.innerText,
+              percentage: percentage != null ? int.parse(percentage) : null,
+            ),
+          );
         }
       }
 
-      var contentRatings = <String, Map<String, AppstreamContentRating>>{};
-      for (var contentRating
+      final contentRatings = <String, Map<String, AppstreamContentRating>>{};
+      for (final contentRating
           in elements.where((e) => e.name.local == 'content_rating')) {
-        var type = contentRating.getAttribute('type');
+        final type = contentRating.getAttribute('type');
         if (type == null) {
           throw FormatException('Missing content rating type');
         }
-        var ratings = <String, AppstreamContentRating>{};
-        for (var contentAttribute in contentRating.children
+        final ratings = <String, AppstreamContentRating>{};
+        for (final contentAttribute in contentRating.children
             .whereType<XmlElement>()
             .where((e) => e.name.local == 'content_attribute')) {
-          var id = contentAttribute.getAttribute('id');
+          final id = contentAttribute.getAttribute('id');
           if (id == null) {
             throw FormatException('Missing content attribute id');
           }
@@ -356,29 +382,30 @@ class AppstreamCollection {
         contentRatings[type] = ratings;
       }
 
-      var bundles = <AppstreamBundle>[];
-      var bundleElement = component.getElement('bundle');
+      final bundles = <AppstreamBundle>[];
+      final bundleElement = component.getElement('bundle');
       if (bundleElement != null) {
-        var typeName = bundleElement.getAttribute('type');
+        final typeName = bundleElement.getAttribute('type');
 
-        var type = typeName != null
+        final type = typeName != null
             ? _parseBundleType(typeName)
             : AppstreamBundleType.unknown;
         bundles.add(AppstreamBundle(bundleElement.innerText, type: type));
       }
 
-      var custom = <Map<String, String>>[];
-      var customElement = component.getElement('custom');
+      final custom = <Map<String, String>>[];
+      final customElement = component.getElement('custom');
       if (customElement != null) {
-        for (var item in customElement.children) {
-          var key = item.getAttribute('key');
+        for (final item in customElement.children) {
+          final key = item.getAttribute('key');
           if (key != null) {
             custom.add({key: item.innerText});
           }
         }
       }
 
-      components.add(AppstreamComponent(
+      components.add(
+        AppstreamComponent(
           id: id.innerText,
           type: type,
           package: package,
@@ -400,181 +427,181 @@ class AppstreamCollection {
           languages: languages,
           bundles: bundles,
           custom: custom,
-          contentRatings: contentRatings));
+          contentRatings: contentRatings,
+        ),
+      );
     }
 
     return AppstreamCollection(
-        version: version,
-        origin: origin,
-        architecture: architecture,
-        components: components);
-  }
-
-  // Very dumb removal of invalid YAML documents.
-  // See https://github.com/canonical/appstream.dart/issues/15.
-  // Fixing these documents would be much costlier and error-prone,
-  // hence this simplistic approach to just filter out invalid documents.
-  static String _removeInvalidDocuments(String yaml) {
-    String processNode(String document) {
-      try {
-        loadYamlDocument(document);
-        return document;
-      } on YamlException {
-        return '';
-      }
-    }
-
-    final documentSeparator = '\n---\n';
-    final documents = yaml.split(documentSeparator);
-    for (var i = 0; i < documents.length; ++i) {
-      documents[i] = processNode(documents[i]);
-    }
-    return documents.where((e) => e.isNotEmpty).join(documentSeparator);
+      version: version,
+      origin: origin,
+      architecture: architecture,
+      components: components,
+    );
   }
 
   /// Decodes an Appstream collection in YAML format.
   factory AppstreamCollection.fromYaml(String yaml) {
-    var yamlDocuments = loadYamlDocuments(_removeInvalidDocuments(yaml));
+    final yamlDocuments = loadYamlDocuments(_removeInvalidDocuments(yaml));
     if (yamlDocuments.isEmpty) {
       throw FormatException('Empty YAML file');
     }
-    var header = yamlDocuments[0];
+    final header = yamlDocuments[0];
     if (header.contents is! YamlMap) {
       throw FormatException('Invalid DEP-11 header');
     }
-    var headerMap = (header.contents as YamlMap);
-    var file = headerMap['File'];
+    final headerMap = header.contents as YamlMap;
+    final file = headerMap['File'];
     if (file != 'DEP-11') {
       throw FormatException('Not a DEP-11 file');
     }
-    var version = headerMap['Version'];
+    final version = headerMap['Version'];
     if (version == null) {
       throw FormatException('Missing AppStream version');
     }
-    var origin = headerMap['Origin'];
+    final origin = headerMap['Origin'] as String?;
     if (origin == null) {
       throw FormatException('Missing repository origin');
     }
-    var priority = headerMap['Priority'];
-    var mediaBaseUrl = headerMap['MediaBaseUrl'];
-    var architecture = headerMap['Architecture'];
-    var components = <AppstreamComponent>[];
-    for (var doc in yamlDocuments.skip(1)) {
-      var component = doc.contents as YamlMap;
-      var id = component['ID'];
+    final priority = headerMap['Priority'] as int?;
+    final mediaBaseUrl = headerMap['MediaBaseUrl'] as String?;
+    final architecture = headerMap['Architecture'] as String?;
+    final components = <AppstreamComponent>[];
+    for (final doc in yamlDocuments.skip(1)) {
+      final component = doc.contents as YamlMap;
+      final id = component['ID'] as String?;
       if (id == null) {
         throw FormatException('Missing component ID');
       }
-      var typeName = component['Type'];
+      final typeName = component['Type'] as String?;
 
-      var type = typeName != null
+      final type = typeName != null
           ? _parseComponentType(typeName)
           : AppstreamComponentType.unknown;
 
-      var package = component['Package'];
-      var name = component['Name'];
+      final package = component['Package'] as String?;
+      final name = component['Name'] as YamlNode?;
       if (name == null) {
         throw FormatException('Missing component name');
       }
-      var summary = component['Summary'];
+      final summary = component['Summary'];
       if (summary == null) {
         throw FormatException('Missing component summary');
       }
-      var description = component['Description'];
-      var developerName = component['DeveloperName'];
-      var projectLicense = component['ProjectLicense'];
-      var projectGroup = component['ProjectGroup'];
+      final description = component['Description'];
+      final developerName = component['DeveloperName'];
+      final projectLicense = component['ProjectLicense'] as String?;
+      final projectGroup = component['ProjectGroup'] as String?;
 
-      var icons = <AppstreamIcon>[];
-      var icon = component['Icon'];
+      final icons = <AppstreamIcon>[];
+      final icon = component['Icon'] as YamlMap?;
       if (icon != null) {
-        for (var type in icon.keys) {
+        for (final type in icon.keys) {
           switch (type) {
             case 'stock':
-              icons.add(AppstreamStockIcon(icon[type]));
+              icons.add(AppstreamStockIcon(icon[type] as String));
               break;
             case 'cached':
-              for (var i in icon[type]) {
-                icons.add(AppstreamCachedIcon(i['name'],
-                    width: i['width'], height: i['height']));
+              for (final i in icon[type] as YamlList) {
+                icons.add(
+                  AppstreamCachedIcon(
+                    i['name'] as String,
+                    width: i['width'] as int?,
+                    height: i['height'] as int?,
+                  ),
+                );
               }
               break;
             case 'local':
-              for (var i in icon[type]) {
-                icons.add(AppstreamLocalIcon(i['name'],
-                    width: i['width'], height: i['height']));
+              for (final i in icon[type] as YamlList) {
+                icons.add(
+                  AppstreamLocalIcon(
+                    i['name'] as String,
+                    width: i['width'] as int?,
+                    height: i['height'] as int?,
+                  ),
+                );
               }
               break;
             case 'remote':
-              for (var i in icon[type]) {
-                icons.add(AppstreamRemoteIcon(_makeUrl(mediaBaseUrl, i['url']),
-                    width: i['width'], height: i['height']));
+              for (final i in icon[type] as YamlList) {
+                icons.add(
+                  AppstreamRemoteIcon(
+                    _makeUrl(mediaBaseUrl, i['url'] as String),
+                    width: i['width'] as int?,
+                    height: i['height'] as int?,
+                  ),
+                );
               }
               break;
           }
         }
       }
 
-      var urls = <AppstreamUrl>[];
-      var url = component['Url'];
+      final urls = <AppstreamUrl>[];
+      final url = component['Url'] as YamlMap?;
       if (url != null) {
-        for (var typeName in url.keys) {
+        for (final typeName in url.keys) {
           urls.add(
-              AppstreamUrl(url[typeName] ?? '', type: _parseUrlType(typeName)));
+            AppstreamUrl(
+              url[typeName] as String? ?? '',
+              type: _parseUrlType(typeName as String),
+            ),
+          );
         }
       }
 
-      var launchables = <AppstreamLaunchable>[];
-      var launchable = component['Launchable'];
+      final launchables = <AppstreamLaunchable>[];
+      final launchable = component['Launchable'] as YamlMap?;
       if (launchable != null) {
-        if (launchable is! YamlMap) {
-          throw FormatException('Invalid Launchable type');
-        }
-        for (var typeName in launchable.keys) {
-          var launchableList = launchable[typeName];
+        for (final typeName in launchable.keys) {
+          final launchableList = launchable[typeName] as YamlList?;
           if (launchableList is! YamlList) {
             throw FormatException('Invalid Launchable type');
           }
           switch (typeName) {
             case 'desktop-id':
               launchables.addAll(
-                  launchableList.map((l) => AppstreamLaunchableDesktopId(l)));
+                launchableList
+                    .map((l) => AppstreamLaunchableDesktopId(l as String)),
+              );
               break;
             case 'service':
               launchables.addAll(
-                  launchableList.map((l) => AppstreamLaunchableService(l)));
+                launchableList
+                    .map((l) => AppstreamLaunchableService(l as String)),
+              );
               break;
             case 'cockpit-manifest':
-              launchables.addAll(launchableList
-                  .map((l) => AppstreamLaunchableCockpitManifest(l)));
+              launchables.addAll(
+                launchableList.map(
+                  (l) => AppstreamLaunchableCockpitManifest(l as String),
+                ),
+              );
               break;
             case 'url':
-              launchables
-                  .addAll(launchableList.map((l) => AppstreamLaunchableUrl(l)));
+              launchables.addAll(
+                launchableList.map((l) => AppstreamLaunchableUrl(l as String)),
+              );
               break;
           }
         }
       }
 
-      var categories = <String>[];
-      var categoriesComponent = component['Categories'];
+      final categories = <String>[];
+      final categoriesComponent = component['Categories'] as YamlList?;
       if (categoriesComponent != null) {
-        if (categoriesComponent is! YamlList) {
-          throw FormatException('Invalid Categories type');
-        }
         categories.addAll(categoriesComponent.cast<String>());
       }
 
       var keywords = <String, List<String>>{};
-      var keywordsComponent = component['Keywords'];
+      final keywordsComponent = component['Keywords'] as YamlMap?;
       if (keywordsComponent != null) {
-        if (keywordsComponent is! YamlMap) {
-          throw FormatException('Invalid Keywords type');
-        }
         keywords = keywordsComponent.map(
           (lang, keywordList) => MapEntry(
-            lang,
-            keywordList.nodes
+            lang as String,
+            (keywordList as YamlList)
+                .nodes
                 .where((e) => e.value != null)
                 .map<String>((e) => e.value.toString())
                 .toList(),
@@ -582,64 +609,70 @@ class AppstreamCollection {
         );
       }
 
-      var screenshots = <AppstreamScreenshot>[];
-      var screenshotsComponent = component['Screenshots'];
+      final screenshots = <AppstreamScreenshot>[];
+      final screenshotsComponent = component['Screenshots'];
       if (screenshotsComponent != null) {
         if (screenshotsComponent is! YamlList) {
           throw FormatException('Invalid Screenshots type');
         }
-        for (var screenshot in screenshotsComponent) {
-          var isDefault = screenshot['default'] ?? 'false' == 'true';
-          var caption = screenshot['caption'];
-          var images = <AppstreamImage>[];
-          var thumbnails = screenshot['thumbnails'];
+        for (final screenshot in screenshotsComponent) {
+          final isDefault = screenshot['default'] as bool? ?? 'false' == 'true';
+          final caption = screenshot['caption'];
+          final images = <AppstreamImage>[];
+          final thumbnails = screenshot['thumbnails'] as YamlList?;
           if (thumbnails != null) {
-            if (thumbnails is! YamlList) {
-              throw FormatException('Invalid thumbnails type');
-            }
-            for (var thumbnail in thumbnails) {
-              var url = thumbnail['url'];
+            for (final thumbnail in thumbnails) {
+              final url = thumbnail['url'] as String?;
               if (url == null) {
                 throw FormatException('Image missing Url');
               }
-              var width = thumbnail['width'];
-              var height = thumbnail['height'];
-              var lang = thumbnail['lang'];
-              images.add(AppstreamImage(
+              final width = thumbnail['width'] as int?;
+              final height = thumbnail['height'] as int?;
+              final lang = thumbnail['lang'] as String?;
+              images.add(
+                AppstreamImage(
                   type: AppstreamImageType.thumbnail,
                   url: _makeUrl(mediaBaseUrl, url),
                   width: width,
                   height: height,
-                  lang: lang));
+                  lang: lang,
+                ),
+              );
             }
           }
-          var sourceImage = screenshot['source-image'];
+          final sourceImage = screenshot['source-image'];
           if (sourceImage != null) {
-            var url = sourceImage['url'];
+            final url = sourceImage['url'] as String?;
             if (url == null) {
               throw FormatException('Image missing Url');
             }
-            var width = sourceImage['width'];
-            var height = sourceImage['height'];
-            var lang = sourceImage['lang'];
-            images.add(AppstreamImage(
+            final width = sourceImage['width'] as int?;
+            final height = sourceImage['height'] as int?;
+            final lang = sourceImage['lang'] as String?;
+            images.add(
+              AppstreamImage(
                 type: AppstreamImageType.source,
                 url: _makeUrl(mediaBaseUrl, url),
                 width: width,
                 height: height,
-                lang: lang));
+                lang: lang,
+              ),
+            );
           }
-          screenshots.add(AppstreamScreenshot(
+          screenshots.add(
+            AppstreamScreenshot(
               images: images,
               caption: caption != null
                   ? _parseYamlTranslatedString(caption)
                   : const {},
-              isDefault: isDefault));
+              isDefault: isDefault,
+            ),
+          );
         }
       }
 
-      var compulsoryForDesktops = <String>[];
-      var compulsoryForDesktopsComponent = component['CompulsoryForDesktops'];
+      final compulsoryForDesktops = <String>[];
+      final compulsoryForDesktopsComponent = component['CompulsoryForDesktops'];
       if (compulsoryForDesktopsComponent != null) {
         if (compulsoryForDesktopsComponent is! YamlList) {
           throw FormatException('Invalid CompulsoryForDesktops type');
@@ -648,63 +681,68 @@ class AppstreamCollection {
             .addAll(compulsoryForDesktopsComponent.cast<String>());
       }
 
-      var releases = <AppstreamRelease>[];
-      var releasesComponent = component['Releases'];
+      final releases = <AppstreamRelease>[];
+      final releasesComponent = component['Releases'] as YamlList?;
       if (releasesComponent != null) {
-        if (releasesComponent is! YamlList) {
-          throw FormatException('Invalid Releases type');
-        }
-        for (var release in releasesComponent) {
+        for (final release in releasesComponent) {
           if (release is! YamlMap) {
             throw FormatException('Invalid release type');
           }
-          var version = release['version'];
+          final version = release['version'];
           DateTime? date;
-          var dateAttribute = release['date'];
-          var unixTimestamp = release['unix-timestamp'];
+          final dateAttribute = release['date'] as String?;
+          final unixTimestamp = release['unix-timestamp'] as int?;
           if (unixTimestamp != null) {
-            date = DateTime.fromMillisecondsSinceEpoch(unixTimestamp * 1000,
-                isUtc: true);
+            date = DateTime.fromMillisecondsSinceEpoch(
+              unixTimestamp * 1000,
+              isUtc: true,
+            );
           } else if (dateAttribute != null) {
             date = DateTime.parse(dateAttribute);
           }
           AppstreamReleaseType? type;
-          var typeName = release['type'];
+          final typeName = release['type'] as String?;
           if (typeName != null) {
             type = _parseReleaseType(typeName);
           }
           AppstreamReleaseUrgency? urgency;
-          var urgencyName = release['urgency'];
+          final urgencyName = release['urgency'] as String?;
           if (urgencyName != null) {
             urgency = _parseReleaseUrgency(urgencyName);
           }
-          var description = release['description'];
-          var url = release['url']?['details'];
-          var issues = <AppstreamIssue>[];
-          var issuesComponent = release['issues'];
+          final description = release['description'];
+          final url = release['url']?['details'] as String?;
+          final issues = <AppstreamIssue>[];
+          final issuesComponent = release['issues'];
           if (issuesComponent != null) {
             if (issuesComponent is! YamlList) {
               throw FormatException('Invalid issues type');
             }
-            for (var issue in issuesComponent) {
+            for (final issue in issuesComponent) {
               if (issue is! YamlMap) {
                 throw FormatException('Invalid issue type');
               }
-              var id = issue['id'];
+              final id = issue['id'] as String?;
               if (id == null) {
                 throw FormatException('Issue missing id');
               }
               AppstreamIssueType? type;
-              var typeName = issue['type'];
+              final typeName = issue['type'] as String?;
               if (typeName != null) {
                 type = _parseIssueType(typeName);
               }
-              var url = issue['url'];
-              issues.add(AppstreamIssue(id,
-                  type: type ?? AppstreamIssueType.generic, url: url));
+              final url = issue['url'] as String?;
+              issues.add(
+                AppstreamIssue(
+                  id,
+                  type: type ?? AppstreamIssueType.generic,
+                  url: url,
+                ),
+              );
             }
           }
-          releases.add(AppstreamRelease(
+          releases.add(
+            AppstreamRelease(
               version: _parseYamlVersion(version),
               date: date,
               type: type ?? AppstreamReleaseType.stable,
@@ -713,38 +751,43 @@ class AppstreamCollection {
                   ? _parseYamlTranslatedString(description)
                   : const {},
               url: url,
-              issues: issues));
+              issues: issues,
+            ),
+          );
         }
       }
 
-      var provides = <AppstreamProvides>[];
-      var providesComponent = component['Provides'];
+      final provides = <AppstreamProvides>[];
+      final providesComponent = component['Provides'] as YamlMap?;
       if (providesComponent != null) {
-        if (providesComponent is! YamlMap) {
-          throw FormatException('Invalid Provides type');
-        }
-        for (var type in providesComponent.keys) {
-          var values = providesComponent[type];
+        for (final type in providesComponent.keys) {
+          final values = providesComponent[type] as YamlList?;
           if (values is! YamlList) {
             throw FormatException('Invalid $type provides');
           }
           switch (type) {
             case 'mediatypes':
             case 'mimetypes':
-              provides.addAll(values.map((e) => AppstreamProvidesMediatype(e)));
+              provides.addAll(
+                values.map((e) => AppstreamProvidesMediatype(e as String)),
+              );
               break;
             case 'libraries':
-              provides.addAll(values.map((e) => AppstreamProvidesLibrary(e)));
+              provides.addAll(
+                values.map((e) => AppstreamProvidesLibrary(e as String)),
+              );
               break;
             case 'binaries':
-              provides.addAll(values.map((e) => AppstreamProvidesBinary(e)));
+              provides.addAll(
+                values.map((e) => AppstreamProvidesBinary(e as String)),
+              );
               break;
             case 'fonts':
-              for (var fontComponent in values) {
+              for (final fontComponent in values) {
                 if (fontComponent is! YamlMap) {
                   throw FormatException('Invalid font provides');
                 }
-                var name = fontComponent['name'];
+                final name = fontComponent['name'] as String?;
                 if (name == null) {
                   throw FormatException('Missing font name');
                 }
@@ -752,56 +795,64 @@ class AppstreamCollection {
               }
               break;
             case 'firmware':
-              for (var firmwareComponent in values) {
+              for (final firmwareComponent in values) {
                 if (firmwareComponent is! YamlMap) {
                   throw FormatException('Invalid firmware provides');
                 }
-                var type = firmwareComponent['type'];
+                final type = firmwareComponent['type'];
                 switch (type) {
                   case 'runtime':
-                    var file = firmwareComponent['file'];
+                    final file = firmwareComponent['file'] as String?;
                     if (file == null) {
                       throw FormatException('Missing firmware file');
                     }
-                    provides.add(AppstreamProvidesFirmware(
-                        AppstreamFirmwareType.runtime, file));
+                    provides.add(
+                      AppstreamProvidesFirmware(
+                        AppstreamFirmwareType.runtime,
+                        file,
+                      ),
+                    );
                     break;
                   case 'flashed':
-                    var guid = firmwareComponent['guid'];
+                    final guid = firmwareComponent['guid'] as String?;
                     if (guid == null) {
                       throw FormatException('Missing firmware guid');
                     }
-                    provides.add(AppstreamProvidesFirmware(
-                        AppstreamFirmwareType.flashed, guid));
+                    provides.add(
+                      AppstreamProvidesFirmware(
+                        AppstreamFirmwareType.flashed,
+                        guid,
+                      ),
+                    );
                     break;
                 }
               }
               break;
             case 'python2':
-              for (var moduleName in values) {
-                provides.add(AppstreamProvidesPython2(moduleName));
+              for (final moduleName in values) {
+                provides.add(AppstreamProvidesPython2(moduleName as String));
               }
               break;
             case 'python3':
-              for (var moduleName in values) {
-                provides.add(AppstreamProvidesPython3(moduleName));
+              for (final moduleName in values) {
+                provides.add(AppstreamProvidesPython3(moduleName as String));
               }
               break;
             case 'modaliases':
-              for (var modalias in values) {
-                provides.add(AppstreamProvidesModalias(modalias));
+              for (final modalias in values) {
+                provides.add(AppstreamProvidesModalias(modalias as String));
               }
               break;
             case 'dbus':
-              for (var dbusComponent in values) {
+              for (final dbusComponent in values) {
                 if (dbusComponent is! YamlMap) {
                   throw FormatException('Invalid dbus provides');
                 }
-                var type = dbusComponent['type'];
+                final type = dbusComponent['type'] as String?;
                 if (type == null) {
                   throw FormatException('Missing DBus bus type');
                 }
-                var service = dbusComponent['service'];
+                final service = dbusComponent['service'] as String?;
                 if (service == null) {
                   throw FormatException('Missing DBus service name');
                 }
@@ -810,79 +861,75 @@ class AppstreamCollection {
               }
               break;
             case 'ids':
-              provides.addAll(values.map((e) => AppstreamProvidesId(e)));
+              provides
+                  .addAll(values.map((e) => AppstreamProvidesId(e as String)));
               break;
           }
         }
       }
 
-      var languages = <AppstreamLanguage>[];
-      var languagesComponent = component['Languages'];
+      final languages = <AppstreamLanguage>[];
+      final languagesComponent = component['Languages'];
       if (languagesComponent != null) {
         if (languagesComponent is! YamlList) {
           throw FormatException('Invalid Languages type');
         }
 
-        for (var language in languagesComponent) {
+        for (final language in languagesComponent) {
           if (language is! YamlMap) {
             throw FormatException('Invalid language type');
           }
-          var locale = language['locale'];
+          final locale = language['locale'] as String?;
           if (locale == null) {
             throw FormatException('Missing language locale');
           }
-          var percentage = language['percentage'];
+          final percentage = language['percentage'] as int?;
           languages.add(AppstreamLanguage(locale, percentage: percentage));
         }
       }
 
-      var contentRatings = <String, Map<String, AppstreamContentRating>>{};
-      var contentRatingComponent = component['ContentRating'];
+      final contentRatings = <String, Map<String, AppstreamContentRating>>{};
+      final contentRatingComponent = component['ContentRating'] as YamlMap?;
       if (contentRatingComponent != null) {
-        if (contentRatingComponent is! YamlMap) {
-          throw FormatException('Invalid ContentRating type');
-        }
-        for (var type in contentRatingComponent.keys) {
-          contentRatings[type] = contentRatingComponent[type]
-              .map<String, AppstreamContentRating>((key, value) =>
-                  MapEntry(key as String, _parseContentRating(value)));
+        for (final type in contentRatingComponent.keys) {
+          contentRatings[type as String] =
+              (contentRatingComponent[type] as YamlMap)
+                  .map<String, AppstreamContentRating>(
+            (key, value) =>
+                MapEntry(key as String, _parseContentRating(value as String)),
+          );
         }
       }
 
-      var bundles = <AppstreamBundle>[];
-      var bundlesComponent = component['Bundles'];
+      final bundles = <AppstreamBundle>[];
+      final bundlesComponent = component['Bundles'] as YamlList?;
       if (bundlesComponent != null) {
-        if (bundlesComponent is! YamlList) {
-          throw FormatException('Invalid Bundle type');
-        }
-        for (var bundle in bundlesComponent) {
+        for (final bundle in bundlesComponent) {
           if (bundle is! YamlMap) {
             throw FormatException('Invalid bundle type');
           }
-          var typeName = bundle['type'];
-          if (typeName == null) {
-            throw FormatException('Missing bundle type');
-          }
-          var type = typeName != null
+          final typeName = bundle['type'] as String?;
+          final type = typeName != null
               ? _parseBundleType(typeName)
               : AppstreamBundleType.unknown;
-          bundles.add(AppstreamBundle(bundle['id'], type: type));
+          bundles.add(AppstreamBundle(bundle['id'] as String, type: type));
         }
       }
 
-      var custom = <Map<String, String>>[];
-      var customComponent = component['Custom'];
+      final custom = <Map<String, String>>[];
+      final customComponent = component['Custom'] as YamlNode?;
       if (customComponent is YamlList) {
-        for (var entry in customComponent) {
+        for (final entry in customComponent) {
           if (entry is YamlMap) {
-            final key = entry.keys.first;
-            final value = entry.values.first;
+            final key = entry.keys.first as String;
+            final value = entry.values.first as String;
             custom.add({key: value});
           }
         }
       }
 
-      components.add(AppstreamComponent(
+      components.add(
+        AppstreamComponent(
           id: id,
           type: type,
           package: package,
@@ -908,15 +955,55 @@ class AppstreamCollection {
           languages: languages,
           bundles: bundles,
           custom: custom,
-          contentRatings: contentRatings));
+          contentRatings: contentRatings,
+        ),
+      );
     }
 
     return AppstreamCollection(
-        version: _parseYamlVersion(version)!,
-        origin: origin,
-        architecture: architecture,
-        priority: priority,
-        components: components);
+      version: _parseYamlVersion(version)!,
+      origin: origin,
+      architecture: architecture,
+      priority: priority,
+      components: components,
+    );
+  }
+
+  /// The Appstream version these components comply with.
+  final String version;
+
+  /// The repository these components come from, e.g. 'ubuntu-hirsute-main'
+  final String origin;
+
+  /// The architecture these components are for, e.g. 'arm64'.
+  final String? architecture;
+
+  /// The priorization of this metadata file over other metadata.
+  final int? priority;
+
+  /// The components in this collection.
+  final List<AppstreamComponent> components;
+
+  // Very dumb removal of invalid YAML documents.
+  // See https://github.com/canonical/appstream.dart/issues/15.
+  // Fixing these documents would be much costlier and error-prone,
+  // hence this simplistic approach to just filter out invalid documents.
+  static String _removeInvalidDocuments(String yaml) {
+    String processNode(String document) {
+      try {
+        loadYamlDocument(document);
+        return document;
+      } on YamlException {
+        return '';
+      }
+    }
+
+    final documentSeparator = '\n---\n';
+    final documents = yaml.split(documentSeparator);
+    for (var i = 0; i < documents.length; ++i) {
+      documents[i] = processNode(documents[i]);
+    }
+    return documents.where((e) => e.isNotEmpty).join(documentSeparator);
   }
 
   @override
@@ -940,11 +1027,11 @@ Map<String, String> _parseYamlTranslatedString(dynamic value) {
 }
 
 Map<String, String> _getXmlTranslatedString(XmlElement parent, String name) {
-  var value = <String, String>{};
-  for (var element in parent.children
+  final value = <String, String>{};
+  for (final element in parent.children
       .whereType<XmlElement>()
       .where((e) => e.name.local == name)) {
-    var lang =
+    final lang =
         element.getAttribute('lang') ?? element.getAttribute('xml:lang') ?? 'C';
     value[lang] = element.innerXml;
   }
@@ -981,13 +1068,13 @@ AppstreamComponentType _parseComponentType(String typeName) {
         'repository': AppstreamComponentType.repository,
         'operating-system': AppstreamComponentType.operatingSystem,
         'icon-theme': AppstreamComponentType.iconTheme,
-        'runtime': AppstreamComponentType.runtime
+        'runtime': AppstreamComponentType.runtime,
       }[typeName] ??
       AppstreamComponentType.unknown;
 }
 
 AppstreamUrlType _parseUrlType(String typeName) {
-  var type = {
+  final type = {
     'homepage': AppstreamUrlType.homepage,
     'bugtracker': AppstreamUrlType.bugtracker,
     'faq': AppstreamUrlType.faq,
@@ -996,7 +1083,7 @@ AppstreamUrlType _parseUrlType(String typeName) {
     'translate': AppstreamUrlType.translate,
     'contact': AppstreamUrlType.contact,
     'vcs-browser': AppstreamUrlType.vcsBrowser,
-    'contribute': AppstreamUrlType.contribute
+    'contribute': AppstreamUrlType.contribute,
   }[typeName];
   if (type == null) {
     throw FormatException("Unknown url type '$typeName'");
@@ -1005,9 +1092,9 @@ AppstreamUrlType _parseUrlType(String typeName) {
 }
 
 AppstreamReleaseType _parseReleaseType(String typeName) {
-  var type = {
+  final type = {
     'stable': AppstreamReleaseType.stable,
-    'development': AppstreamReleaseType.development
+    'development': AppstreamReleaseType.development,
   }[typeName];
   if (type == null) {
     throw FormatException("Unknown release type '$typeName'");
@@ -1016,11 +1103,11 @@ AppstreamReleaseType _parseReleaseType(String typeName) {
 }
 
 AppstreamReleaseUrgency _parseReleaseUrgency(String urgencyName) {
-  var urgency = {
+  final urgency = {
     'low': AppstreamReleaseUrgency.low,
     'medium': AppstreamReleaseUrgency.medium,
     'high': AppstreamReleaseUrgency.high,
-    'critical': AppstreamReleaseUrgency.critical
+    'critical': AppstreamReleaseUrgency.critical,
   }[urgencyName];
   if (urgency == null) {
     throw FormatException("Unknown release urgency '$urgencyName'");
@@ -1029,9 +1116,9 @@ AppstreamReleaseUrgency _parseReleaseUrgency(String urgencyName) {
 }
 
 AppstreamIssueType _parseIssueType(String typeName) {
-  var type = {
+  final type = {
     'generic': AppstreamIssueType.generic,
-    'cve': AppstreamIssueType.cve
+    'cve': AppstreamIssueType.cve,
   }[typeName];
   if (type == null) {
     throw FormatException("Unknown issue type '$typeName'");
@@ -1040,10 +1127,10 @@ AppstreamIssueType _parseIssueType(String typeName) {
 }
 
 AppstreamDBusType _parseDBusType(String typeName) {
-  var type = {
+  final type = {
     'user': AppstreamDBusType.user,
     'session': AppstreamDBusType.session,
-    'system': AppstreamDBusType.system
+    'system': AppstreamDBusType.system,
   }[typeName];
   if (type == null) {
     throw FormatException("Unknown DBus type '$typeName'");
@@ -1052,7 +1139,7 @@ AppstreamDBusType _parseDBusType(String typeName) {
 }
 
 AppstreamBundleType _parseBundleType(String typeName) {
-  var type = {
+  final type = {
     'package': AppstreamBundleType.package,
     'limba': AppstreamBundleType.limba,
     'flatpak': AppstreamBundleType.flatpak,
@@ -1070,11 +1157,11 @@ AppstreamBundleType _parseBundleType(String typeName) {
 }
 
 AppstreamContentRating _parseContentRating(String ratingName) {
-  var rating = {
+  final rating = {
     'none': AppstreamContentRating.none,
     'mild': AppstreamContentRating.mild,
     'moderate': AppstreamContentRating.moderate,
-    'intense': AppstreamContentRating.intense
+    'intense': AppstreamContentRating.intense,
   }[ratingName];
   if (rating == null) {
     throw FormatException("Unknown content rating '$ratingName'");

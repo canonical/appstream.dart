@@ -1,10 +1,12 @@
+// ignore_for_file: avoid_print
+
 import 'package:appstream/appstream.dart';
 
 void main() async {
-  var pool = AppstreamPool();
+  final pool = AppstreamPool();
   await pool.load();
-  for (var component in pool.components) {
-    var type = {
+  for (final component in pool.components) {
+    final type = {
           AppstreamComponentType.unknown: 'unknown',
           AppstreamComponentType.generic: 'generic',
           AppstreamComponentType.desktopApplication: 'desktop-application',
@@ -24,10 +26,10 @@ void main() async {
           AppstreamComponentType.runtime: 'runtime',
         }[component.type] ??
         'unknown';
-    var name = component.name['C'] ?? '';
-    var summary = component.summary['C'] ?? '';
+    final name = component.name['C'] ?? '';
+    final summary = component.summary['C'] ?? '';
     String? homepage;
-    for (var url in component.urls) {
+    for (final url in component.urls) {
       if (url.type == AppstreamUrlType.homepage) {
         homepage = url.url;
         break;

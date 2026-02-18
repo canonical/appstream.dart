@@ -18,5 +18,5 @@ dependencies:
   yaml: ^3.1.0
 
 dev_dependencies:
-  lints: ^2.0.0
   test: ^1.16.8
+  ubuntu_lints: ^0.4.1+1

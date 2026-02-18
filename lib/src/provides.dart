@@ -11,13 +11,13 @@ class AppstreamProvides {
 
 /// Metadata about an media type this component can handle.
 class AppstreamProvidesMediatype extends AppstreamProvides {
+  const AppstreamProvidesMediatype(this.mediaType);
+
   /// The media type, e.g. 'image/png'.
   final String mediaType;
 
-  const AppstreamProvidesMediatype(this.mediaType);
-
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is AppstreamProvidesMediatype && other.mediaType == mediaType;
 
   @override
@@ -29,13 +29,13 @@ class AppstreamProvidesMediatype extends AppstreamProvides {
 
 /// Metadata about a library an Appstream component provides.
 class AppstreamProvidesLibrary extends AppstreamProvides {
+  const AppstreamProvidesLibrary(this.libraryName);
+
   /// The name of the library, e.g. 'libawesome.so.1'
   final String libraryName;
 
-  const AppstreamProvidesLibrary(this.libraryName);
-
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is AppstreamProvidesLibrary && other.libraryName == libraryName;
 
   @override
@@ -47,13 +47,13 @@ class AppstreamProvidesLibrary extends AppstreamProvides {
 
 /// Metadata about a binary an Appstream component provides.
 class AppstreamProvidesBinary extends AppstreamProvides {
+  const AppstreamProvidesBinary(this.binaryName);
+
   /// The name of the binary, e.g. 'my_app'.
   final String binaryName;
 
-  const AppstreamProvidesBinary(this.binaryName);
-
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is AppstreamProvidesBinary && other.binaryName == binaryName;
 
   @override
@@ -65,13 +65,13 @@ class AppstreamProvidesBinary extends AppstreamProvides {
 
 /// Metadata about a font an Appstream component provides.
 class AppstreamProvidesFont extends AppstreamProvides {
+  const AppstreamProvidesFont(this.fontName);
+
   /// The name of the font, e.g. 'Ubuntu Bold'.
   final String fontName;
 
-  const AppstreamProvidesFont(this.fontName);
-
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is AppstreamProvidesFont && other.fontName == fontName;
 
   @override
@@ -83,13 +83,13 @@ class AppstreamProvidesFont extends AppstreamProvides {
 
 /// Metadata about hardware an Appstream component can handle.
 class AppstreamProvidesModalias extends AppstreamProvides {
+  const AppstreamProvidesModalias(this.modalias);
+
   /// A modalias glob, e.g. 'usb:v25FBp0160d*'
   final String modalias;
 
-  const AppstreamProvidesModalias(this.modalias);
-
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is AppstreamProvidesModalias && other.modalias == modalias;
 
   @override
@@ -101,16 +101,16 @@ class AppstreamProvidesModalias extends AppstreamProvides {
 
 /// Metadata about firmware an Appstream component provides.
 class AppstreamProvidesFirmware extends AppstreamProvides {
+  const AppstreamProvidesFirmware(this.type, this.name);
+
   /// The type of firmware.
   final AppstreamFirmwareType type;
 
   /// The name of the firmware.
   final String name;
 
-  const AppstreamProvidesFirmware(this.type, this.name);
-
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is AppstreamProvidesFirmware &&
       other.type == type &&
       other.name == name;
@@ -124,13 +124,13 @@ class AppstreamProvidesFirmware extends AppstreamProvides {
 
 /// Metadata about a Python 2 module an Appstream component provides.
 class AppstreamProvidesPython2 extends AppstreamProvides {
+  const AppstreamProvidesPython2(this.moduleName);
+
   /// Name of a Python 2 module, e.g. 'mymodule'.
   final String moduleName;
 
-  const AppstreamProvidesPython2(this.moduleName);
-
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is AppstreamProvidesPython2 && other.moduleName == moduleName;
 
   @override
@@ -142,13 +142,13 @@ class AppstreamProvidesPython2 extends AppstreamProvides {
 
 /// Metadata about a Python 3 module an Appstream component provides.
 class AppstreamProvidesPython3 extends AppstreamProvides {
+  const AppstreamProvidesPython3(this.moduleName);
+
   /// Name of a Python 3 module, e.g. 'mymodule3'.
   final String moduleName;
 
-  const AppstreamProvidesPython3(this.moduleName);
-
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is AppstreamProvidesPython3 && other.moduleName == moduleName;
 
   @override
@@ -160,16 +160,16 @@ class AppstreamProvidesPython3 extends AppstreamProvides {
 
 /// Metadata about a D-Bus name an Appstream component provides.
 class AppstreamProvidesDBus extends AppstreamProvides {
+  const AppstreamProvidesDBus(this.busType, this.busName);
+
   /// The bus this name is on.
   final AppstreamDBusType busType;
 
   /// The name used on the bus, e.g. 'com.example.MyService'.
   final String busName;
 
-  const AppstreamProvidesDBus(this.busType, this.busName);
-
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is AppstreamProvidesDBus &&
       other.busType == busType &&
       other.busName == busName;
@@ -183,13 +183,14 @@ class AppstreamProvidesDBus extends AppstreamProvides {
 
 /// Metadata about another Appstream component that can be relaced.
 class AppstreamProvidesId extends AppstreamProvides {
+  const AppstreamProvidesId(this.id);
+
   /// The ID of the component that can be replaced.
   final String id;
 
-  const AppstreamProvidesId(this.id);
-
   @override
-  bool operator ==(other) => other is AppstreamProvidesId && other.id == id;
+  bool operator ==(Object other) =>
+      other is AppstreamProvidesId && other.id == id;
 
   @override
   int get hashCode => id.hashCode;

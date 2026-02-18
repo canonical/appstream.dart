@@ -1,4 +1,4 @@
-import 'utils.dart';
+import 'package:appstream/src/utils.dart';
 
 /// Types of release.
 enum AppstreamReleaseType { stable, development }
@@ -11,6 +11,12 @@ enum AppstreamIssueType { generic, cve }
 
 /// Metadata about issue in an issue tracker.
 class AppstreamIssue {
+  const AppstreamIssue(
+    this.id, {
+    this.type = AppstreamIssueType.generic,
+    this.url,
+  });
+
   /// The type of issue this is.
   final AppstreamIssueType type;
 
@@ -20,11 +26,8 @@ class AppstreamIssue {
   /// URL to more information about this issue.
   final String? url;
 
-  const AppstreamIssue(this.id,
-      {this.type = AppstreamIssueType.generic, this.url});
-
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is AppstreamIssue &&
       other.type == type &&
       other.id == id &&
@@ -39,6 +42,16 @@ class AppstreamIssue {
 
 /// Metadata about an available release for a component.
 class AppstreamRelease {
+  const AppstreamRelease({
+    this.version,
+    this.date,
+    this.type = AppstreamReleaseType.stable,
+    this.urgency = AppstreamReleaseUrgency.medium,
+    this.description = const {},
+    this.url,
+    this.issues = const [],
+  });
+
   /// The version of this release.
   final String? version;
 
@@ -60,17 +73,8 @@ class AppstreamRelease {
   /// Issues resolved by this release.
   final List<AppstreamIssue> issues;
 
-  const AppstreamRelease(
-      {this.version,
-      this.date,
-      this.type = AppstreamReleaseType.stable,
-      this.urgency = AppstreamReleaseUrgency.medium,
-      this.description = const {},
-      this.url,
-      this.issues = const []});
-
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is AppstreamRelease &&
       other.version == version &&
       other.date == date &&

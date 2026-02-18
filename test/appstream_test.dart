@@ -7,13 +7,16 @@ void main() {
   });
 
   test('collection - invalid xml', () async {
-    expect(() => AppstreamCollection.fromXml('<foo></foo>'),
-        throwsFormatException);
+    expect(
+      () => AppstreamCollection.fromXml('<foo></foo>'),
+      throwsFormatException,
+    );
   });
 
   test('collection - empty - xml', () async {
-    var collection = AppstreamCollection.fromXml(
-        '<components version="0.12" origin="ubuntu-hirsute-main"/>');
+    final collection = AppstreamCollection.fromXml(
+      '<components version="0.12" origin="ubuntu-hirsute-main"/>',
+    );
     expect(collection.version, equals('0.12'));
     expect(collection.origin, equals('ubuntu-hirsute-main'));
     expect(collection.architecture, isNull);
@@ -22,13 +25,14 @@ void main() {
   });
 
   test('collection - architecture - xml', () async {
-    var collection = AppstreamCollection.fromXml(
-        '<components version="0.12" origin="ubuntu-hirsute-main" architecture="arm64"/>');
+    final collection = AppstreamCollection.fromXml(
+      '<components version="0.12" origin="ubuntu-hirsute-main" architecture="arm64"/>',
+    );
     expect(collection.architecture, equals('arm64'));
   });
 
   test('collection - single - xml', () async {
-    var collection = AppstreamCollection.fromXml(
+    final collection = AppstreamCollection.fromXml(
         '''<components version="0.12" origin="ubuntu-hirsute-main">
   <component type="console-application">
     <id>com.example.Hello</id>
@@ -39,7 +43,7 @@ void main() {
 </components>
 ''');
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(component.id, equals('com.example.Hello'));
     expect(component.type, equals(AppstreamComponentType.consoleApplication));
     expect(component.package, equals('hello'));
@@ -62,7 +66,7 @@ void main() {
   });
 
   test('collection - optional fields - xml', () async {
-    var collection = AppstreamCollection.fromXml(
+    final collection = AppstreamCollection.fromXml(
         '''<components version="0.12" origin="ubuntu-hirsute-main">
   <component type="console-application">
     <id>com.example.Hello</id>
@@ -79,9 +83,11 @@ void main() {
 </components>
 ''');
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
-    expect(component.description,
-        equals({'C': '<p>The <b>best</b> thing since sliced bread</p>'}));
+    final component = collection.components[0];
+    expect(
+      component.description,
+      equals({'C': '<p>The <b>best</b> thing since sliced bread</p>'}),
+    );
     expect(component.developerName, equals({'C': 'The Developer'}));
     expect(component.projectLicense, equals('GPL-3'));
     expect(component.projectGroup, equals('GNOME'));
@@ -89,7 +95,7 @@ void main() {
   });
 
   test('collection - icons - xml', () async {
-    var collection = AppstreamCollection.fromXml(
+    final collection = AppstreamCollection.fromXml(
         '''<components version="0.12" origin="ubuntu-hirsute-main">
   <component type="console-application">
     <id>com.example.Hello</id>
@@ -104,21 +110,25 @@ void main() {
 </components>
 ''');
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(component.icons, hasLength(4));
     expect(
-        component.icons,
-        equals([
-          AppstreamStockIcon('stock-name'),
-          AppstreamCachedIcon('icon.png', width: 8, height: 16),
-          AppstreamLocalIcon('/path/to/icon.png', width: 32, height: 48),
-          AppstreamRemoteIcon('https://example.com/icon.png',
-              width: 64, height: 128)
-        ]));
+      component.icons,
+      equals([
+        AppstreamStockIcon('stock-name'),
+        AppstreamCachedIcon('icon.png', width: 8, height: 16),
+        AppstreamLocalIcon('/path/to/icon.png', width: 32, height: 48),
+        AppstreamRemoteIcon(
+          'https://example.com/icon.png',
+          width: 64,
+          height: 128,
+        ),
+      ]),
+    );
   });
 
   test('collection - urls - xml', () async {
-    var collection = AppstreamCollection.fromXml(
+    final collection = AppstreamCollection.fromXml(
         '''<components version="0.12" origin="ubuntu-hirsute-main">
   <component type="console-application">
     <id>com.example.Hello</id>
@@ -132,18 +142,19 @@ void main() {
 </components>
 ''');
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(
-        component.urls,
-        equals([
-          AppstreamUrl('https://example.com', type: AppstreamUrlType.homepage),
-          AppstreamUrl('https://example.com/help', type: AppstreamUrlType.help),
-          AppstreamUrl('', type: AppstreamUrlType.contact)
-        ]));
+      component.urls,
+      equals([
+        AppstreamUrl('https://example.com', type: AppstreamUrlType.homepage),
+        AppstreamUrl('https://example.com/help', type: AppstreamUrlType.help),
+        AppstreamUrl('', type: AppstreamUrlType.contact),
+      ]),
+    );
   });
 
   test('collection - launchables - xml', () async {
-    var collection = AppstreamCollection.fromXml(
+    final collection = AppstreamCollection.fromXml(
         '''<components version="0.12" origin="ubuntu-hirsute-main">
   <component type="console-application">
     <id>com.example.Hello</id>
@@ -157,18 +168,19 @@ void main() {
 </components>
 ''');
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(
-        component.launchables,
-        equals([
-          AppstreamLaunchableDesktopId('com.example.Hello1'),
-          AppstreamLaunchableDesktopId('com.example.Hello2'),
-          AppstreamLaunchableUrl('https://example.com/launch')
-        ]));
+      component.launchables,
+      equals([
+        AppstreamLaunchableDesktopId('com.example.Hello1'),
+        AppstreamLaunchableDesktopId('com.example.Hello2'),
+        AppstreamLaunchableUrl('https://example.com/launch'),
+      ]),
+    );
   });
 
   test('collection - categories - xml', () async {
-    var collection = AppstreamCollection.fromXml(
+    final collection = AppstreamCollection.fromXml(
         '''<components version="0.12" origin="ubuntu-hirsute-main">
   <component type="console-application">
     <id>com.example.Hello</id>
@@ -183,12 +195,12 @@ void main() {
 </components>
 ''');
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(component.categories, equals(['Game', 'ArcadeGame']));
   });
 
   test('collection - keywords - xml', () async {
-    var collection = AppstreamCollection.fromXml(
+    final collection = AppstreamCollection.fromXml(
         '''<components version="0.12" origin="ubuntu-hirsute-main">
   <component type="console-application">
     <id>com.example.Hello</id>
@@ -207,17 +219,18 @@ void main() {
 </components>
 ''');
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(
-        component.keywords,
-        equals({
-          'C': ['Hello', 'Welcome'],
-          'de_DE': ['Hallo', 'Wilkommen']
-        }));
+      component.keywords,
+      equals({
+        'C': ['Hello', 'Welcome'],
+        'de_DE': ['Hallo', 'Wilkommen'],
+      }),
+    );
   });
 
   test('collection - screenshot - xml', () async {
-    var collection = AppstreamCollection.fromXml(
+    final collection = AppstreamCollection.fromXml(
         '''<components version="0.12" origin="ubuntu-hirsute-main">
   <component type="console-application">
     <id>com.example.Hello</id>
@@ -234,35 +247,42 @@ void main() {
 </components>
 ''');
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(
-        component.screenshots,
-        equals([
-          AppstreamScreenshot(images: [
+      component.screenshots,
+      equals([
+        AppstreamScreenshot(
+          images: [
             AppstreamImage(
-                type: AppstreamImageType.thumbnail,
-                url: 'https://example.com/thumbnail-big.jpg',
-                width: 512,
-                height: 384),
+              type: AppstreamImageType.thumbnail,
+              url: 'https://example.com/thumbnail-big.jpg',
+              width: 512,
+              height: 384,
+            ),
             AppstreamImage(
-                type: AppstreamImageType.thumbnail,
-                url: 'https://example.com/thumbnail-small.jpg',
-                width: 256,
-                height: 192,
-                lang: 'en_NZ'),
+              type: AppstreamImageType.thumbnail,
+              url: 'https://example.com/thumbnail-small.jpg',
+              width: 256,
+              height: 192,
+              lang: 'en_NZ',
+            ),
             AppstreamImage(
-                type: AppstreamImageType.source,
-                url: 'https://example.com/screenshot.jpg',
-                width: 1024,
-                height: 768)
-          ], caption: {
-            'C': 'A screenshot'
-          })
-        ]));
+              type: AppstreamImageType.source,
+              url: 'https://example.com/screenshot.jpg',
+              width: 1024,
+              height: 768,
+            ),
+          ],
+          caption: {
+            'C': 'A screenshot',
+          },
+        ),
+      ]),
+    );
   });
 
   test('collection - screenshots - xml', () async {
-    var collection = AppstreamCollection.fromXml(
+    final collection = AppstreamCollection.fromXml(
         '''<components version="0.12" origin="ubuntu-hirsute-main">
   <component type="console-application">
     <id>com.example.Hello</id>
@@ -279,26 +299,33 @@ void main() {
 </components>
 ''');
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(
-        component.screenshots,
-        equals([
-          AppstreamScreenshot(images: [
+      component.screenshots,
+      equals([
+        AppstreamScreenshot(
+          images: [
             AppstreamImage(
               type: AppstreamImageType.source,
               url: 'https://example.com/screenshot1.jpg',
-            )
-          ]),
-          AppstreamScreenshot(images: [
+            ),
+          ],
+        ),
+        AppstreamScreenshot(
+          images: [
             AppstreamImage(
-                type: AppstreamImageType.source,
-                url: 'https://example.com/screenshot2.jpg')
-          ], isDefault: true)
-        ]));
+              type: AppstreamImageType.source,
+              url: 'https://example.com/screenshot2.jpg',
+            ),
+          ],
+          isDefault: true,
+        ),
+      ]),
+    );
   });
 
   test('collection - releases - xml', () async {
-    var collection = AppstreamCollection.fromXml(
+    final collection = AppstreamCollection.fromXml(
         '''<components version="0.12" origin="ubuntu-hirsute-main">
   <component type="console-application">
     <id>com.example.Hello</id>
@@ -321,31 +348,36 @@ void main() {
 </components>
 ''');
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(
-        component.releases,
-        equals([
-          AppstreamRelease(
-              version: '1.2',
-              date: DateTime(2014, 4, 12),
-              urgency: AppstreamReleaseUrgency.high,
-              description: {'C': 'This stable release fixes bugs.'},
-              url: 'https://example.com/releases/version-1.2.html',
-              issues: [
-                AppstreamIssue('#123',
-                    url: 'https://github.com/example/example/issues/123'),
-                AppstreamIssue('CVE-2019-123456', type: AppstreamIssueType.cve)
-              ]),
-          AppstreamRelease(
-              version: '1.1',
-              type: AppstreamReleaseType.development,
-              date: DateTime(2013, 10, 20)),
-          AppstreamRelease(version: '1.0', date: DateTime.utc(2012, 8, 26))
-        ]));
+      component.releases,
+      equals([
+        AppstreamRelease(
+          version: '1.2',
+          date: DateTime(2014, 4, 12),
+          urgency: AppstreamReleaseUrgency.high,
+          description: {'C': 'This stable release fixes bugs.'},
+          url: 'https://example.com/releases/version-1.2.html',
+          issues: [
+            AppstreamIssue(
+              '#123',
+              url: 'https://github.com/example/example/issues/123',
+            ),
+            AppstreamIssue('CVE-2019-123456', type: AppstreamIssueType.cve),
+          ],
+        ),
+        AppstreamRelease(
+          version: '1.1',
+          type: AppstreamReleaseType.development,
+          date: DateTime(2013, 10, 20),
+        ),
+        AppstreamRelease(version: '1.0', date: DateTime.utc(2012, 8, 26)),
+      ]),
+    );
   });
 
   test('collection - provides - xml', () async {
-    var collection = AppstreamCollection.fromXml(
+    final collection = AppstreamCollection.fromXml(
         '''<components version="0.12" origin="ubuntu-hirsute-main">
   <component type="console-application">
     <id>com.example.Hello</id>
@@ -369,27 +401,30 @@ void main() {
 </components>
 ''');
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(
-        component.provides,
-        equals([
-          AppstreamProvidesMediatype('text/html'),
-          AppstreamProvidesMediatype('image/png'),
-          AppstreamProvidesLibrary('libhello.so.1'),
-          AppstreamProvidesBinary('hello'),
-          AppstreamProvidesFont('Hello'),
-          AppstreamProvidesModalias('usb:*'),
-          AppstreamProvidesFirmware(AppstreamFirmwareType.runtime, 'hello.fw'),
-          AppstreamProvidesPython2('modhello'),
-          AppstreamProvidesPython3('modhello3'),
-          AppstreamProvidesDBus(
-              AppstreamDBusType.system, 'com.example.Service'),
-          AppstreamProvidesId('com.example.SimpleHello')
-        ]));
+      component.provides,
+      equals([
+        AppstreamProvidesMediatype('text/html'),
+        AppstreamProvidesMediatype('image/png'),
+        AppstreamProvidesLibrary('libhello.so.1'),
+        AppstreamProvidesBinary('hello'),
+        AppstreamProvidesFont('Hello'),
+        AppstreamProvidesModalias('usb:*'),
+        AppstreamProvidesFirmware(AppstreamFirmwareType.runtime, 'hello.fw'),
+        AppstreamProvidesPython2('modhello'),
+        AppstreamProvidesPython3('modhello3'),
+        AppstreamProvidesDBus(
+          AppstreamDBusType.system,
+          'com.example.Service',
+        ),
+        AppstreamProvidesId('com.example.SimpleHello'),
+      ]),
+    );
   });
 
   test('collection - languages - xml', () async {
-    var collection = AppstreamCollection.fromXml(
+    final collection = AppstreamCollection.fromXml(
         '''<components version="0.12" origin="ubuntu-hirsute-main">
   <component type="console-application">
     <id>com.example.Hello</id>
@@ -404,17 +439,18 @@ void main() {
 </components>
 ''');
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(
-        component.languages,
-        equals([
-          AppstreamLanguage('en'),
-          AppstreamLanguage('de', percentage: 42)
-        ]));
+      component.languages,
+      equals([
+        AppstreamLanguage('en'),
+        AppstreamLanguage('de', percentage: 42),
+      ]),
+    );
   });
 
   test('collection - content-rating - xml', () async {
-    var collection = AppstreamCollection.fromXml(
+    final collection = AppstreamCollection.fromXml(
         '''<components version="0.12" origin="ubuntu-hirsute-main">
   <component type="console-application">
     <id>com.example.Hello</id>
@@ -429,19 +465,20 @@ void main() {
 </components>
 ''');
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(
-        component.contentRatings,
-        equals({
-          'oars-1.0': {
-            'drugs-alcohol': AppstreamContentRating.moderate,
-            'language-humor': AppstreamContentRating.mild
-          }
-        }));
+      component.contentRatings,
+      equals({
+        'oars-1.0': {
+          'drugs-alcohol': AppstreamContentRating.moderate,
+          'language-humor': AppstreamContentRating.mild,
+        },
+      }),
+    );
   });
 
   test('collection - bundles - xml', () async {
-    var collection = AppstreamCollection.fromXml(
+    final collection = AppstreamCollection.fromXml(
         '''<components version="0.12" origin="ubuntu-hirsute-main">
   <component type="console-application">
     <id>com.example.Hello</id>
@@ -453,16 +490,17 @@ void main() {
 </components>
 ''');
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(
-        component.bundles,
-        equals([
-          AppstreamBundle('foobar-1.0.2', type: AppstreamBundleType.limba),
-        ]));
+      component.bundles,
+      equals([
+        AppstreamBundle('foobar-1.0.2', type: AppstreamBundleType.limba),
+      ]),
+    );
   });
 
   test('collection - custom - xml', () async {
-    var collection = AppstreamCollection.fromXml(
+    final collection = AppstreamCollection.fromXml(
         '''<components version="0.12" origin="ubuntu-hirsute-main">
   <component type="console-application">
     <id>com.example.Hello</id>
@@ -477,13 +515,14 @@ void main() {
 </components>
 ''');
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(
-        component.custom,
-        equals([
-          {'MyCorp::app_color': '#FF0000'},
-          {'MyCorp::special_id': '284fd262-6870-42a6-89a4-b189d3109e3e'},
-        ]));
+      component.custom,
+      equals([
+        {'MyCorp::app_color': '#FF0000'},
+        {'MyCorp::special_id': '284fd262-6870-42a6-89a4-b189d3109e3e'},
+      ]),
+    );
   });
 
   test('collection - empty yaml', () async {
@@ -491,12 +530,14 @@ void main() {
   });
 
   test('collection - invalid yaml', () async {
-    expect(() => AppstreamCollection.fromYaml('---\nFile: NotTheRightThing\n'),
-        throwsFormatException);
+    expect(
+      () => AppstreamCollection.fromYaml('---\nFile: NotTheRightThing\n'),
+      throwsFormatException,
+    );
   });
 
   test('collection - yaml with duplicate mapping keys', () async {
-    var collection = AppstreamCollection.fromYaml("""---
+    final collection = AppstreamCollection.fromYaml("""---
 File: DEP-11
 Version: '0.12'
 Origin: ubuntu-hirsute-main
@@ -516,7 +557,7 @@ ContentRating:
   });
 
   test('collection - empty - yaml', () async {
-    var collection = AppstreamCollection.fromYaml("""---
+    final collection = AppstreamCollection.fromYaml("""---
 File: DEP-11
 Version: '0.12'
 Origin: ubuntu-hirsute-main
@@ -529,7 +570,7 @@ Origin: ubuntu-hirsute-main
   });
 
   test('collection - architecture - yaml', () async {
-    var collection = AppstreamCollection.fromYaml("""---
+    final collection = AppstreamCollection.fromYaml("""---
 File: DEP-11
 Version: '0.12'
 Origin: ubuntu-hirsute-main
@@ -539,7 +580,7 @@ Architecture: arm64
   });
 
   test('collection - priority - yaml', () async {
-    var collection = AppstreamCollection.fromYaml("""---
+    final collection = AppstreamCollection.fromYaml("""---
 File: DEP-11
 Version: '0.12'
 Origin: ubuntu-hirsute-main
@@ -549,7 +590,7 @@ Priority: 42
   });
 
   test('collection - single - yaml', () async {
-    var collection = AppstreamCollection.fromYaml("""---
+    final collection = AppstreamCollection.fromYaml("""---
 File: DEP-11
 Version: '0.12'
 Origin: ubuntu-hirsute-main
@@ -563,7 +604,7 @@ Summary:
   C: A simple example application
 """);
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(component.id, equals('com.example.Hello'));
     expect(component.type, equals(AppstreamComponentType.consoleApplication));
     expect(component.package, equals('hello'));
@@ -586,7 +627,7 @@ Summary:
   });
 
   test('collection - optional fields - yaml', () async {
-    var collection = AppstreamCollection.fromYaml("""---
+    final collection = AppstreamCollection.fromYaml("""---
 File: DEP-11
 Version: '0.12'
 Origin: ubuntu-hirsute-main
@@ -610,9 +651,11 @@ CompulsoryForDesktops:
 - KDE
 """);
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
-    expect(component.description,
-        equals({'C': '<p>The <b>best</b> thing since sliced bread</p>'}));
+    final component = collection.components[0];
+    expect(
+      component.description,
+      equals({'C': '<p>The <b>best</b> thing since sliced bread</p>'}),
+    );
     expect(component.developerName, equals({'C': 'The Developer'}));
     expect(component.projectLicense, equals('GPL-3'));
     expect(component.projectGroup, equals('GNOME'));
@@ -620,7 +663,7 @@ CompulsoryForDesktops:
   });
 
   test('collection - icons - yaml', () async {
-    var collection = AppstreamCollection.fromYaml("""---
+    final collection = AppstreamCollection.fromYaml("""---
 File: DEP-11
 Version: '0.12'
 Origin: ubuntu-hirsute-main
@@ -652,27 +695,34 @@ Icon:
     height: 256
 """);
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(component.id, equals('com.example.Hello'));
     expect(component.type, equals(AppstreamComponentType.consoleApplication));
     expect(component.package, equals('hello'));
     expect(component.name, equals({'C': 'Hello World'}));
     expect(component.summary, equals({'C': 'A simple example application'}));
     expect(
-        component.icons,
-        equals([
-          AppstreamStockIcon('stock-name'),
-          AppstreamCachedIcon('icon.png', width: 8, height: 16),
-          AppstreamLocalIcon('/path/to/icon.png', width: 32, height: 48),
-          AppstreamRemoteIcon('https://example.com/icon.png',
-              width: 64, height: 128),
-          AppstreamRemoteIcon('https://example.com/images/icon-big.png',
-              width: 256, height: 256)
-        ]));
+      component.icons,
+      equals([
+        AppstreamStockIcon('stock-name'),
+        AppstreamCachedIcon('icon.png', width: 8, height: 16),
+        AppstreamLocalIcon('/path/to/icon.png', width: 32, height: 48),
+        AppstreamRemoteIcon(
+          'https://example.com/icon.png',
+          width: 64,
+          height: 128,
+        ),
+        AppstreamRemoteIcon(
+          'https://example.com/images/icon-big.png',
+          width: 256,
+          height: 256,
+        ),
+      ]),
+    );
   });
 
   test('collection - urls - yaml', () async {
-    var collection = AppstreamCollection.fromYaml("""---
+    final collection = AppstreamCollection.fromYaml("""---
 File: DEP-11
 Version: '0.12'
 Origin: ubuntu-hirsute-main
@@ -690,18 +740,19 @@ Url:
   contact:
 """);
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(
-        component.urls,
-        equals([
-          AppstreamUrl('https://example.com', type: AppstreamUrlType.homepage),
-          AppstreamUrl('https://example.com/help', type: AppstreamUrlType.help),
-          AppstreamUrl('', type: AppstreamUrlType.contact)
-        ]));
+      component.urls,
+      equals([
+        AppstreamUrl('https://example.com', type: AppstreamUrlType.homepage),
+        AppstreamUrl('https://example.com/help', type: AppstreamUrlType.help),
+        AppstreamUrl('', type: AppstreamUrlType.contact),
+      ]),
+    );
   });
 
   test('collection - launchables - yaml', () async {
-    var collection = AppstreamCollection.fromYaml("""---
+    final collection = AppstreamCollection.fromYaml("""---
 File: DEP-11
 Version: '0.12'
 Origin: ubuntu-hirsute-main
@@ -721,18 +772,19 @@ Launchable:
     - https://example.com/launch
 """);
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(
-        component.launchables,
-        equals([
-          AppstreamLaunchableDesktopId('com.example.Hello1'),
-          AppstreamLaunchableDesktopId('com.example.Hello2'),
-          AppstreamLaunchableUrl('https://example.com/launch')
-        ]));
+      component.launchables,
+      equals([
+        AppstreamLaunchableDesktopId('com.example.Hello1'),
+        AppstreamLaunchableDesktopId('com.example.Hello2'),
+        AppstreamLaunchableUrl('https://example.com/launch'),
+      ]),
+    );
   });
 
   test('collection - categories - yaml', () async {
-    var collection = AppstreamCollection.fromYaml("""---
+    final collection = AppstreamCollection.fromYaml("""---
 File: DEP-11
 Version: '0.12'
 Origin: ubuntu-hirsute-main
@@ -749,12 +801,12 @@ Categories:
   - ArcadeGame
 """);
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(component.categories, equals(['Game', 'ArcadeGame']));
   });
 
   test('collection - keywords - yaml', () async {
-    var collection = AppstreamCollection.fromYaml("""---
+    final collection = AppstreamCollection.fromYaml("""---
 File: DEP-11
 Version: '0.12'
 Origin: ubuntu-hirsute-main
@@ -775,18 +827,19 @@ Keywords:
     - Wilkommen
 """);
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(
-        component.keywords,
-        equals({
-          'C': ['Hello', 'Welcome'],
-          'de_DE': ['Hallo', 'Wilkommen']
-        }));
+      component.keywords,
+      equals({
+        'C': ['Hello', 'Welcome'],
+        'de_DE': ['Hallo', 'Wilkommen'],
+      }),
+    );
   });
 
   test('collection - keywords (null values) - yaml', () async {
     // Test for https://github.com/canonical/appstream.dart/issues/22
-    var collection = AppstreamCollection.fromYaml("""---
+    final collection = AppstreamCollection.fromYaml("""---
 File: DEP-11
 Version: '0.12'
 Origin: ubuntu-hirsute-main
@@ -804,21 +857,22 @@ Keywords:
     - Welcome
   de_DE:
     - Hallo
-    - 
+    -
     - Wilkommen
 """);
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(
-        component.keywords,
-        equals({
-          'C': ['Hello', 'Welcome'],
-          'de_DE': ['Hallo', 'Wilkommen']
-        }));
+      component.keywords,
+      equals({
+        'C': ['Hello', 'Welcome'],
+        'de_DE': ['Hallo', 'Wilkommen'],
+      }),
+    );
   });
 
   test('collection - screenshot - yaml', () async {
-    var collection = AppstreamCollection.fromYaml("""---
+    final collection = AppstreamCollection.fromYaml("""---
 File: DEP-11
 Version: '0.12'
 Origin: ubuntu-hirsute-main
@@ -848,35 +902,42 @@ Screenshots:
     height: 768
 """);
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(
-        component.screenshots,
-        equals([
-          AppstreamScreenshot(images: [
+      component.screenshots,
+      equals([
+        AppstreamScreenshot(
+          images: [
             AppstreamImage(
-                type: AppstreamImageType.thumbnail,
-                url: 'https://example.com/thumbnail-big.jpg',
-                width: 512,
-                height: 384),
+              type: AppstreamImageType.thumbnail,
+              url: 'https://example.com/thumbnail-big.jpg',
+              width: 512,
+              height: 384,
+            ),
             AppstreamImage(
-                type: AppstreamImageType.thumbnail,
-                url: 'https://example.com/images/thumbnail-small.jpg',
-                width: 256,
-                height: 192,
-                lang: 'en_NZ'),
+              type: AppstreamImageType.thumbnail,
+              url: 'https://example.com/images/thumbnail-small.jpg',
+              width: 256,
+              height: 192,
+              lang: 'en_NZ',
+            ),
             AppstreamImage(
-                type: AppstreamImageType.source,
-                url: 'https://example.com/images/screenshot.jpg',
-                width: 1024,
-                height: 768)
-          ], caption: {
-            'C': 'A screenshot'
-          })
-        ]));
+              type: AppstreamImageType.source,
+              url: 'https://example.com/images/screenshot.jpg',
+              width: 1024,
+              height: 768,
+            ),
+          ],
+          caption: {
+            'C': 'A screenshot',
+          },
+        ),
+      ]),
+    );
   });
 
   test('collection - screenshots - yaml', () async {
-    var collection = AppstreamCollection.fromYaml("""---
+    final collection = AppstreamCollection.fromYaml("""---
 File: DEP-11
 Version: '0.12'
 Origin: ubuntu-hirsute-main
@@ -896,26 +957,33 @@ Screenshots:
     url: https://example.com/screenshot2.jpg
 """);
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(
-        component.screenshots,
-        equals([
-          AppstreamScreenshot(images: [
+      component.screenshots,
+      equals([
+        AppstreamScreenshot(
+          images: [
             AppstreamImage(
               type: AppstreamImageType.source,
               url: 'https://example.com/screenshot1.jpg',
-            )
-          ]),
-          AppstreamScreenshot(images: [
+            ),
+          ],
+        ),
+        AppstreamScreenshot(
+          images: [
             AppstreamImage(
-                type: AppstreamImageType.source,
-                url: 'https://example.com/screenshot2.jpg')
-          ], isDefault: true)
-        ]));
+              type: AppstreamImageType.source,
+              url: 'https://example.com/screenshot2.jpg',
+            ),
+          ],
+          isDefault: true,
+        ),
+      ]),
+    );
   });
 
   test('collection - releases - yaml', () async {
-    var collection = AppstreamCollection.fromYaml("""---
+    final collection = AppstreamCollection.fromYaml("""---
 File: DEP-11
 Version: '0.12'
 Origin: ubuntu-hirsute-main
@@ -948,32 +1016,37 @@ Releases:
 - unix-timestamp: 1234567890
 """);
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(
-        component.releases,
-        equals([
-          AppstreamRelease(
-              version: '1.2',
-              date: DateTime(2014, 4, 12),
-              urgency: AppstreamReleaseUrgency.high,
-              description: {'C': 'This stable release fixes bugs.'},
-              url: 'https://example.com/releases/version-1.2.html',
-              issues: [
-                AppstreamIssue('#123',
-                    url: 'https://github.com/example/example/issues/123'),
-                AppstreamIssue('CVE-2019-123456', type: AppstreamIssueType.cve)
-              ]),
-          AppstreamRelease(
-              version: '1.1',
-              type: AppstreamReleaseType.development,
-              date: DateTime(2013, 10, 20)),
-          AppstreamRelease(version: '1.0', date: DateTime.utc(2012, 8, 26)),
-          AppstreamRelease(date: DateTime.utc(2009, 2, 13, 23, 31, 30)),
-        ]));
+      component.releases,
+      equals([
+        AppstreamRelease(
+          version: '1.2',
+          date: DateTime(2014, 4, 12),
+          urgency: AppstreamReleaseUrgency.high,
+          description: {'C': 'This stable release fixes bugs.'},
+          url: 'https://example.com/releases/version-1.2.html',
+          issues: [
+            AppstreamIssue(
+              '#123',
+              url: 'https://github.com/example/example/issues/123',
+            ),
+            AppstreamIssue('CVE-2019-123456', type: AppstreamIssueType.cve),
+          ],
+        ),
+        AppstreamRelease(
+          version: '1.1',
+          type: AppstreamReleaseType.development,
+          date: DateTime(2013, 10, 20),
+        ),
+        AppstreamRelease(version: '1.0', date: DateTime.utc(2012, 8, 26)),
+        AppstreamRelease(date: DateTime.utc(2009, 2, 13, 23, 31, 30)),
+      ]),
+    );
   });
 
   test('collection - provides - yaml', () async {
-    var collection = AppstreamCollection.fromYaml("""---
+    final collection = AppstreamCollection.fromYaml("""---
 File: DEP-11
 Version: '0.12'
 Origin: ubuntu-hirsute-main
@@ -1011,27 +1084,30 @@ Provides:
   - com.example.SimpleHello
 """);
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(
-        component.provides,
-        equals([
-          AppstreamProvidesMediatype('text/html'),
-          AppstreamProvidesMediatype('image/png'),
-          AppstreamProvidesLibrary('libhello.so.1'),
-          AppstreamProvidesBinary('hello'),
-          AppstreamProvidesFont('Hello'),
-          AppstreamProvidesModalias('usb:*'),
-          AppstreamProvidesFirmware(AppstreamFirmwareType.runtime, 'hello.fw'),
-          AppstreamProvidesPython2('modhello'),
-          AppstreamProvidesPython3('modhello3'),
-          AppstreamProvidesDBus(
-              AppstreamDBusType.system, 'com.example.Service'),
-          AppstreamProvidesId('com.example.SimpleHello')
-        ]));
+      component.provides,
+      equals([
+        AppstreamProvidesMediatype('text/html'),
+        AppstreamProvidesMediatype('image/png'),
+        AppstreamProvidesLibrary('libhello.so.1'),
+        AppstreamProvidesBinary('hello'),
+        AppstreamProvidesFont('Hello'),
+        AppstreamProvidesModalias('usb:*'),
+        AppstreamProvidesFirmware(AppstreamFirmwareType.runtime, 'hello.fw'),
+        AppstreamProvidesPython2('modhello'),
+        AppstreamProvidesPython3('modhello3'),
+        AppstreamProvidesDBus(
+          AppstreamDBusType.system,
+          'com.example.Service',
+        ),
+        AppstreamProvidesId('com.example.SimpleHello'),
+      ]),
+    );
   });
 
   test('collection - languages - yaml', () async {
-    var collection = AppstreamCollection.fromYaml("""---
+    final collection = AppstreamCollection.fromYaml("""---
 File: DEP-11
 Version: '0.12'
 Origin: ubuntu-hirsute-main
@@ -1049,17 +1125,18 @@ Languages:
     percentage: 42
 """);
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(
-        component.languages,
-        equals([
-          AppstreamLanguage('en'),
-          AppstreamLanguage('de', percentage: 42)
-        ]));
+      component.languages,
+      equals([
+        AppstreamLanguage('en'),
+        AppstreamLanguage('de', percentage: 42),
+      ]),
+    );
   });
 
   test('collection - content-rating - yaml', () async {
-    var collection = AppstreamCollection.fromYaml("""---
+    final collection = AppstreamCollection.fromYaml("""---
 File: DEP-11
 Version: '0.12'
 Origin: ubuntu-hirsute-main
@@ -1077,19 +1154,20 @@ ContentRating:
     language-humor: mild
 """);
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(
-        component.contentRatings,
-        equals({
-          'oars-1.0': {
-            'drugs-alcohol': AppstreamContentRating.moderate,
-            'language-humor': AppstreamContentRating.mild
-          }
-        }));
+      component.contentRatings,
+      equals({
+        'oars-1.0': {
+          'drugs-alcohol': AppstreamContentRating.moderate,
+          'language-humor': AppstreamContentRating.mild,
+        },
+      }),
+    );
   });
 
   test('collection - bundles - yaml', () async {
-    var collection = AppstreamCollection.fromYaml("""---
+    final collection = AppstreamCollection.fromYaml("""---
 File: DEP-11
 Version: '0.12'
 Origin: ubuntu-hirsute-main
@@ -1106,16 +1184,17 @@ Bundles:
     id: foobar-1.0.2
 """);
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(
-        component.bundles,
-        equals([
-          AppstreamBundle('foobar-1.0.2', type: AppstreamBundleType.limba),
-        ]));
+      component.bundles,
+      equals([
+        AppstreamBundle('foobar-1.0.2', type: AppstreamBundleType.limba),
+      ]),
+    );
   });
 
   test('collection - custom - yaml', () async {
-    var collection = AppstreamCollection.fromYaml("""---
+    final collection = AppstreamCollection.fromYaml("""---
 File: DEP-11
 Version: '0.12'
 Origin: ubuntu-hirsute-main
@@ -1132,12 +1211,13 @@ Custom:
   - MyCorp::special_id: 284fd262-6870-42a6-89a4-b189d3109e3e
 """);
     expect(collection.components, hasLength(1));
-    var component = collection.components[0];
+    final component = collection.components[0];
     expect(
-        component.custom,
-        equals([
-          {'MyCorp::app_color': '#FF0000'},
-          {'MyCorp::special_id': '284fd262-6870-42a6-89a4-b189d3109e3e'},
-        ]));
+      component.custom,
+      equals([
+        {'MyCorp::app_color': '#FF0000'},
+        {'MyCorp::special_id': '284fd262-6870-42a6-89a4-b189d3109e3e'},
+      ]),
+    );
   });
 }

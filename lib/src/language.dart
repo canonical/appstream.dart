@@ -1,15 +1,15 @@
 /// Metadata about language support for a component.
 class AppstreamLanguage {
+  const AppstreamLanguage(this.locale, {this.percentage});
+
   /// The locale this language is for, e.g. 'en'
   final String locale;
 
   /// The percentage of translated text available for this language.
   final int? percentage;
 
-  const AppstreamLanguage(this.locale, {this.percentage});
-
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is AppstreamLanguage &&
       other.locale == locale &&
       other.percentage == percentage;
