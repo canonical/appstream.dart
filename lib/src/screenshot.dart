@@ -1,10 +1,18 @@
-import 'utils.dart';
+import 'package:appstream/src/utils.dart';
 
 /// Types of screenshot image.
 enum AppstreamImageType { source, thumbnail }
 
 /// Metadata about an image.
 class AppstreamImage {
+  const AppstreamImage({
+    required this.type,
+    required this.url,
+    this.width,
+    this.height,
+    this.lang,
+  });
+
   /// Type of image.
   final AppstreamImageType type;
 
@@ -20,15 +28,8 @@ class AppstreamImage {
   /// The language this image is intended for.
   final String? lang;
 
-  const AppstreamImage(
-      {required this.type,
-      required this.url,
-      this.width,
-      this.height,
-      this.lang});
-
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is AppstreamImage &&
       other.type == type &&
       other.url == url &&
@@ -46,6 +47,12 @@ class AppstreamImage {
 
 /// Metadata for a screenshot of a component.
 class AppstreamScreenshot {
+  const AppstreamScreenshot({
+    this.images = const [],
+    this.caption = const {},
+    this.isDefault = false,
+  });
+
   /// Images available for this screenshot.
   final List<AppstreamImage> images;
 
@@ -55,13 +62,8 @@ class AppstreamScreenshot {
   /// True if this is the default screenshot for this component.
   final bool isDefault;
 
-  const AppstreamScreenshot(
-      {this.images = const [],
-      this.caption = const {},
-      this.isDefault = false});
-
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is AppstreamScreenshot &&
       listsEqual(other.images, images) &&
       mapsEqual(other.caption, caption) &&

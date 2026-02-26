@@ -13,16 +13,16 @@ enum AppstreamBundleType {
 
 /// Metadata about bundle support for a component.
 class AppstreamBundle {
+  const AppstreamBundle(this.id, {required this.type});
+
   /// The type of appstream bundle
   final AppstreamBundleType type;
 
   /// The name of the bundle
   final String id;
 
-  const AppstreamBundle(this.id, {required this.type});
-
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is AppstreamBundle && other.type == type && other.id == id;
 
   @override

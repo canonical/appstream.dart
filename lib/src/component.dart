@@ -1,11 +1,11 @@
-import 'bundle.dart';
-import 'icon.dart';
-import 'language.dart';
-import 'launchable.dart';
-import 'provides.dart';
-import 'release.dart';
-import 'screenshot.dart';
-import 'url.dart';
+import 'package:appstream/src/bundle.dart';
+import 'package:appstream/src/icon.dart';
+import 'package:appstream/src/language.dart';
+import 'package:appstream/src/launchable.dart';
+import 'package:appstream/src/provides.dart';
+import 'package:appstream/src/release.dart';
+import 'package:appstream/src/screenshot.dart';
+import 'package:appstream/src/url.dart';
 
 /// Types of Appstream component.
 enum AppstreamComponentType {
@@ -33,6 +33,32 @@ enum AppstreamContentRating { none, mild, moderate, intense }
 
 /// Metadata about a component (application, font etc).
 class AppstreamComponent {
+  /// Creates a new Appstream component.
+  const AppstreamComponent({
+    required this.id,
+    required this.type,
+    required this.package,
+    required this.name,
+    required this.summary,
+    this.description = const {},
+    this.developerName = const {},
+    this.projectLicense,
+    this.projectGroup,
+    this.icons = const [],
+    this.urls = const [],
+    this.categories = const [],
+    this.keywords = const {},
+    this.screenshots = const [],
+    this.compulsoryForDesktops = const [],
+    this.releases = const [],
+    this.provides = const [],
+    this.launchables = const [],
+    this.languages = const [],
+    this.bundles = const [],
+    this.custom = const [],
+    this.contentRatings = const {},
+  });
+
   /// Unique ID for this component.
   final String id;
 
@@ -97,31 +123,6 @@ class AppstreamComponent {
 
   /// Custom attributes a component could provide
   final List<Map<String, String>> custom;
-
-  /// Creates a new Appstream component.
-  const AppstreamComponent(
-      {required this.id,
-      required this.type,
-      required this.package,
-      required this.name,
-      required this.summary,
-      this.description = const {},
-      this.developerName = const {},
-      this.projectLicense,
-      this.projectGroup,
-      this.icons = const [],
-      this.urls = const [],
-      this.categories = const [],
-      this.keywords = const {},
-      this.screenshots = const [],
-      this.compulsoryForDesktops = const [],
-      this.releases = const [],
-      this.provides = const [],
-      this.launchables = const [],
-      this.languages = const [],
-      this.bundles = const [],
-      this.custom = const [],
-      this.contentRatings = const {}});
 
   @override
   String toString() =>

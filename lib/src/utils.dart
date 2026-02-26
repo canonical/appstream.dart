@@ -17,7 +17,7 @@ bool mapsEqual<K, V>(Map<K, V> a, Map<K, V> b) {
     return false;
   }
 
-  for (var key in a.keys) {
+  for (final key in a.keys) {
     if (a[key] != b[key]) {
       return false;
     }

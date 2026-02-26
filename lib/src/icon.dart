@@ -5,13 +5,14 @@ class AppstreamIcon {
 
 /// Metadata for an icon in the stock set.
 class AppstreamStockIcon extends AppstreamIcon {
+  const AppstreamStockIcon(this.name);
+
   /// The name of the icon, e.g. 'firefox'.
   final String name;
 
-  const AppstreamStockIcon(this.name);
-
   @override
-  bool operator ==(other) => other is AppstreamStockIcon && other.name == name;
+  bool operator ==(Object other) =>
+      other is AppstreamStockIcon && other.name == name;
 
   @override
   int get hashCode => name.hashCode;
@@ -22,6 +23,8 @@ class AppstreamStockIcon extends AppstreamIcon {
 
 /// Metadata for an icon installed in the icon cache.
 class AppstreamCachedIcon extends AppstreamIcon {
+  const AppstreamCachedIcon(this.name, {this.width, this.height});
+
   /// Name of the icon, e.g. 'firefox.png'.
   final String name;
 
@@ -31,10 +34,8 @@ class AppstreamCachedIcon extends AppstreamIcon {
   /// Height of the icon in pixels.
   final int? height;
 
-  const AppstreamCachedIcon(this.name, {this.width, this.height});
-
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is AppstreamCachedIcon &&
       other.name == name &&
       other.width == width &&
@@ -49,6 +50,8 @@ class AppstreamCachedIcon extends AppstreamIcon {
 
 /// Metadata for an icon installed on the local system.
 class AppstreamLocalIcon extends AppstreamIcon {
+  const AppstreamLocalIcon(this.filename, {this.width, this.height});
+
   /// The file containing the icon, e.g. '/usr/share/my_app/my_icon.png'.
   final String filename;
 
@@ -58,10 +61,8 @@ class AppstreamLocalIcon extends AppstreamIcon {
   /// Height of the icon in pixels.
   final int? height;
 
-  const AppstreamLocalIcon(this.filename, {this.width, this.height});
-
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is AppstreamLocalIcon &&
       other.filename == filename &&
       other.width == width &&
@@ -77,6 +78,8 @@ class AppstreamLocalIcon extends AppstreamIcon {
 
 /// Metadata for an icon accessed via a URL.
 class AppstreamRemoteIcon extends AppstreamIcon {
+  const AppstreamRemoteIcon(this.url, {this.width, this.height});
+
   /// The URL for the icon file. e.g. 'https://example.com/my_icon.png'
   final String url;
 
@@ -86,10 +89,8 @@ class AppstreamRemoteIcon extends AppstreamIcon {
   /// Height of the icon in pixels.
   final int? height;
 
-  const AppstreamRemoteIcon(this.url, {this.width, this.height});
-
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is AppstreamRemoteIcon &&
       other.url == url &&
       other.width == width &&
