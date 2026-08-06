@@ -11,15 +11,38 @@ class _LoadCollectionArguments {
   final String path;
 }
 
+/// Thrown when a catalog file cannot be loaded, for instance because it holds
+/// metadata this package cannot parse.
+class AppstreamCollectionLoadException implements Exception {
+  const AppstreamCollectionLoadException(this.path, this.message);
+
+  /// Path of the catalog file that failed to load.
+  final String path;
+
+  /// Description of the underlying failure.
+  final String message;
+
+  @override
+  String toString() =>
+      'AppstreamCollectionLoadException: failed to load $path: $message';
+}
+
 /// Metadata for all the components known about on this system.
 class AppstreamPool {
+  /// Creates a pool that reads catalogs from [catalogDirPrefixes], which
+  /// defaults to the standard system locations.
+  AppstreamPool({List<String>? catalogDirPrefixes})
+      : catalogDirPrefixes = catalogDirPrefixes ??
+            const ['/usr/share', '/var/lib', '/var/cache'];
+
+  /// Prefixes searched for `swcatalog` and `app-info` directories.
+  final List<String> catalogDirPrefixes;
+
   /// The components in this pool.
   final components = <AppstreamComponent>[];
 
   /// Load the pool.
   Future<void> load() async {
-    final catalogDirPrefixes = ['/usr/share', '/var/lib', '/var/cache'];
-
     final catalogDirs = <String>[];
     for (final prefix in catalogDirPrefixes) {
       final catalogPath = '$prefix/swcatalog';
@@ -75,13 +98,31 @@ class AppstreamPool {
     String path,
   ) async {
     final port = ReceivePort();
+    final errorPort = ReceivePort();
     final isolate = await Isolate.spawn<_LoadCollectionArguments>(
       entryPoint,
       _LoadCollectionArguments(port.sendPort, path),
+      onError: errorPort.sendPort,
     );
-    final collection = await port.first;
-    isolate.kill(priority: Isolate.immediate);
-    return collection as AppstreamCollection;
+    try {
+      // An isolate that dies before sending never closes `port`, so waiting on
+      // it alone hangs forever. Race the result against the error port so a
+      // failure to parse surfaces as an exception instead.
+      final collection = await Future.any([
+        port.first,
+        errorPort.first.then(
+          (error) => throw AppstreamCollectionLoadException(
+            path,
+            (error as List).first.toString(),
+          ),
+        ),
+      ]);
+      return collection as AppstreamCollection;
+    } finally {
+      port.close();
+      errorPort.close();
+      isolate.kill(priority: Isolate.immediate);
+    }
   }
 
   static Future<AppstreamCollection> _loadXmlCollection(String path) =>

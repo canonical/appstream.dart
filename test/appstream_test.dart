@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:appstream/appstream.dart';
 import 'package:test/test.dart';
 
@@ -343,6 +345,7 @@ void main() {
       </release>
       <release version="1.1" type="development" date="2013-10-20"/>
       <release version="1.0" timestamp="1345939200"/>
+      <release version="0.9" type="snapshot" date="2012-01-15"/>
     </releases>
   </component>
 </components>
@@ -372,6 +375,11 @@ void main() {
           date: DateTime(2013, 10, 20),
         ),
         AppstreamRelease(version: '1.0', date: DateTime.utc(2012, 8, 26)),
+        AppstreamRelease(
+          version: '0.9',
+          type: AppstreamReleaseType.snapshot,
+          date: DateTime(2012, 1, 15),
+        ),
       ]),
     );
   });
@@ -1014,6 +1022,9 @@ Releases:
 - version: 1.0
   unix-timestamp: 1345939200
 - unix-timestamp: 1234567890
+- version: '0.9'
+  type: snapshot
+  date: 2012-01-15
 """);
     expect(collection.components, hasLength(1));
     final component = collection.components[0];
@@ -1041,6 +1052,11 @@ Releases:
         ),
         AppstreamRelease(version: '1.0', date: DateTime.utc(2012, 8, 26)),
         AppstreamRelease(date: DateTime.utc(2009, 2, 13, 23, 31, 30)),
+        AppstreamRelease(
+          version: '0.9',
+          type: AppstreamReleaseType.snapshot,
+          date: DateTime(2012, 1, 15),
+        ),
       ]),
     );
   });
@@ -1220,4 +1236,40 @@ Custom:
       ]),
     );
   });
+
+  test(
+    'pool - unparseable catalog reports an error instead of hanging',
+    () async {
+      final tempDir = await Directory.systemTemp.createTemp('appstream_pool');
+      addTearDown(() => tempDir.delete(recursive: true));
+
+      final yamlDir = Directory('${tempDir.path}/swcatalog/yaml');
+      await yamlDir.create(recursive: true);
+      await File('${yamlDir.path}/broken.yml').writeAsString("""---
+File: DEP-11
+Version: '0.12'
+Origin: test
+---
+Type: console-application
+ID: com.example.Hello
+Package: hello
+Name:
+  C: Hello World
+Summary:
+  C: A simple example application
+Releases:
+- version: '1.0'
+  type: definitely-not-a-release-type
+""");
+
+      // The parse runs in a spawned isolate. Before the error port was wired up,
+      // the isolate died without ever sending a result and `load()` waited on it
+      // forever, so this has to fail loudly rather than time out.
+      await expectLater(
+        AppstreamPool(catalogDirPrefixes: [tempDir.path]).load(),
+        throwsA(isA<AppstreamCollectionLoadException>()),
+      );
+    },
+    timeout: const Timeout(Duration(seconds: 30)),
+  );
 }

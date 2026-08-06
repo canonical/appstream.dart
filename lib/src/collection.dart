@@ -1095,6 +1095,7 @@ AppstreamReleaseType _parseReleaseType(String typeName) {
   final type = {
     'stable': AppstreamReleaseType.stable,
     'development': AppstreamReleaseType.development,
+    'snapshot': AppstreamReleaseType.snapshot,
   }[typeName];
   if (type == null) {
     throw FormatException("Unknown release type '$typeName'");
