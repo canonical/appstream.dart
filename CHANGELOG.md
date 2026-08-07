@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.11
+
+* Support the `snapshot` release type.
+* Report an error when a catalog file fails to parse, instead of hanging forever.
+* Allow overriding the catalog directory prefixes searched by `AppstreamPool`.
+
 ## 0.2.10
 
 * Fixed YAML parsing to support appstream releases with missing version information

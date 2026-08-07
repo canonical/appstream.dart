@@ -1,7 +1,7 @@
 import 'package:appstream/src/utils.dart';
 
 /// Types of release.
-enum AppstreamReleaseType { stable, development }
+enum AppstreamReleaseType { stable, development, snapshot }
 
 /// How important this release is to be installed.
 enum AppstreamReleaseUrgency { low, medium, high, critical }
