@@ -670,6 +670,25 @@ CompulsoryForDesktops:
     expect(component.compulsoryForDesktops, equals(['GNOME', 'KDE']));
   });
 
+  test('collection - translated strings (non-string values) - yaml', () async {
+    final collection = AppstreamCollection.fromYaml("""---
+File: DEP-11
+Version: '0.12'
+Origin: ubuntu-hirsute-main
+---
+Type: desktop-application
+ID: com.example.Game
+Package: game
+Name:
+  C: 2048
+  de_DE:
+Summary:
+  C: A sliding tile puzzle
+""");
+    final component = collection.components.single;
+    expect(component.name, equals({'C': '2048'}));
+  });
+
   test('collection - icons - yaml', () async {
     final collection = AppstreamCollection.fromYaml("""---
 File: DEP-11

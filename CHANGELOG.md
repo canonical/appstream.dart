@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.12
+
+* Stop translated strings parsed from YAML from keeping the whole parsed catalog, including a copy of its text, in memory (about 100 MB with Ubuntu's archive catalogs).
+* Convert non-string translated values to strings and skip empty ones, instead of throwing when they are read.
+
 ## 0.2.11
 
 * Support the `snapshot` release type.

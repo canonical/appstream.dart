@@ -1020,7 +1020,12 @@ String? _parseYamlVersion(dynamic value) {
 
 Map<String, String> _parseYamlTranslatedString(dynamic value) {
   if (value is YamlMap) {
-    return value.cast<String, String>();
+    // Copy rather than cast: a cast view keeps the YamlMap alive, and with it
+    // the source spans of its nodes, which hold the whole catalog text.
+    return {
+      for (final entry in value.entries)
+        if (entry.value != null) entry.key.toString(): entry.value.toString(),
+    };
   } else {
     throw FormatException('Invalid type for translated string');
   }
