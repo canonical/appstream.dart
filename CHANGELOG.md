@@ -3,7 +3,10 @@
 ## 0.2.12
 
 * Stop translated strings parsed from YAML from keeping the whole parsed catalog, including a copy of its text, in memory (about 100 MB with Ubuntu's archive catalogs).
-* Convert non-string translated values to strings and skip empty ones, instead of throwing when they are read.
+* Convert non-string translated values to strings and skip ones with no value, instead of throwing when they are read.
+* Parse YAML catalogs one document at a time: `AppstreamPool` streams plain and gzip-compressed YAML catalogs from disk in chunks, and the new `AppstreamCollection.fromYamlLines` parses a catalog from its lines.
+* Load YAML catalogs with CRLF line endings, instead of throwing a FormatException ('Empty YAML file').
+* Skip empty documents in YAML catalogs, instead of throwing a `TypeError`.
 
 ## 0.2.11
 

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:appstream/src/bundle.dart';
 import 'package:appstream/src/component.dart';
 import 'package:appstream/src/icon.dart';
@@ -441,16 +443,19 @@ class AppstreamCollection {
   }
 
   /// Decodes an Appstream collection in YAML format.
-  factory AppstreamCollection.fromYaml(String yaml) {
-    final yamlDocuments = loadYamlDocuments(_removeInvalidDocuments(yaml));
-    if (yamlDocuments.isEmpty) {
+  factory AppstreamCollection.fromYaml(String yaml) =>
+      AppstreamCollection.fromYamlLines(LineSplitter.split(yaml));
+
+  /// Decodes YAML [lines] as they stream; they must have no line terminators.
+  factory AppstreamCollection.fromYamlLines(Iterable<String> lines) {
+    final yamlDocuments = _parseYamlDocuments(lines).iterator;
+    if (!yamlDocuments.moveNext()) {
       throw FormatException('Empty YAML file');
     }
-    final header = yamlDocuments[0];
-    if (header.contents is! YamlMap) {
+    final headerMap = yamlDocuments.current;
+    if (headerMap is! YamlMap) {
       throw FormatException('Invalid DEP-11 header');
     }
-    final headerMap = header.contents as YamlMap;
     final file = headerMap['File'];
     if (file != 'DEP-11') {
       throw FormatException('Not a DEP-11 file');
@@ -467,8 +472,8 @@ class AppstreamCollection {
     final mediaBaseUrl = headerMap['MediaBaseUrl'] as String?;
     final architecture = headerMap['Architecture'] as String?;
     final components = <AppstreamComponent>[];
-    for (final doc in yamlDocuments.skip(1)) {
-      final component = doc.contents as YamlMap;
+    while (yamlDocuments.moveNext()) {
+      final component = yamlDocuments.current as YamlMap;
       final id = component['ID'] as String?;
       if (id == null) {
         throw FormatException('Missing component ID');
@@ -984,30 +989,43 @@ class AppstreamCollection {
   /// The components in this collection.
   final List<AppstreamComponent> components;
 
-  // Very dumb removal of invalid YAML documents.
-  // See https://github.com/canonical/appstream.dart/issues/15.
-  // Fixing these documents would be much costlier and error-prone,
-  // hence this simplistic approach to just filter out invalid documents.
-  static String _removeInvalidDocuments(String yaml) {
-    String processNode(String document) {
-      try {
-        loadYamlDocument(document);
-        return document;
-      } on YamlException {
-        return '';
-      }
-    }
-
-    final documentSeparator = '\n---\n';
-    final documents = yaml.split(documentSeparator);
-    for (var i = 0; i < documents.length; ++i) {
-      documents[i] = processNode(documents[i]);
-    }
-    return documents.where((e) => e.isNotEmpty).join(documentSeparator);
-  }
-
   @override
   String toString() => "$runtimeType(version: $version, origin: '$origin')";
+}
+
+/// Skips invalid documents rather than failing; see appstream.dart issue 15.
+Iterable<YamlNode> _parseYamlDocuments(Iterable<String> lines) sync* {
+  final document = StringBuffer();
+  for (final line in lines) {
+    // DEP-11 catalogs start every document with a bare `---` line.
+    if (line != '---') {
+      document.writeln(line);
+      continue;
+    }
+    final contents = _parseYamlDocument(document);
+    if (contents != null) {
+      yield contents;
+    }
+  }
+  final contents = _parseYamlDocument(document);
+  if (contents != null) {
+    yield contents;
+  }
+}
+
+/// Parses and clears [document], returning null if it is empty or invalid.
+YamlNode? _parseYamlDocument(StringBuffer document) {
+  if (document.isEmpty) {
+    return null;
+  }
+  final text = document.toString();
+  document.clear();
+  try {
+    final contents = loadYamlNode(text);
+    return contents is YamlScalar && contents.value == null ? null : contents;
+  } on YamlException {
+    return null;
+  }
 }
 
 String? _parseYamlVersion(dynamic value) {
@@ -1020,8 +1038,7 @@ String? _parseYamlVersion(dynamic value) {
 
 Map<String, String> _parseYamlTranslatedString(dynamic value) {
   if (value is YamlMap) {
-    // Copy rather than cast: a cast view keeps the YamlMap alive, and with it
-    // the source spans of its nodes, which hold the whole catalog text.
+    // Copy, don't cast: a cast view keeps the YAML document's text alive.
     return {
       for (final entry in value.entries)
         if (entry.value != null) entry.key.toString(): entry.value.toString(),

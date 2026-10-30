@@ -137,10 +137,17 @@ class AppstreamPool {
   static Future<AppstreamCollection> _loadYamlCollection(String path) =>
       _loadCollection(_loadYamlCollectionInIsolate, path);
 
-  static Future<void> _loadYamlCollectionInIsolate(
-    _LoadCollectionArguments args,
-  ) async {
-    args.port.send(AppstreamCollection.fromYaml(await _loadFile(args.path)));
+  static void _loadYamlCollectionInIsolate(_LoadCollectionArguments args) {
+    final file = File(args.path).openSync();
+    try {
+      args.port.send(
+        AppstreamCollection.fromYamlLines(
+          _readLines(file, args.path.endsWith('.gz')),
+        ),
+      );
+    } finally {
+      file.closeSync();
+    }
   }
 
   static Future<String> _loadFile(String path) async {
@@ -151,4 +158,42 @@ class AppstreamPool {
 
     return utf8.decoder.bind(stream).join();
   }
+
+  /// [file] stays open: a `finally` here won't run if iteration stops early.
+  static Iterable<String> _readLines(RandomAccessFile file, bool gunzip) sync* {
+    final lines = _LineSink();
+    Sink<List<int>> input = utf8.decoder
+        .startChunkedConversion(LineSplitter().startChunkedConversion(lines));
+    if (gunzip) {
+      input = gzip.decoder.startChunkedConversion(input);
+    }
+    while (true) {
+      // Blocking is fine in an isolate; 64 KiB is File.openRead's block size.
+      final chunk = file.readSync(64 * 1024);
+      if (chunk.isEmpty) {
+        break;
+      }
+      input.add(chunk);
+      yield* lines.take();
+    }
+    input.close();
+    yield* lines.take();
+  }
+}
+
+class _LineSink implements Sink<String> {
+  var _lines = <String>[];
+
+  /// Returns the lines collected since the last call.
+  List<String> take() {
+    final lines = _lines;
+    _lines = <String>[];
+    return lines;
+  }
+
+  @override
+  void add(String line) => _lines.add(line);
+
+  @override
+  void close() {}
 }

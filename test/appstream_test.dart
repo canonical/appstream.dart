@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:appstream/appstream.dart';
@@ -1256,6 +1257,78 @@ Custom:
     );
   });
 
+  test('collection - from lines, skipping invalid and empty documents - yaml',
+      () async {
+    const yaml = """---
+File: DEP-11
+Version: '0.12'
+Origin: ubuntu-hirsute-main
+---
+Type: console-application
+ID: com.example.Hello
+Package: hello
+Name:
+  C: Hello World
+Summary:
+  C: A simple example application
+---
+Type: console-application
+ID: com.example.Broken
+Package: broken
+Name:
+  C: Broken
+Summary:
+  C: A component with a duplicate mapping key
+Summary:
+  C: The duplicate
+---
+---
+Type: console-application
+ID: com.example.Goodbye
+Package: goodbye
+Name:
+  C: Goodbye World
+Summary:
+  C: Another simple example application
+""";
+
+    final fromLines = AppstreamCollection.fromYamlLines(yaml.split('\n'));
+    expect(fromLines.version, equals('0.12'));
+    expect(fromLines.origin, equals('ubuntu-hirsute-main'));
+    expect(
+      fromLines.components.map((c) => c.id),
+      equals(['com.example.Hello', 'com.example.Goodbye']),
+    );
+    expect(
+      fromLines.components.map((c) => c.name),
+      equals([
+        {'C': 'Hello World'},
+        {'C': 'Goodbye World'},
+      ]),
+    );
+    expect(
+      fromLines.components.map((c) => c.summary),
+      equals([
+        {'C': 'A simple example application'},
+        {'C': 'Another simple example application'},
+      ]),
+    );
+
+    final fromString = AppstreamCollection.fromYaml(yaml);
+    expect(
+      fromString.components.map((c) => c.id),
+      equals(fromLines.components.map((c) => c.id)),
+    );
+    expect(
+      fromString.components.map((c) => c.name),
+      equals(fromLines.components.map((c) => c.name)),
+    );
+    expect(
+      fromString.components.map((c) => c.summary),
+      equals(fromLines.components.map((c) => c.summary)),
+    );
+  });
+
   test(
     'pool - unparseable catalog reports an error instead of hanging',
     () async {
@@ -1291,4 +1364,132 @@ Releases:
     },
     timeout: const Timeout(Duration(seconds: 30)),
   );
+
+  test('pool - gzip-compressed yaml catalog', () async {
+    final tempDir = await Directory.systemTemp.createTemp('appstream_pool');
+    addTearDown(() => tempDir.delete(recursive: true));
+
+    // Big enough that the pool reads and decompresses it in several chunks.
+    const componentCount = 4000;
+    final yaml = StringBuffer("""---
+File: DEP-11
+Version: '0.12'
+Origin: test
+""");
+    for (var i = 0; i < componentCount; ++i) {
+      yaml.write('''---
+Type: desktop-application
+ID: com.example.App$i
+Package: app$i
+Name:
+  C: App $i
+  de_DE: Anwendung $i
+  fr: Application $i
+Summary:
+  C: Greets you $i times
+  de_DE: Grüßt Sie $i Mal
+  fr: Vous salue $i fois
+''');
+    }
+    final yamlDir = Directory('${tempDir.path}/swcatalog/yaml');
+    await yamlDir.create(recursive: true);
+    final compressed = File('${yamlDir.path}/test.yml.gz');
+    await compressed.writeAsBytes(gzip.encode(utf8.encode(yaml.toString())));
+    expect(compressed.lengthSync(), greaterThan(64 * 1024));
+
+    final pool = AppstreamPool(catalogDirPrefixes: [tempDir.path]);
+    await pool.load();
+
+    expect(
+      pool.components.map((c) => c.id),
+      equals([for (var i = 0; i < componentCount; ++i) 'com.example.App$i']),
+    );
+    expect(
+      pool.components.map((c) => c.name),
+      equals([
+        for (var i = 0; i < componentCount; ++i)
+          {'C': 'App $i', 'de_DE': 'Anwendung $i', 'fr': 'Application $i'},
+      ]),
+    );
+    expect(
+      pool.components.map((c) => c.summary),
+      equals([
+        for (var i = 0; i < componentCount; ++i)
+          {
+            'C': 'Greets you $i times',
+            'de_DE': 'Grüßt Sie $i Mal',
+            'fr': 'Vous salue $i fois',
+          },
+      ]),
+    );
+  });
+
+  test('pool - plain yaml catalog with CRLF line endings', () async {
+    final tempDir = await Directory.systemTemp.createTemp('appstream_pool');
+    addTearDown(() => tempDir.delete(recursive: true));
+
+    // The summary spans three 64 KiB reads; the first ends inside a character.
+    final summary = '€' * 50000;
+    final yaml = '---\r\n'
+        'File: DEP-11\r\n'
+        "Version: '0.12'\r\n"
+        'Origin: test\r\n'
+        '---\r\n'
+        'Type: desktop-application\r\n'
+        'ID: com.example.Big\r\n'
+        'Package: big\r\n'
+        'Name:\r\n'
+        '  C: Big\r\n'
+        'Summary:\r\n'
+        '  C: $summary\r\n'
+        '---\r\n'
+        'Type: desktop-application\r\n'
+        'ID: com.example.Small\r\n'
+        'Package: small\r\n'
+        'Name:\r\n'
+        '  C: Small\r\n'
+        'Summary:\r\n'
+        '  C: A short summary\r\n';
+    final yamlDir = Directory('${tempDir.path}/swcatalog/yaml');
+    await yamlDir.create(recursive: true);
+    await File('${yamlDir.path}/test.yml').writeAsString(yaml);
+
+    final pool = AppstreamPool(catalogDirPrefixes: [tempDir.path]);
+    await pool.load();
+
+    expect(
+      pool.components.map((component) => component.id),
+      equals(['com.example.Big', 'com.example.Small']),
+    );
+    expect(pool.components.first.summary, equals({'C': summary}));
+    expect(pool.components.last.summary, equals({'C': 'A short summary'}));
+  });
+
+  test('pool - yaml catalog without a final newline loads completely',
+      () async {
+    final tempDir = await Directory.systemTemp.createTemp('appstream_pool');
+    addTearDown(() => tempDir.delete(recursive: true));
+
+    final yamlDir = Directory('${tempDir.path}/swcatalog/yaml');
+    await yamlDir.create(recursive: true);
+    await File('${yamlDir.path}/test.yml').writeAsString("""---
+File: DEP-11
+Version: '0.12'
+Origin: test
+---
+Type: console-application
+ID: com.example.Hello
+Package: hello
+Name:
+  C: Hello World
+Summary:
+  C: A simple example application""");
+
+    final pool = AppstreamPool(catalogDirPrefixes: [tempDir.path]);
+    await pool.load();
+
+    final component = pool.components.single;
+    expect(component.id, equals('com.example.Hello'));
+    expect(component.summary, equals({'C': 'A simple example application'}));
+  });
 }
