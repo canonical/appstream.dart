@@ -1631,6 +1631,59 @@ Summary:
     );
   });
 
+  test('collection - from lines, handing each component over as it is read',
+      () {
+    const yaml = """---
+File: DEP-11
+Version: '0.12'
+Origin: test
+---
+Type: console-application
+ID: com.example.Hello
+Package: hello
+Name:
+  C: Hello World
+Summary:
+  C: A simple example application
+---
+Type: console-application
+ID: com.example.Goodbye
+Package: goodbye
+Name:
+  C: Goodbye World
+Summary:
+  C: Another simple example application
+""";
+    final allLines = yaml.split('\n');
+    var pulled = 0;
+    Iterable<String> lines() sync* {
+      for (final line in allLines) {
+        pulled++;
+        yield line;
+      }
+    }
+
+    final handedOver = <AppstreamComponent>[];
+    final linesPulledAtHandOver = <int>[];
+    final collection = AppstreamCollection.fromYamlLines(
+      lines(),
+      onComponent: (component) {
+        handedOver.add(component);
+        linesPulledAtHandOver.add(pulled);
+      },
+    );
+
+    expect(collection.origin, equals('test'));
+    expect(collection.components, isEmpty);
+    final plain = AppstreamCollection.fromYamlLines(allLines);
+    expect(
+      handedOver.map((c) => [c.id, c.name, c.summary]),
+      equals(plain.components.map((c) => [c.id, c.name, c.summary])),
+    );
+    // The first one arrives while later lines are still unread.
+    expect(linesPulledAtHandOver.first, lessThan(linesPulledAtHandOver.last));
+  });
+
   test(
     'pool - unparseable catalog reports an error instead of hanging',
     () async {
@@ -1842,5 +1895,81 @@ Summary:
     final component = pool.components.single;
     expect(component.id, equals('com.example.Hello'));
     expect(component.summary, equals({'C': 'A simple example application'}));
+  });
+
+  // Each file in [catalogs] (name -> component IDs) becomes a YAML catalog.
+  Future<AppstreamPool> poolOf(Map<String, List<String>> catalogs) async {
+    final tempDir = await Directory.systemTemp.createTemp('appstream_pool');
+    addTearDown(() => tempDir.delete(recursive: true));
+    final yamlDir = Directory('${tempDir.path}/swcatalog/yaml');
+    await yamlDir.create(recursive: true);
+    for (final catalog in catalogs.entries) {
+      final yaml = StringBuffer('---\nFile: DEP-11\nVersion: "0.12"\n')
+        ..write('Origin: test\n');
+      for (final id in catalog.value) {
+        yaml.write('---\nType: console-application\nID: $id\nPackage: p-$id\n'
+            'Name:\n  C: $id\nSummary:\n  C: Summary of $id\n');
+      }
+      await File('${yamlDir.path}/${catalog.key}.yml')
+          .writeAsString(yaml.toString());
+    }
+    return AppstreamPool(catalogDirPrefixes: [tempDir.path]);
+  }
+
+  test('pool - components read by index match those read in a pass', () async {
+    final pool = await poolOf({
+      'a': ['a1', 'a2'],
+      'b': ['b1'],
+      'c': [],
+      'd': ['d1', 'd2', 'd3'],
+    });
+    await pool.load();
+
+    final scanned = [for (final component in pool.components) component.id];
+    expect(scanned, hasLength(6));
+    expect(scanned.toSet(), equals({'a1', 'a2', 'b1', 'd1', 'd2', 'd3'}));
+    expect(pool.components, hasLength(6));
+    expect(
+      [for (var i = 0; i < 6; i++) pool.components[i].id],
+      equals(scanned),
+    );
+    expect(() => pool.components[6], throwsRangeError);
+    expect(() => pool.components[-1], throwsRangeError);
+  });
+
+  test('pool - a component read by index is the same object each time',
+      () async {
+    final pool = await poolOf({
+      'a': ['a1', 'a2'],
+    });
+    await pool.load();
+
+    expect(identical(pool.components[1], pool.components[1]), isTrue);
+  });
+
+  test('pool - components cannot be changed', () async {
+    final pool = await poolOf({
+      'a': ['a1', 'a2'],
+    });
+    await pool.load();
+
+    expect(() => pool.components.removeLast(), throwsUnsupportedError);
+    expect(() => pool.components.clear(), throwsUnsupportedError);
+    expect(
+      () => pool.components[0] = pool.components[1],
+      throwsUnsupportedError,
+    );
+    expect(pool.components, hasLength(2));
+  });
+
+  test('pool - loading again replaces the components', () async {
+    final pool = await poolOf({
+      'a': ['a1', 'a2'],
+    });
+    expect(pool.components, isEmpty);
+    await pool.load();
+    await pool.load();
+
+    expect([for (final c in pool.components) c.id], equals(['a1', 'a2']));
   });
 }

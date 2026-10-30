@@ -467,6 +467,8 @@ class AppstreamCollection {
   factory AppstreamCollection.fromYamlLines(
     Iterable<String> lines, {
     Iterable<String>? locales,
+    // Gets each component as it is parsed, and `components` stays empty.
+    void Function(AppstreamComponent component)? onComponent,
   }) {
     final keptLocales = _keptLocales(locales);
     final yamlDocuments = _parseYamlDocuments(lines).iterator;
@@ -953,36 +955,39 @@ class AppstreamCollection {
         }
       }
 
-      components.add(
-        AppstreamComponent(
-          id: id,
-          type: type,
-          package: package,
-          name: _parseYamlTranslatedString(name, keptLocales),
-          summary: _parseYamlTranslatedString(summary, keptLocales),
-          description: description != null
-              ? _parseYamlTranslatedString(description, keptLocales)
-              : const {},
-          developerName: developerName != null
-              ? _parseYamlTranslatedString(developerName, keptLocales)
-              : const {},
-          projectLicense: projectLicense,
-          projectGroup: projectGroup,
-          icons: icons,
-          urls: urls,
-          launchables: launchables,
-          categories: categories,
-          keywords: keywords,
-          screenshots: screenshots,
-          compulsoryForDesktops: compulsoryForDesktops,
-          releases: releases,
-          provides: provides,
-          languages: languages,
-          bundles: bundles,
-          custom: custom,
-          contentRatings: contentRatings,
-        ),
+      final parsed = AppstreamComponent(
+        id: id,
+        type: type,
+        package: package,
+        name: _parseYamlTranslatedString(name, keptLocales),
+        summary: _parseYamlTranslatedString(summary, keptLocales),
+        description: description != null
+            ? _parseYamlTranslatedString(description, keptLocales)
+            : const {},
+        developerName: developerName != null
+            ? _parseYamlTranslatedString(developerName, keptLocales)
+            : const {},
+        projectLicense: projectLicense,
+        projectGroup: projectGroup,
+        icons: icons,
+        urls: urls,
+        launchables: launchables,
+        categories: categories,
+        keywords: keywords,
+        screenshots: screenshots,
+        compulsoryForDesktops: compulsoryForDesktops,
+        releases: releases,
+        provides: provides,
+        languages: languages,
+        bundles: bundles,
+        custom: custom,
+        contentRatings: contentRatings,
       );
+      if (onComponent != null) {
+        onComponent(parsed);
+      } else {
+        components.add(parsed);
+      }
     }
 
     return AppstreamCollection(

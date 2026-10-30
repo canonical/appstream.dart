@@ -1,7 +1,9 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:appstream/src/codec.dart';
 import 'package:appstream/src/collection.dart';
 import 'package:appstream/src/component.dart';
 
@@ -41,10 +43,12 @@ class AppstreamPool {
 
   final Set<String>? _locales;
 
-  /// The components in this pool.
-  final components = <AppstreamComponent>[];
+  /// The components in this pool, read-only and decoded as they are used.
+  List<AppstreamComponent> get components => _components;
 
-  /// Load the pool.
+  var _components = _EncodedComponentList(const []);
+
+  /// Load the pool, replacing the components it held before.
   Future<void> load() async {
     final catalogDirs = <String>[];
     for (final prefix in catalogDirPrefixes) {
@@ -65,7 +69,7 @@ class AppstreamPool {
 
     // The loaders start together at the end: one that fails early would have
     // no listener yet while the directories are still being listed.
-    final loaders = <Future<AppstreamCollection> Function()>[];
+    final loaders = <Future<EncodedComponents> Function()>[];
     for (final dir in catalogDirs) {
       final xmlPaths = await _listFiles(dir, ['.xml', '.xml.gz']);
       for (final path in xmlPaths) {
@@ -76,10 +80,8 @@ class AppstreamPool {
         loaders.add(() => _loadCollection(_loadYamlCollectionInIsolate, path));
       }
     }
-    final collections = await Future.wait([for (final load in loaders) load()]);
-    for (final collection in collections) {
-      components.addAll(collection.components);
-    }
+    final chunks = await Future.wait([for (final load in loaders) load()]);
+    _components = _EncodedComponentList(chunks);
   }
 
   static Future<List<String>> _listFiles(
@@ -98,7 +100,7 @@ class AppstreamPool {
     }
   }
 
-  Future<AppstreamCollection> _loadCollection(
+  Future<EncodedComponents> _loadCollection(
     void Function(_LoadCollectionArguments args) entryPoint,
     String path,
   ) async {
@@ -122,7 +124,7 @@ class AppstreamPool {
           ),
         ),
       ]);
-      return collection as AppstreamCollection;
+      return collection as EncodedComponents;
     } finally {
       port.close();
       errorPort.close();
@@ -130,29 +132,32 @@ class AppstreamPool {
     }
   }
 
+  // Isolate.exit hands over the bytes without copying them.
   static Future<void> _loadXmlCollectionInIsolate(
     _LoadCollectionArguments args,
   ) async {
-    args.port.send(
-      AppstreamCollection.fromXml(
-        await _loadFile(args.path),
-        locales: args.locales,
-      ),
+    final xml = await _loadFile(args.path);
+    final collection = AppstreamCollection.fromXml(
+      xml,
+      locales: args.locales,
     );
+    Isolate.exit(args.port, EncodedComponents.encode(collection.components));
   }
 
   static void _loadYamlCollectionInIsolate(_LoadCollectionArguments args) {
     final file = File(args.path).openSync();
+    final encoded = EncodedComponentsBuilder();
     try {
-      args.port.send(
-        AppstreamCollection.fromYamlLines(
-          _readLines(file, args.path.endsWith('.gz')),
-          locales: args.locales,
-        ),
+      AppstreamCollection.fromYamlLines(
+        _readLines(file, args.path.endsWith('.gz')),
+        locales: args.locales,
+        onComponent: encoded.add,
       );
     } finally {
       file.closeSync();
     }
+    // Isolate.exit never returns, so the file has to be closed before it.
+    Isolate.exit(args.port, encoded.build());
   }
 
   static Future<String> _loadFile(String path) async {
@@ -201,4 +206,62 @@ class _LineSink implements Sink<String> {
 
   @override
   void close() {}
+}
+
+/// Reads [EncodedComponents] as one list; indexing keeps what it decodes.
+class _EncodedComponentList extends ListBase<AppstreamComponent> {
+  _EncodedComponentList(this._chunks) {
+    var total = 0;
+    for (final chunk in _chunks) {
+      total += chunk.length;
+      _chunkEnds.add(total);
+    }
+  }
+
+  final List<EncodedComponents> _chunks;
+
+  // Cumulative lengths, so an index finds its chunk.
+  final _chunkEnds = <int>[];
+
+  final _read = <int, AppstreamComponent>{};
+
+  @override
+  int get length => _chunkEnds.isEmpty ? 0 : _chunkEnds.last;
+
+  @override
+  set length(int newLength) => throw UnsupportedError(
+        'Cannot change the length of an unmodifiable list',
+      );
+
+  @override
+  AppstreamComponent operator [](int index) {
+    RangeError.checkValidIndex(index, this);
+    return _read[index] ??= _decode(index);
+  }
+
+  @override
+  void operator []=(int index, AppstreamComponent value) =>
+      throw UnsupportedError('Cannot modify an unmodifiable list');
+
+  @override
+  Iterator<AppstreamComponent> get iterator => _decodeAll().iterator;
+
+  // Scanning keeps nothing, so a pass over the catalog does not fill the cache.
+  Iterable<AppstreamComponent> _decodeAll() sync* {
+    var index = 0;
+    for (final chunk in _chunks) {
+      for (var i = 0; i < chunk.length; i++) {
+        yield _read[index++] ?? chunk[i];
+      }
+    }
+  }
+
+  AppstreamComponent _decode(int index) {
+    var chunk = 0;
+    while (_chunkEnds[chunk] <= index) {
+      chunk++;
+    }
+    final start = chunk == 0 ? 0 : _chunkEnds[chunk - 1];
+    return _chunks[chunk][index - start];
+  }
 }
