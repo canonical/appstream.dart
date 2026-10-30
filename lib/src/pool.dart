@@ -8,10 +8,11 @@ import 'package:appstream/src/collection.dart';
 import 'package:appstream/src/component.dart';
 
 class _LoadCollectionArguments {
-  const _LoadCollectionArguments(this.port, this.path, this.locales);
+  const _LoadCollectionArguments(this.port, this.path, this.locales, this.omit);
   final SendPort port;
   final String path;
   final Set<String>? locales;
+  final Set<AppstreamDetail> omit;
 }
 
 /// Thrown when a catalog file cannot be loaded, for instance because it holds
@@ -33,15 +34,21 @@ class AppstreamCollectionLoadException implements Exception {
 /// Metadata for all the components known about on this system.
 class AppstreamPool {
   /// Creates a pool keeping only [locales] translations plus `C` (null: all).
-  AppstreamPool({List<String>? catalogDirPrefixes, Iterable<String>? locales})
-      : catalogDirPrefixes = catalogDirPrefixes ??
+  AppstreamPool({
+    List<String>? catalogDirPrefixes,
+    Iterable<String>? locales,
+    Iterable<AppstreamDetail> omit = const {},
+  })  : catalogDirPrefixes = catalogDirPrefixes ??
             const ['/usr/share', '/var/lib', '/var/cache'],
-        _locales = locales?.toSet();
+        _locales = locales?.toSet(),
+        _omit = omit.toSet();
 
   /// Where `swcatalog` and `app-info` are searched; defaults to system dirs.
   final List<String> catalogDirPrefixes;
 
   final Set<String>? _locales;
+
+  final Set<AppstreamDetail> _omit;
 
   /// The components in this pool, read-only and decoded as they are used.
   List<AppstreamComponent> get components => _components;
@@ -108,7 +115,7 @@ class AppstreamPool {
     final errorPort = ReceivePort();
     final isolate = await Isolate.spawn<_LoadCollectionArguments>(
       entryPoint,
-      _LoadCollectionArguments(port.sendPort, path, _locales),
+      _LoadCollectionArguments(port.sendPort, path, _locales, _omit),
       onError: errorPort.sendPort,
     );
     try {
@@ -140,6 +147,7 @@ class AppstreamPool {
     final collection = AppstreamCollection.fromXml(
       xml,
       locales: args.locales,
+      omit: args.omit,
     );
     Isolate.exit(args.port, EncodedComponents.encode(collection.components));
   }
@@ -151,6 +159,7 @@ class AppstreamPool {
       AppstreamCollection.fromYamlLines(
         _readLines(file, args.path.endsWith('.gz')),
         locales: args.locales,
+        omit: args.omit,
         onComponent: encoded.add,
       );
     } finally {

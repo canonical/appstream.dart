@@ -1972,4 +1972,267 @@ Summary:
 
     expect([for (final c in pool.components) c.id], equals(['a1', 'a2']));
   });
+
+  // One component with every detail and the data beside them, in both formats.
+  const omitXml = '''<components version="0.14" origin="test">
+  <component type="desktop-application">
+    <id>com.example.Hello</id>
+    <pkgname>hello</pkgname>
+    <name>Hello World</name>
+    <summary>A simple example application</summary>
+    <icon type="stock">hello</icon>
+    <icon type="cached" width="64" height="64">hello_64.png</icon>
+    <screenshots>
+      <screenshot type="default">
+        <caption>The main window</caption>
+        <image type="source" width="1024" height="768">https://example.com/hello.png</image>
+        <image type="thumbnail" width="224" height="168">https://example.com/hello-small.png</image>
+      </screenshot>
+    </screenshots>
+    <releases>
+      <release version="1.2" timestamp="1700000000" urgency="high">
+        <description><p>Fixes things.</p></description>
+        <url>https://example.com/releases/1.2</url>
+        <issues>
+          <issue url="https://example.com/issues/1">HELLO-1</issue>
+        </issues>
+      </release>
+      <release version="1.1" type="development" date="2023-01-02"/>
+    </releases>
+    <languages>
+      <lang percentage="96">de</lang>
+    </languages>
+    <content_rating type="oars-1.1">
+      <content_attribute id="violence-cartoon">mild</content_attribute>
+    </content_rating>
+  </component>
+</components>
+''';
+  const omitYaml = """---
+File: DEP-11
+Version: '0.14'
+Origin: test
+---
+Type: desktop-application
+ID: com.example.Hello
+Package: hello
+Name:
+  C: Hello World
+Summary:
+  C: A simple example application
+Icon:
+  stock: hello
+  cached:
+  - name: hello_64.png
+    width: 64
+    height: 64
+Screenshots:
+- default: true
+  caption:
+    C: The main window
+  thumbnails:
+  - url: https://example.com/hello-small.png
+    width: 224
+    height: 168
+  source-image:
+    url: https://example.com/hello.png
+    width: 1024
+    height: 768
+Releases:
+- version: '1.2'
+  unix-timestamp: 1700000000
+  urgency: high
+  description:
+    C: <p>Fixes things.</p>
+  url:
+    details: https://example.com/releases/1.2
+  issues:
+  - id: HELLO-1
+    url: https://example.com/issues/1
+- version: '1.1'
+  type: development
+  date: 2023-01-02
+Languages:
+- locale: de
+  percentage: 96
+ContentRating:
+  oars-1.1:
+    violence-cartoon: mild
+""";
+  final omitParsers =
+      <String, AppstreamCollection Function(Iterable<AppstreamDetail> omit)>{
+    'xml': (omit) => AppstreamCollection.fromXml(omitXml, omit: omit),
+    'yaml': (omit) => AppstreamCollection.fromYaml(omitYaml, omit: omit),
+  };
+
+  final omitCases = [
+    _OmitCase(
+      AppstreamDetail.cachedIcons,
+      (component) => component.icons.whereType<AppstreamCachedIcon>().toList(),
+      [AppstreamCachedIcon('hello_64.png', width: 64, height: 64)],
+    ),
+    _OmitCase(
+      AppstreamDetail.contentRatings,
+      (component) => component.contentRatings,
+      {
+        'oars-1.1': {'violence-cartoon': AppstreamContentRating.mild},
+      },
+    ),
+    _OmitCase(
+      AppstreamDetail.languages,
+      (component) => component.languages,
+      [AppstreamLanguage('de', percentage: 96)],
+    ),
+    _OmitCase(
+      AppstreamDetail.releaseNotes,
+      (component) => [
+        for (final release in component.releases) ...[
+          if (release.description.isNotEmpty) release.description,
+          if (release.url != null) release.url,
+          ...release.issues,
+        ],
+      ],
+      [
+        {'C': '<p>Fixes things.</p>'},
+        'https://example.com/releases/1.2',
+        AppstreamIssue('HELLO-1', url: 'https://example.com/issues/1'),
+      ],
+    ),
+    _OmitCase(
+      AppstreamDetail.screenshotCaptions,
+      (component) => [
+        for (final screenshot in component.screenshots)
+          if (screenshot.caption.isNotEmpty) screenshot.caption,
+      ],
+      [
+        {'C': 'The main window'},
+      ],
+    ),
+    _OmitCase(
+      AppstreamDetail.screenshotThumbnails,
+      (component) => [
+        for (final screenshot in component.screenshots)
+          ...screenshot.images
+              .where((image) => image.type == AppstreamImageType.thumbnail),
+      ],
+      [
+        AppstreamImage(
+          type: AppstreamImageType.thumbnail,
+          url: 'https://example.com/hello-small.png',
+          width: 224,
+          height: 168,
+        ),
+      ],
+    ),
+  ];
+
+  // The data next to the details, which omitting them must leave in place.
+  List<Object> readKeptData(AppstreamComponent component) => [
+        ...component.icons.whereType<AppstreamStockIcon>(),
+        for (final screenshot in component.screenshots)
+          AppstreamScreenshot(
+            isDefault: screenshot.isDefault,
+            images: screenshot.images
+                .where((image) => image.type == AppstreamImageType.source)
+                .toList(),
+          ),
+        for (final release in component.releases)
+          AppstreamRelease(
+            version: release.version,
+            date: release.date,
+            type: release.type,
+            urgency: release.urgency,
+          ),
+      ];
+  final keptData = [
+    AppstreamStockIcon('hello'),
+    AppstreamScreenshot(
+      isDefault: true,
+      images: [
+        AppstreamImage(
+          type: AppstreamImageType.source,
+          url: 'https://example.com/hello.png',
+          width: 1024,
+          height: 768,
+        ),
+      ],
+    ),
+    AppstreamRelease(
+      version: '1.2',
+      date: DateTime.utc(2023, 11, 14, 22, 13, 20),
+      urgency: AppstreamReleaseUrgency.high,
+    ),
+    AppstreamRelease(
+      version: '1.1',
+      date: DateTime(2023, 1, 2),
+      type: AppstreamReleaseType.development,
+    ),
+  ];
+
+  test('collection - omit cases cover every detail', () {
+    expect(
+      omitCases.map((omitCase) => omitCase.detail),
+      unorderedEquals(AppstreamDetail.values),
+    );
+  });
+
+  for (final parser in omitParsers.entries) {
+    for (final omitCase in omitCases) {
+      test('collection - omit ${omitCase.detail.name} - ${parser.key}', () {
+        final kept = parser.value(const {}).components.single;
+        expect(omitCase.read(kept), equals(omitCase.present));
+
+        final component = parser.value({omitCase.detail}).components.single;
+        expect(omitCase.read(component), isEmpty);
+        expect(readKeptData(component), equals(keptData));
+        for (final other in omitCases.where((other) => other != omitCase)) {
+          expect(
+            other.read(component),
+            equals(other.present),
+            reason: '${other.detail.name} is not omitted',
+          );
+        }
+      });
+    }
+  }
+
+  test('pool - omit leaves details out of xml and yaml catalogs', () async {
+    final tempDir = await Directory.systemTemp.createTemp('appstream_pool');
+    addTearDown(() => tempDir.delete(recursive: true));
+
+    final yamlDir = Directory('${tempDir.path}/swcatalog/yaml');
+    await yamlDir.create(recursive: true);
+    await File('${tempDir.path}/swcatalog/test.xml').writeAsString(omitXml);
+    await File('${yamlDir.path}/test.yml').writeAsString(omitYaml);
+
+    final pool = AppstreamPool(
+      catalogDirPrefixes: [tempDir.path],
+      omit: AppstreamDetail.values,
+    );
+    await pool.load();
+
+    expect(pool.components, hasLength(2));
+    for (final component in pool.components) {
+      for (final omitCase in omitCases) {
+        expect(
+          omitCase.read(component),
+          isEmpty,
+          reason: '${omitCase.detail.name} is omitted',
+        );
+      }
+      expect(readKeptData(component), equals(keptData));
+    }
+  });
+}
+
+class _OmitCase {
+  const _OmitCase(this.detail, this.read, this.present);
+
+  final AppstreamDetail detail;
+
+  /// Reads the metadata [detail] covers, which is empty when it is omitted.
+  final Object Function(AppstreamComponent component) read;
+
+  /// What [read] returns when [detail] is kept.
+  final Object present;
 }

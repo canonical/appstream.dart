@@ -5,6 +5,7 @@
 * Stop translated strings parsed from YAML from keeping the whole parsed catalog, including a copy of its text, in memory (about 100 MB with Ubuntu's archive catalogs).
 * Convert non-string translated values to strings and skip ones with no value, instead of throwing when they are read.
 * Add a `locales` option to `AppstreamPool` and to the `AppstreamCollection.fromXml`, `fromYaml` and `fromYamlLines` constructors, to keep translated text only for those locales, besides the untranslated `C` text.
+* Add an `omit` option to `AppstreamPool` and to the `AppstreamCollection.fromXml`, `fromYaml` and `fromYamlLines` constructors, to leave out details a consumer never uses, listed in the new `AppstreamDetail` enum, and save the memory they take.
 * Parse YAML catalogs one document at a time: `AppstreamPool` streams plain and gzip-compressed YAML catalogs from disk in chunks, and the new `AppstreamCollection.fromYamlLines` parses a catalog from its lines.
 * Load YAML catalogs with CRLF line endings, instead of throwing a FormatException ('Empty YAML file').
 * Skip empty documents in YAML catalogs, instead of throwing a `TypeError`.

@@ -12,6 +12,21 @@ import 'package:appstream/src/url.dart';
 import 'package:xml/xml.dart';
 import 'package:yaml/yaml.dart';
 
+/// Details a consumer can omit: never parsed, so they read as empty.
+enum AppstreamDetail {
+  /// [AppstreamCachedIcon]s in [AppstreamComponent.icons]; other icons stay.
+  cachedIcons,
+  contentRatings,
+  languages,
+
+  /// Each release's description, URL and issues; the release itself stays.
+  releaseNotes,
+  screenshotCaptions,
+
+  /// Screenshot images other than the source image.
+  screenshotThumbnails,
+}
+
 /// A collection of Appstream components.
 class AppstreamCollection {
   /// Creates a new Appstream collection.
@@ -27,8 +42,10 @@ class AppstreamCollection {
   factory AppstreamCollection.fromXml(
     String xml, {
     Iterable<String>? locales,
+    Iterable<AppstreamDetail> omit = const {},
   }) {
     final keptLocales = _keptLocales(locales);
+    final omitted = omit.toSet();
     final document = XmlDocument.parse(xml);
 
     final root = document.getElement('components');
@@ -79,6 +96,9 @@ class AppstreamCollection {
         final type = icon.getAttribute('type');
         if (type == null) {
           throw FormatException('Missing icon type');
+        }
+        if (type == 'cached' && omitted.contains(AppstreamDetail.cachedIcons)) {
+          continue;
         }
         final w = icon.getAttribute('width');
         final width = w != null ? int.parse(w) : null;
@@ -184,8 +204,9 @@ class AppstreamCollection {
       }
       for (final screenshot in screenshotElements) {
         final isDefault = screenshot.getAttribute('type') == 'default';
-        final caption =
-            _getXmlTranslatedString(screenshot, 'caption', keptLocales);
+        final caption = omitted.contains(AppstreamDetail.screenshotCaptions)
+            ? const <String, String>{}
+            : _getXmlTranslatedString(screenshot, 'caption', keptLocales);
         final images = <AppstreamImage>[];
         for (final imageElement in screenshot.children
             .whereType<XmlElement>()
@@ -200,6 +221,10 @@ class AppstreamCollection {
           }[typeName];
           if (type == null) {
             throw FormatException('Unknown image type');
+          }
+          if (type == AppstreamImageType.thumbnail &&
+              omitted.contains(AppstreamDetail.screenshotThumbnails)) {
+            continue;
           }
           final w = imageElement.getAttribute('width');
           final width = w != null ? int.parse(w) : null;
@@ -258,30 +283,35 @@ class AppstreamCollection {
           if (urgencyName != null) {
             urgency = _parseReleaseUrgency(urgencyName);
           }
-          final description =
-              _getXmlTranslatedString(release, 'description', keptLocales);
-          final urlElement = release.getElement('url');
-          final url = urlElement?.innerText;
+          var description = const <String, String>{};
+          String? url;
+          var issues = const <AppstreamIssue>[];
+          if (!omitted.contains(AppstreamDetail.releaseNotes)) {
+            description =
+                _getXmlTranslatedString(release, 'description', keptLocales);
+            final urlElement = release.getElement('url');
+            url = urlElement?.innerText;
 
-          final issues = <AppstreamIssue>[];
-          final issuesElement = release.getElement('issues');
-          if (issuesElement != null) {
-            for (final issue in issuesElement.children
-                .whereType<XmlElement>()
-                .where((e) => e.name.local == 'issue')) {
-              AppstreamIssueType? type;
-              final typeName = issue.getAttribute('type');
-              if (typeName != null) {
-                type = _parseIssueType(typeName);
+            issues = [];
+            final issuesElement = release.getElement('issues');
+            if (issuesElement != null) {
+              for (final issue in issuesElement.children
+                  .whereType<XmlElement>()
+                  .where((e) => e.name.local == 'issue')) {
+                AppstreamIssueType? type;
+                final typeName = issue.getAttribute('type');
+                if (typeName != null) {
+                  type = _parseIssueType(typeName);
+                }
+                final url = issue.getAttribute('url');
+                issues.add(
+                  AppstreamIssue(
+                    issue.innerText,
+                    type: type ?? AppstreamIssueType.generic,
+                    url: url,
+                  ),
+                );
               }
-              final url = issue.getAttribute('url');
-              issues.add(
-                AppstreamIssue(
-                  issue.innerText,
-                  type: type ?? AppstreamIssueType.generic,
-                  url: url,
-                ),
-              );
             }
           }
 
@@ -359,40 +389,47 @@ class AppstreamCollection {
         }
       }
 
-      final languages = <AppstreamLanguage>[];
-      final languagesElement = component.getElement('languages');
-      if (languagesElement != null) {
-        for (final language in languagesElement.children
-            .whereType<XmlElement>()
-            .where((e) => e.name.local == 'lang')) {
-          final percentage = language.getAttribute('percentage');
-          languages.add(
-            AppstreamLanguage(
-              language.innerText,
-              percentage: percentage != null ? int.parse(percentage) : null,
-            ),
-          );
+      var languages = const <AppstreamLanguage>[];
+      if (!omitted.contains(AppstreamDetail.languages)) {
+        languages = [];
+        final languagesElement = component.getElement('languages');
+        if (languagesElement != null) {
+          for (final language in languagesElement.children
+              .whereType<XmlElement>()
+              .where((e) => e.name.local == 'lang')) {
+            final percentage = language.getAttribute('percentage');
+            languages.add(
+              AppstreamLanguage(
+                language.innerText,
+                percentage: percentage != null ? int.parse(percentage) : null,
+              ),
+            );
+          }
         }
       }
 
-      final contentRatings = <String, Map<String, AppstreamContentRating>>{};
-      for (final contentRating
-          in elements.where((e) => e.name.local == 'content_rating')) {
-        final type = contentRating.getAttribute('type');
-        if (type == null) {
-          throw FormatException('Missing content rating type');
-        }
-        final ratings = <String, AppstreamContentRating>{};
-        for (final contentAttribute in contentRating.children
-            .whereType<XmlElement>()
-            .where((e) => e.name.local == 'content_attribute')) {
-          final id = contentAttribute.getAttribute('id');
-          if (id == null) {
-            throw FormatException('Missing content attribute id');
+      var contentRatings =
+          const <String, Map<String, AppstreamContentRating>>{};
+      if (!omitted.contains(AppstreamDetail.contentRatings)) {
+        contentRatings = {};
+        for (final contentRating
+            in elements.where((e) => e.name.local == 'content_rating')) {
+          final type = contentRating.getAttribute('type');
+          if (type == null) {
+            throw FormatException('Missing content rating type');
           }
-          ratings[id] = _parseContentRating(contentAttribute.innerText);
+          final ratings = <String, AppstreamContentRating>{};
+          for (final contentAttribute in contentRating.children
+              .whereType<XmlElement>()
+              .where((e) => e.name.local == 'content_attribute')) {
+            final id = contentAttribute.getAttribute('id');
+            if (id == null) {
+              throw FormatException('Missing content attribute id');
+            }
+            ratings[id] = _parseContentRating(contentAttribute.innerText);
+          }
+          contentRatings[type] = ratings;
         }
-        contentRatings[type] = ratings;
       }
 
       final bundles = <AppstreamBundle>[];
@@ -457,20 +494,24 @@ class AppstreamCollection {
   factory AppstreamCollection.fromYaml(
     String yaml, {
     Iterable<String>? locales,
+    Iterable<AppstreamDetail> omit = const {},
   }) =>
       AppstreamCollection.fromYamlLines(
         LineSplitter.split(yaml),
         locales: locales,
+        omit: omit,
       );
 
   /// Decodes YAML [lines] as they stream; they must have no line terminators.
   factory AppstreamCollection.fromYamlLines(
     Iterable<String> lines, {
     Iterable<String>? locales,
+    Iterable<AppstreamDetail> omit = const {},
     // Gets each component as it is parsed, and `components` stays empty.
     void Function(AppstreamComponent component)? onComponent,
   }) {
     final keptLocales = _keptLocales(locales);
+    final omitted = omit.toSet();
     final yamlDocuments = _parseYamlDocuments(lines).iterator;
     if (!yamlDocuments.moveNext()) {
       throw FormatException('Empty YAML file');
@@ -525,6 +566,10 @@ class AppstreamCollection {
       final icon = component['Icon'] as YamlMap?;
       if (icon != null) {
         for (final type in icon.keys) {
+          if (type == 'cached' &&
+              omitted.contains(AppstreamDetail.cachedIcons)) {
+            continue;
+          }
           switch (type) {
             case 'stock':
               icons.add(AppstreamStockIcon(icon[type] as String));
@@ -644,9 +689,14 @@ class AppstreamCollection {
         }
         for (final screenshot in screenshotsComponent) {
           final isDefault = screenshot['default'] as bool? ?? 'false' == 'true';
-          final caption = screenshot['caption'];
+          final caption = omitted.contains(AppstreamDetail.screenshotCaptions)
+              ? null
+              : screenshot['caption'];
           final images = <AppstreamImage>[];
-          final thumbnails = screenshot['thumbnails'] as YamlList?;
+          final thumbnails =
+              omitted.contains(AppstreamDetail.screenshotThumbnails)
+                  ? null
+                  : screenshot['thumbnails'] as YamlList?;
           if (thumbnails != null) {
             for (final thumbnail in thumbnails) {
               final url = thumbnail['url'] as String?;
@@ -737,35 +787,45 @@ class AppstreamCollection {
           if (urgencyName != null) {
             urgency = _parseReleaseUrgency(urgencyName);
           }
-          final description = release['description'];
-          final url = release['url']?['details'] as String?;
-          final issues = <AppstreamIssue>[];
-          final issuesComponent = release['issues'];
-          if (issuesComponent != null) {
-            if (issuesComponent is! YamlList) {
-              throw FormatException('Invalid issues type');
+          var description = const <String, String>{};
+          String? url;
+          var issues = const <AppstreamIssue>[];
+          if (!omitted.contains(AppstreamDetail.releaseNotes)) {
+            final rawDescription = release['description'];
+            url = release['url']?['details'] as String?;
+            issues = [];
+            final issuesComponent = release['issues'];
+            if (issuesComponent != null) {
+              if (issuesComponent is! YamlList) {
+                throw FormatException('Invalid issues type');
+              }
+              for (final issue in issuesComponent) {
+                if (issue is! YamlMap) {
+                  throw FormatException('Invalid issue type');
+                }
+                final id = issue['id'] as String?;
+                if (id == null) {
+                  throw FormatException('Issue missing id');
+                }
+                AppstreamIssueType? type;
+                final typeName = issue['type'] as String?;
+                if (typeName != null) {
+                  type = _parseIssueType(typeName);
+                }
+                final url = issue['url'] as String?;
+                issues.add(
+                  AppstreamIssue(
+                    id,
+                    type: type ?? AppstreamIssueType.generic,
+                    url: url,
+                  ),
+                );
+              }
             }
-            for (final issue in issuesComponent) {
-              if (issue is! YamlMap) {
-                throw FormatException('Invalid issue type');
-              }
-              final id = issue['id'] as String?;
-              if (id == null) {
-                throw FormatException('Issue missing id');
-              }
-              AppstreamIssueType? type;
-              final typeName = issue['type'] as String?;
-              if (typeName != null) {
-                type = _parseIssueType(typeName);
-              }
-              final url = issue['url'] as String?;
-              issues.add(
-                AppstreamIssue(
-                  id,
-                  type: type ?? AppstreamIssueType.generic,
-                  url: url,
-                ),
-              );
+            // After the issues, so invalid issues are reported first.
+            if (rawDescription != null) {
+              description =
+                  _parseYamlTranslatedString(rawDescription, keptLocales);
             }
           }
           releases.add(
@@ -774,9 +834,7 @@ class AppstreamCollection {
               date: date,
               type: type ?? AppstreamReleaseType.stable,
               urgency: urgency ?? AppstreamReleaseUrgency.medium,
-              description: description != null
-                  ? _parseYamlTranslatedString(description, keptLocales)
-                  : const {},
+              description: description,
               url: url,
               issues: issues,
             ),
@@ -895,36 +953,43 @@ class AppstreamCollection {
         }
       }
 
-      final languages = <AppstreamLanguage>[];
-      final languagesComponent = component['Languages'];
-      if (languagesComponent != null) {
-        if (languagesComponent is! YamlList) {
-          throw FormatException('Invalid Languages type');
-        }
+      var languages = const <AppstreamLanguage>[];
+      if (!omitted.contains(AppstreamDetail.languages)) {
+        languages = [];
+        final languagesComponent = component['Languages'];
+        if (languagesComponent != null) {
+          if (languagesComponent is! YamlList) {
+            throw FormatException('Invalid Languages type');
+          }
 
-        for (final language in languagesComponent) {
-          if (language is! YamlMap) {
-            throw FormatException('Invalid language type');
+          for (final language in languagesComponent) {
+            if (language is! YamlMap) {
+              throw FormatException('Invalid language type');
+            }
+            final locale = language['locale'] as String?;
+            if (locale == null) {
+              throw FormatException('Missing language locale');
+            }
+            final percentage = language['percentage'] as int?;
+            languages.add(AppstreamLanguage(locale, percentage: percentage));
           }
-          final locale = language['locale'] as String?;
-          if (locale == null) {
-            throw FormatException('Missing language locale');
-          }
-          final percentage = language['percentage'] as int?;
-          languages.add(AppstreamLanguage(locale, percentage: percentage));
         }
       }
 
-      final contentRatings = <String, Map<String, AppstreamContentRating>>{};
-      final contentRatingComponent = component['ContentRating'] as YamlMap?;
-      if (contentRatingComponent != null) {
-        for (final type in contentRatingComponent.keys) {
-          contentRatings[type as String] =
-              (contentRatingComponent[type] as YamlMap)
-                  .map<String, AppstreamContentRating>(
-            (key, value) =>
-                MapEntry(key as String, _parseContentRating(value as String)),
-          );
+      var contentRatings =
+          const <String, Map<String, AppstreamContentRating>>{};
+      if (!omitted.contains(AppstreamDetail.contentRatings)) {
+        contentRatings = {};
+        final contentRatingComponent = component['ContentRating'] as YamlMap?;
+        if (contentRatingComponent != null) {
+          for (final type in contentRatingComponent.keys) {
+            contentRatings[type as String] =
+                (contentRatingComponent[type] as YamlMap)
+                    .map<String, AppstreamContentRating>(
+              (key, value) =>
+                  MapEntry(key as String, _parseContentRating(value as String)),
+            );
+          }
         }
       }
 
