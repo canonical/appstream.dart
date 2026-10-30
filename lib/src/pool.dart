@@ -6,9 +6,10 @@ import 'package:appstream/src/collection.dart';
 import 'package:appstream/src/component.dart';
 
 class _LoadCollectionArguments {
-  const _LoadCollectionArguments(this.port, this.path);
+  const _LoadCollectionArguments(this.port, this.path, this.locales);
   final SendPort port;
   final String path;
+  final Set<String>? locales;
 }
 
 /// Thrown when a catalog file cannot be loaded, for instance because it holds
@@ -29,14 +30,16 @@ class AppstreamCollectionLoadException implements Exception {
 
 /// Metadata for all the components known about on this system.
 class AppstreamPool {
-  /// Creates a pool that reads catalogs from [catalogDirPrefixes], which
-  /// defaults to the standard system locations.
-  AppstreamPool({List<String>? catalogDirPrefixes})
+  /// Creates a pool keeping only [locales] translations plus `C` (null: all).
+  AppstreamPool({List<String>? catalogDirPrefixes, Iterable<String>? locales})
       : catalogDirPrefixes = catalogDirPrefixes ??
-            const ['/usr/share', '/var/lib', '/var/cache'];
+            const ['/usr/share', '/var/lib', '/var/cache'],
+        _locales = locales?.toSet();
 
-  /// Prefixes searched for `swcatalog` and `app-info` directories.
+  /// Where `swcatalog` and `app-info` are searched; defaults to system dirs.
   final List<String> catalogDirPrefixes;
+
+  final Set<String>? _locales;
 
   /// The components in this pool.
   final components = <AppstreamComponent>[];
@@ -93,7 +96,7 @@ class AppstreamPool {
     }
   }
 
-  static Future<AppstreamCollection> _loadCollection(
+  Future<AppstreamCollection> _loadCollection(
     void Function(_LoadCollectionArguments args) entryPoint,
     String path,
   ) async {
@@ -101,7 +104,7 @@ class AppstreamPool {
     final errorPort = ReceivePort();
     final isolate = await Isolate.spawn<_LoadCollectionArguments>(
       entryPoint,
-      _LoadCollectionArguments(port.sendPort, path),
+      _LoadCollectionArguments(port.sendPort, path, _locales),
       onError: errorPort.sendPort,
     );
     try {
@@ -125,16 +128,21 @@ class AppstreamPool {
     }
   }
 
-  static Future<AppstreamCollection> _loadXmlCollection(String path) =>
+  Future<AppstreamCollection> _loadXmlCollection(String path) =>
       _loadCollection(_loadXmlCollectionInIsolate, path);
 
   static Future<void> _loadXmlCollectionInIsolate(
     _LoadCollectionArguments args,
   ) async {
-    args.port.send(AppstreamCollection.fromXml(await _loadFile(args.path)));
+    args.port.send(
+      AppstreamCollection.fromXml(
+        await _loadFile(args.path),
+        locales: args.locales,
+      ),
+    );
   }
 
-  static Future<AppstreamCollection> _loadYamlCollection(String path) =>
+  Future<AppstreamCollection> _loadYamlCollection(String path) =>
       _loadCollection(_loadYamlCollectionInIsolate, path);
 
   static void _loadYamlCollectionInIsolate(_LoadCollectionArguments args) {
@@ -143,6 +151,7 @@ class AppstreamPool {
       args.port.send(
         AppstreamCollection.fromYamlLines(
           _readLines(file, args.path.endsWith('.gz')),
+          locales: args.locales,
         ),
       );
     } finally {

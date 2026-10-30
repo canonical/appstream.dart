@@ -23,8 +23,12 @@ class AppstreamCollection {
     Iterable<AppstreamComponent> components = const [],
   }) : components = List<AppstreamComponent>.from(components);
 
-  /// Decodes an Appstream collection in XML format.
-  factory AppstreamCollection.fromXml(String xml) {
+  /// Decodes XML, keeping only [locales] translations plus `C` (null: all).
+  factory AppstreamCollection.fromXml(
+    String xml, {
+    Iterable<String>? locales,
+  }) {
+    final keptLocales = _keptLocales(locales);
     final document = XmlDocument.parse(xml);
 
     final root = document.getElement('components');
@@ -58,11 +62,13 @@ class AppstreamCollection {
       }
       final pkg = component.getElement('pkgname');
       final package = pkg?.innerText;
-      final name = _getXmlTranslatedString(component, 'name');
-      final summary = _getXmlTranslatedString(component, 'summary');
-      final description = _getXmlTranslatedString(component, 'description');
+      final name = _getXmlTranslatedString(component, 'name', keptLocales);
+      final summary =
+          _getXmlTranslatedString(component, 'summary', keptLocales);
+      final description =
+          _getXmlTranslatedString(component, 'description', keptLocales);
       final developerName =
-          _getXmlTranslatedString(component, 'developer_name');
+          _getXmlTranslatedString(component, 'developer_name', keptLocales);
       final projectLicense = component.getElement('project_license')?.innerText;
       final projectGroup = component.getElement('project_group')?.innerText;
 
@@ -155,6 +161,9 @@ class AppstreamCollection {
       for (final keywordsElement
           in elements.where((e) => e.name.local == 'keywords')) {
         final lang = keywordsElement.getAttribute('xml:lang') ?? 'C';
+        if (keptLocales != null && !keptLocales.contains(lang)) {
+          continue;
+        }
         keywords[lang] = keywordsElement.children
             .whereType<XmlElement>()
             .where((e) => e.name.local == 'keyword')
@@ -175,7 +184,8 @@ class AppstreamCollection {
       }
       for (final screenshot in screenshotElements) {
         final isDefault = screenshot.getAttribute('type') == 'default';
-        final caption = _getXmlTranslatedString(screenshot, 'caption');
+        final caption =
+            _getXmlTranslatedString(screenshot, 'caption', keptLocales);
         final images = <AppstreamImage>[];
         for (final imageElement in screenshot.children
             .whereType<XmlElement>()
@@ -248,7 +258,8 @@ class AppstreamCollection {
           if (urgencyName != null) {
             urgency = _parseReleaseUrgency(urgencyName);
           }
-          final description = _getXmlTranslatedString(release, 'description');
+          final description =
+              _getXmlTranslatedString(release, 'description', keptLocales);
           final urlElement = release.getElement('url');
           final url = urlElement?.innerText;
 
@@ -442,12 +453,22 @@ class AppstreamCollection {
     );
   }
 
-  /// Decodes an Appstream collection in YAML format.
-  factory AppstreamCollection.fromYaml(String yaml) =>
-      AppstreamCollection.fromYamlLines(LineSplitter.split(yaml));
+  /// Decodes YAML, keeping only [locales] translations plus `C` (null: all).
+  factory AppstreamCollection.fromYaml(
+    String yaml, {
+    Iterable<String>? locales,
+  }) =>
+      AppstreamCollection.fromYamlLines(
+        LineSplitter.split(yaml),
+        locales: locales,
+      );
 
   /// Decodes YAML [lines] as they stream; they must have no line terminators.
-  factory AppstreamCollection.fromYamlLines(Iterable<String> lines) {
+  factory AppstreamCollection.fromYamlLines(
+    Iterable<String> lines, {
+    Iterable<String>? locales,
+  }) {
+    final keptLocales = _keptLocales(locales);
     final yamlDocuments = _parseYamlDocuments(lines).iterator;
     if (!yamlDocuments.moveNext()) {
       throw FormatException('Empty YAML file');
@@ -602,16 +623,15 @@ class AppstreamCollection {
       var keywords = <String, List<String>>{};
       final keywordsComponent = component['Keywords'] as YamlMap?;
       if (keywordsComponent != null) {
-        keywords = keywordsComponent.map(
-          (lang, keywordList) => MapEntry(
-            lang as String,
-            (keywordList as YamlList)
-                .nodes
-                .where((e) => e.value != null)
-                .map<String>((e) => e.value.toString())
-                .toList(),
-          ),
-        );
+        keywords = {
+          for (final entry in keywordsComponent.entries)
+            if (keptLocales == null || keptLocales.contains(entry.key))
+              entry.key as String: (entry.value as YamlList)
+                  .nodes
+                  .where((e) => e.value != null)
+                  .map<String>((e) => e.value.toString())
+                  .toList(),
+        };
       }
 
       final screenshots = <AppstreamScreenshot>[];
@@ -668,7 +688,7 @@ class AppstreamCollection {
             AppstreamScreenshot(
               images: images,
               caption: caption != null
-                  ? _parseYamlTranslatedString(caption)
+                  ? _parseYamlTranslatedString(caption, keptLocales)
                   : const {},
               isDefault: isDefault,
             ),
@@ -753,7 +773,7 @@ class AppstreamCollection {
               type: type ?? AppstreamReleaseType.stable,
               urgency: urgency ?? AppstreamReleaseUrgency.medium,
               description: description != null
-                  ? _parseYamlTranslatedString(description)
+                  ? _parseYamlTranslatedString(description, keptLocales)
                   : const {},
               url: url,
               issues: issues,
@@ -938,13 +958,13 @@ class AppstreamCollection {
           id: id,
           type: type,
           package: package,
-          name: _parseYamlTranslatedString(name),
-          summary: _parseYamlTranslatedString(summary),
+          name: _parseYamlTranslatedString(name, keptLocales),
+          summary: _parseYamlTranslatedString(summary, keptLocales),
           description: description != null
-              ? _parseYamlTranslatedString(description)
+              ? _parseYamlTranslatedString(description, keptLocales)
               : const {},
           developerName: developerName != null
-              ? _parseYamlTranslatedString(developerName)
+              ? _parseYamlTranslatedString(developerName, keptLocales)
               : const {},
           projectLicense: projectLicense,
           projectGroup: projectGroup,
@@ -993,6 +1013,10 @@ class AppstreamCollection {
   String toString() => "$runtimeType(version: $version, origin: '$origin')";
 }
 
+/// `C` is the untranslated text, which is always kept.
+Set<String>? _keptLocales(Iterable<String>? locales) =>
+    locales == null ? null : {'C', ...locales};
+
 /// Skips invalid documents rather than failing; see appstream.dart issue 15.
 Iterable<YamlNode> _parseYamlDocuments(Iterable<String> lines) sync* {
   final document = StringBuffer();
@@ -1036,26 +1060,37 @@ String? _parseYamlVersion(dynamic value) {
   }
 }
 
-Map<String, String> _parseYamlTranslatedString(dynamic value) {
+Map<String, String> _parseYamlTranslatedString(
+  dynamic value,
+  Set<String>? keptLocales,
+) {
   if (value is YamlMap) {
     // Copy, don't cast: a cast view keeps the YAML document's text alive.
     return {
       for (final entry in value.entries)
-        if (entry.value != null) entry.key.toString(): entry.value.toString(),
+        if (entry.value != null &&
+            (keptLocales == null || keptLocales.contains(entry.key.toString())))
+          entry.key.toString(): entry.value.toString(),
     };
   } else {
     throw FormatException('Invalid type for translated string');
   }
 }
 
-Map<String, String> _getXmlTranslatedString(XmlElement parent, String name) {
+Map<String, String> _getXmlTranslatedString(
+  XmlElement parent,
+  String name,
+  Set<String>? keptLocales,
+) {
   final value = <String, String>{};
   for (final element in parent.children
       .whereType<XmlElement>()
       .where((e) => e.name.local == name)) {
     final lang =
         element.getAttribute('lang') ?? element.getAttribute('xml:lang') ?? 'C';
-    value[lang] = element.innerXml;
+    if (keptLocales == null || keptLocales.contains(lang)) {
+      value[lang] = element.innerXml;
+    }
   }
 
   return value;

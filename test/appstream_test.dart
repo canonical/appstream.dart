@@ -534,6 +534,154 @@ void main() {
     );
   });
 
+  test('collection - locales - xml', () async {
+    const xml = '''<components version="0.12" origin="ubuntu-hirsute-main">
+  <component type="desktop-application">
+    <id>com.example.Hello</id>
+    <pkgname>hello</pkgname>
+    <name>Hello</name>
+    <name xml:lang="de_DE">Hallo</name>
+    <name xml:lang="fr">Bonjour</name>
+    <summary>Says hello</summary>
+    <summary xml:lang="de_DE">Sagt hallo</summary>
+    <summary xml:lang="fr">Dit bonjour</summary>
+    <description><p>Greets the world.</p></description>
+    <description xml:lang="de_DE"><p>Grüßt die Welt.</p></description>
+    <description xml:lang="fr"><p>Salue le monde.</p></description>
+    <developer_name>The Developer</developer_name>
+    <developer_name xml:lang="de_DE">Der Entwickler</developer_name>
+    <developer_name xml:lang="fr">Le développeur</developer_name>
+    <keywords>
+      <keyword>greeting</keyword>
+    </keywords>
+    <keywords xml:lang="de_DE">
+      <keyword>Gruß</keyword>
+    </keywords>
+    <keywords xml:lang="fr">
+      <keyword>salutation</keyword>
+    </keywords>
+    <screenshots>
+      <screenshot type="default">
+        <caption>Main window</caption>
+        <caption xml:lang="de_DE">Hauptfenster</caption>
+        <caption xml:lang="fr">Fenêtre principale</caption>
+        <image type="source">https://example.com/screenshot.png</image>
+      </screenshot>
+    </screenshots>
+    <releases>
+      <release version="1.0" date="2014-04-12">
+        <description><p>First release.</p></description>
+        <description xml:lang="de_DE"><p>Erste Version.</p></description>
+        <description xml:lang="fr"><p>Première version.</p></description>
+      </release>
+    </releases>
+  </component>
+</components>
+''';
+
+    final unfiltered = AppstreamCollection.fromXml(xml).components.single;
+    expect(
+      unfiltered.name,
+      equals({'C': 'Hello', 'de_DE': 'Hallo', 'fr': 'Bonjour'}),
+    );
+    expect(
+      unfiltered.summary,
+      equals({'C': 'Says hello', 'de_DE': 'Sagt hallo', 'fr': 'Dit bonjour'}),
+    );
+    expect(
+      unfiltered.description,
+      equals({
+        'C': '<p>Greets the world.</p>',
+        'de_DE': '<p>Grüßt die Welt.</p>',
+        'fr': '<p>Salue le monde.</p>',
+      }),
+    );
+    expect(
+      unfiltered.developerName,
+      equals({
+        'C': 'The Developer',
+        'de_DE': 'Der Entwickler',
+        'fr': 'Le développeur',
+      }),
+    );
+    expect(
+      unfiltered.keywords,
+      equals({
+        'C': ['greeting'],
+        'de_DE': ['Gruß'],
+        'fr': ['salutation'],
+      }),
+    );
+    expect(
+      unfiltered.screenshots.single.caption,
+      equals({
+        'C': 'Main window',
+        'de_DE': 'Hauptfenster',
+        'fr': 'Fenêtre principale',
+      }),
+    );
+    expect(
+      unfiltered.releases.single.description,
+      equals({
+        'C': '<p>First release.</p>',
+        'de_DE': '<p>Erste Version.</p>',
+        'fr': '<p>Première version.</p>',
+      }),
+    );
+
+    final filtered =
+        AppstreamCollection.fromXml(xml, locales: ['de_DE']).components.single;
+    expect(filtered.name, equals({'C': 'Hello', 'de_DE': 'Hallo'}));
+    expect(
+      filtered.summary,
+      equals({'C': 'Says hello', 'de_DE': 'Sagt hallo'}),
+    );
+    expect(
+      filtered.description,
+      equals({
+        'C': '<p>Greets the world.</p>',
+        'de_DE': '<p>Grüßt die Welt.</p>',
+      }),
+    );
+    expect(
+      filtered.developerName,
+      equals({'C': 'The Developer', 'de_DE': 'Der Entwickler'}),
+    );
+    expect(
+      filtered.keywords,
+      equals({
+        'C': ['greeting'],
+        'de_DE': ['Gruß'],
+      }),
+    );
+    expect(
+      filtered.screenshots.single.caption,
+      equals({'C': 'Main window', 'de_DE': 'Hauptfenster'}),
+    );
+    expect(
+      filtered.releases.single.description,
+      equals({'C': '<p>First release.</p>', 'de_DE': '<p>Erste Version.</p>'}),
+    );
+
+    final cOnly =
+        AppstreamCollection.fromXml(xml, locales: []).components.single;
+    expect(cOnly.name, equals({'C': 'Hello'}));
+    expect(cOnly.summary, equals({'C': 'Says hello'}));
+    expect(cOnly.description, equals({'C': '<p>Greets the world.</p>'}));
+    expect(cOnly.developerName, equals({'C': 'The Developer'}));
+    expect(
+      cOnly.keywords,
+      equals({
+        'C': ['greeting'],
+      }),
+    );
+    expect(cOnly.screenshots.single.caption, equals({'C': 'Main window'}));
+    expect(
+      cOnly.releases.single.description,
+      equals({'C': '<p>First release.</p>'}),
+    );
+  });
+
   test('collection - empty yaml', () async {
     expect(() => AppstreamCollection.fromYaml(''), throwsFormatException);
   });
@@ -1257,6 +1405,159 @@ Custom:
     );
   });
 
+  test('collection - locales - yaml', () async {
+    const yaml = """---
+File: DEP-11
+Version: '0.12'
+Origin: ubuntu-hirsute-main
+---
+Type: desktop-application
+ID: com.example.Hello
+Package: hello
+Name:
+  C: Hello
+  de_DE: Hallo
+  fr: Bonjour
+Summary:
+  C: Says hello
+  de_DE: Sagt hallo
+  fr: Dit bonjour
+Description:
+  C: <p>Greets the world.</p>
+  de_DE: <p>Grüßt die Welt.</p>
+  fr: <p>Salue le monde.</p>
+DeveloperName:
+  C: The Developer
+  de_DE: Der Entwickler
+  fr: Le développeur
+Keywords:
+  C:
+    - greeting
+  de_DE:
+    - Gruß
+  fr:
+    - salutation
+Screenshots:
+- default: true
+  caption:
+    C: Main window
+    de_DE: Hauptfenster
+    fr: Fenêtre principale
+  source-image:
+    url: https://example.com/screenshot.png
+Releases:
+- version: '1.0'
+  date: 2014-04-12
+  description:
+    C: <p>First release.</p>
+    de_DE: <p>Erste Version.</p>
+    fr: <p>Première version.</p>
+""";
+
+    final unfiltered = AppstreamCollection.fromYaml(yaml).components.single;
+    expect(
+      unfiltered.name,
+      equals({'C': 'Hello', 'de_DE': 'Hallo', 'fr': 'Bonjour'}),
+    );
+    expect(
+      unfiltered.summary,
+      equals({'C': 'Says hello', 'de_DE': 'Sagt hallo', 'fr': 'Dit bonjour'}),
+    );
+    expect(
+      unfiltered.description,
+      equals({
+        'C': '<p>Greets the world.</p>',
+        'de_DE': '<p>Grüßt die Welt.</p>',
+        'fr': '<p>Salue le monde.</p>',
+      }),
+    );
+    expect(
+      unfiltered.developerName,
+      equals({
+        'C': 'The Developer',
+        'de_DE': 'Der Entwickler',
+        'fr': 'Le développeur',
+      }),
+    );
+    expect(
+      unfiltered.keywords,
+      equals({
+        'C': ['greeting'],
+        'de_DE': ['Gruß'],
+        'fr': ['salutation'],
+      }),
+    );
+    expect(
+      unfiltered.screenshots.single.caption,
+      equals({
+        'C': 'Main window',
+        'de_DE': 'Hauptfenster',
+        'fr': 'Fenêtre principale',
+      }),
+    );
+    expect(
+      unfiltered.releases.single.description,
+      equals({
+        'C': '<p>First release.</p>',
+        'de_DE': '<p>Erste Version.</p>',
+        'fr': '<p>Première version.</p>',
+      }),
+    );
+
+    final filtered = AppstreamCollection.fromYaml(yaml, locales: ['de_DE'])
+        .components
+        .single;
+    expect(filtered.name, equals({'C': 'Hello', 'de_DE': 'Hallo'}));
+    expect(
+      filtered.summary,
+      equals({'C': 'Says hello', 'de_DE': 'Sagt hallo'}),
+    );
+    expect(
+      filtered.description,
+      equals({
+        'C': '<p>Greets the world.</p>',
+        'de_DE': '<p>Grüßt die Welt.</p>',
+      }),
+    );
+    expect(
+      filtered.developerName,
+      equals({'C': 'The Developer', 'de_DE': 'Der Entwickler'}),
+    );
+    expect(
+      filtered.keywords,
+      equals({
+        'C': ['greeting'],
+        'de_DE': ['Gruß'],
+      }),
+    );
+    expect(
+      filtered.screenshots.single.caption,
+      equals({'C': 'Main window', 'de_DE': 'Hauptfenster'}),
+    );
+    expect(
+      filtered.releases.single.description,
+      equals({'C': '<p>First release.</p>', 'de_DE': '<p>Erste Version.</p>'}),
+    );
+
+    final cOnly =
+        AppstreamCollection.fromYaml(yaml, locales: []).components.single;
+    expect(cOnly.name, equals({'C': 'Hello'}));
+    expect(cOnly.summary, equals({'C': 'Says hello'}));
+    expect(cOnly.description, equals({'C': '<p>Greets the world.</p>'}));
+    expect(cOnly.developerName, equals({'C': 'The Developer'}));
+    expect(
+      cOnly.keywords,
+      equals({
+        'C': ['greeting'],
+      }),
+    );
+    expect(cOnly.screenshots.single.caption, equals({'C': 'Main window'}));
+    expect(
+      cOnly.releases.single.description,
+      equals({'C': '<p>First release.</p>'}),
+    );
+  });
+
   test('collection - from lines, skipping invalid and empty documents - yaml',
       () async {
     const yaml = """---
@@ -1365,7 +1666,8 @@ Releases:
     timeout: const Timeout(Duration(seconds: 30)),
   );
 
-  test('pool - gzip-compressed yaml catalog', () async {
+  test('pool - gzip-compressed yaml catalog keeps only the requested locales',
+      () async {
     final tempDir = await Directory.systemTemp.createTemp('appstream_pool');
     addTearDown(() => tempDir.delete(recursive: true));
 
@@ -1397,7 +1699,10 @@ Summary:
     await compressed.writeAsBytes(gzip.encode(utf8.encode(yaml.toString())));
     expect(compressed.lengthSync(), greaterThan(64 * 1024));
 
-    final pool = AppstreamPool(catalogDirPrefixes: [tempDir.path]);
+    final pool = AppstreamPool(
+      catalogDirPrefixes: [tempDir.path],
+      locales: ['de_DE'],
+    );
     await pool.load();
 
     expect(
@@ -1408,18 +1713,14 @@ Summary:
       pool.components.map((c) => c.name),
       equals([
         for (var i = 0; i < componentCount; ++i)
-          {'C': 'App $i', 'de_DE': 'Anwendung $i', 'fr': 'Application $i'},
+          {'C': 'App $i', 'de_DE': 'Anwendung $i'},
       ]),
     );
     expect(
       pool.components.map((c) => c.summary),
       equals([
         for (var i = 0; i < componentCount; ++i)
-          {
-            'C': 'Greets you $i times',
-            'de_DE': 'Grüßt Sie $i Mal',
-            'fr': 'Vous salue $i fois',
-          },
+          {'C': 'Greets you $i times', 'de_DE': 'Grüßt Sie $i Mal'},
       ]),
     );
   });
