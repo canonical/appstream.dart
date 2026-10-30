@@ -63,18 +63,20 @@ class AppstreamPool {
       }
     }
 
-    final collectionFutures = <Future<AppstreamCollection>>[];
+    // The loaders start together at the end: one that fails early would have
+    // no listener yet while the directories are still being listed.
+    final loaders = <Future<AppstreamCollection> Function()>[];
     for (final dir in catalogDirs) {
       final xmlPaths = await _listFiles(dir, ['.xml', '.xml.gz']);
       for (final path in xmlPaths) {
-        collectionFutures.add(_loadXmlCollection(path));
+        loaders.add(() => _loadCollection(_loadXmlCollectionInIsolate, path));
       }
       final yamlPaths = await _listFiles('$dir/yaml', ['.yml', '.yml.gz']);
       for (final path in yamlPaths) {
-        collectionFutures.add(_loadYamlCollection(path));
+        loaders.add(() => _loadCollection(_loadYamlCollectionInIsolate, path));
       }
     }
-    final collections = await Future.wait(collectionFutures);
+    final collections = await Future.wait([for (final load in loaders) load()]);
     for (final collection in collections) {
       components.addAll(collection.components);
     }
@@ -128,9 +130,6 @@ class AppstreamPool {
     }
   }
 
-  Future<AppstreamCollection> _loadXmlCollection(String path) =>
-      _loadCollection(_loadXmlCollectionInIsolate, path);
-
   static Future<void> _loadXmlCollectionInIsolate(
     _LoadCollectionArguments args,
   ) async {
@@ -141,9 +140,6 @@ class AppstreamPool {
       ),
     );
   }
-
-  Future<AppstreamCollection> _loadYamlCollection(String path) =>
-      _loadCollection(_loadYamlCollectionInIsolate, path);
 
   static void _loadYamlCollectionInIsolate(_LoadCollectionArguments args) {
     final file = File(args.path).openSync();

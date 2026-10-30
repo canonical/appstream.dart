@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -1662,6 +1663,55 @@ Releases:
         AppstreamPool(catalogDirPrefixes: [tempDir.path]).load(),
         throwsA(isA<AppstreamCollectionLoadException>()),
       );
+    },
+    timeout: const Timeout(Duration(seconds: 30)),
+  );
+
+  test(
+    'pool - a catalog that fails right away is reported by load() alone',
+    () async {
+      final tempDir = await Directory.systemTemp.createTemp('appstream_pool');
+      addTearDown(() => tempDir.delete(recursive: true));
+
+      final yamlDir = Directory('${tempDir.path}/first/swcatalog/yaml');
+      await yamlDir.create(recursive: true);
+      await File('${yamlDir.path}/broken.yml').writeAsString("""---
+File: DEP-11
+Version: '0.12'
+Origin: test
+---
+Type: console-application
+ID: com.example.Hello
+Package: hello
+Name:
+  C: Hello World
+Summary:
+  C: A simple example application
+Releases:
+- version: '1.0'
+  type: definitely-not-a-release-type
+""");
+
+      // Listing the directories after the broken catalog takes longer than it
+      // needs to fail. A loader started before that would fail with nobody
+      // listening yet, and the error would also surface as uncaught.
+      final prefixes = [
+        '${tempDir.path}/first',
+        for (var i = 0; i < 400; i++) '${tempDir.path}/missing$i',
+      ];
+      final uncaught = <Object>[];
+      await runZonedGuarded(
+        () async {
+          await expectLater(
+            AppstreamPool(catalogDirPrefixes: prefixes).load(),
+            throwsA(isA<AppstreamCollectionLoadException>()),
+          );
+          // Gives an error that nobody listened to time to reach the zone.
+          await Future<void>.delayed(const Duration(milliseconds: 300));
+        },
+        (error, stack) => uncaught.add(error),
+      );
+      expect(uncaught, isEmpty);
     },
     timeout: const Timeout(Duration(seconds: 30)),
   );

@@ -8,6 +8,7 @@
 * Parse YAML catalogs one document at a time: `AppstreamPool` streams plain and gzip-compressed YAML catalogs from disk in chunks, and the new `AppstreamCollection.fromYamlLines` parses a catalog from its lines.
 * Load YAML catalogs with CRLF line endings, instead of throwing a FormatException ('Empty YAML file').
 * Skip empty documents in YAML catalogs, instead of throwing a `TypeError`.
+* Start the catalog loaders of `AppstreamPool.load()` only after all directories are listed, so a catalog that fails to parse right away is reported only as the exception from `load()`, not also as an uncaught asynchronous error.
 
 ## 0.2.11
 
