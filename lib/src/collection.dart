@@ -507,8 +507,6 @@ class AppstreamCollection {
     Iterable<String> lines, {
     Iterable<String>? locales,
     Iterable<AppstreamDetail> omit = const {},
-    // Gets each component as it is parsed, and `components` stays empty.
-    void Function(AppstreamComponent component)? onComponent,
   }) {
     final keptLocales = _keptLocales(locales);
     final omitted = omit.toSet();
@@ -1048,11 +1046,7 @@ class AppstreamCollection {
         custom: custom,
         contentRatings: contentRatings,
       );
-      if (onComponent != null) {
-        onComponent(parsed);
-      } else {
-        components.add(parsed);
-      }
+      components.add(parsed);
     }
 
     return AppstreamCollection(

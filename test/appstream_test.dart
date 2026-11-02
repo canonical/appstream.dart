@@ -1631,59 +1631,6 @@ Summary:
     );
   });
 
-  test('collection - from lines, handing each component over as it is read',
-      () {
-    const yaml = """---
-File: DEP-11
-Version: '0.12'
-Origin: test
----
-Type: console-application
-ID: com.example.Hello
-Package: hello
-Name:
-  C: Hello World
-Summary:
-  C: A simple example application
----
-Type: console-application
-ID: com.example.Goodbye
-Package: goodbye
-Name:
-  C: Goodbye World
-Summary:
-  C: Another simple example application
-""";
-    final allLines = yaml.split('\n');
-    var pulled = 0;
-    Iterable<String> lines() sync* {
-      for (final line in allLines) {
-        pulled++;
-        yield line;
-      }
-    }
-
-    final handedOver = <AppstreamComponent>[];
-    final linesPulledAtHandOver = <int>[];
-    final collection = AppstreamCollection.fromYamlLines(
-      lines(),
-      onComponent: (component) {
-        handedOver.add(component);
-        linesPulledAtHandOver.add(pulled);
-      },
-    );
-
-    expect(collection.origin, equals('test'));
-    expect(collection.components, isEmpty);
-    final plain = AppstreamCollection.fromYamlLines(allLines);
-    expect(
-      handedOver.map((c) => [c.id, c.name, c.summary]),
-      equals(plain.components.map((c) => [c.id, c.name, c.summary])),
-    );
-    // The first one arrives while later lines are still unread.
-    expect(linesPulledAtHandOver.first, lessThan(linesPulledAtHandOver.last));
-  });
-
   test(
     'pool - unparseable catalog reports an error instead of hanging',
     () async {
