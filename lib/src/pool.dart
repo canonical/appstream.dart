@@ -72,8 +72,7 @@ class AppstreamPool {
       }
     }
 
-    // The loaders start together at the end: one that fails early would have
-    // no listener yet while the directories are still being listed.
+    // Start loaders together so early failures do not fire before listeners attach.
     final loaders = <Future<AppstreamCollection> Function()>[];
     for (final dir in catalogDirs) {
       final xmlPaths = await _listFiles(dir, ['.xml', '.xml.gz']);

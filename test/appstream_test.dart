@@ -1692,9 +1692,7 @@ Releases:
   type: definitely-not-a-release-type
 """);
 
-      // Listing the directories after the broken catalog takes longer than it
-      // needs to fail. A loader started before that would fail with nobody
-      // listening yet, and the error would also surface as uncaught.
+      // Listing extra dirs ensures the failing loader runs before a listener attaches.
       final prefixes = [
         '${tempDir.path}/first',
         for (var i = 0; i < 400; i++) '${tempDir.path}/missing$i',
