@@ -1,17 +1,11 @@
 # Changelog
 
-## 0.2.12
+## 0.3.0
 
-* Stop translated strings parsed from YAML from keeping the whole parsed catalog, including a copy of its text, in memory (about 100 MB with Ubuntu's archive catalogs).
-* Convert non-string translated values to strings and skip ones with no value, instead of throwing when they are read.
-* Add a `locales` option to `AppstreamPool` and to the `AppstreamCollection.fromXml`, `fromYaml` and `fromYamlLines` constructors, to keep translated text only for those locales, besides the untranslated `C` text.
-* Add an `omit` option to `AppstreamPool` and to the `AppstreamCollection.fromXml`, `fromYaml` and `fromYamlLines` constructors, to leave out details a consumer never uses, listed in the new `AppstreamDetail` enum, and save the memory they take.
-* Parse YAML catalogs one document at a time: `AppstreamPool` streams plain and gzip-compressed YAML catalogs from disk in chunks, and the new `AppstreamCollection.fromYamlLines` parses a catalog from its lines.
-* Load YAML catalogs with CRLF line endings, instead of throwing a FormatException ('Empty YAML file').
-* Skip empty documents in YAML catalogs, instead of throwing a `TypeError`.
-* Make `AppstreamPool.load()` replace the components, instead of adding them again each time it is called.
-* Start the catalog loaders of `AppstreamPool.load()` only after all directories are listed, so a catalog that fails to parse right away is reported only as the exception from `load()`, not also as an uncaught asynchronous error.
-* Raise the minimum Dart SDK to 2.15.0, for `Isolate.exit`.
+* Fix translated YAML strings retaining unparsed catalog text in memory.
+* Add `locales` and `omit` options to filter translations and metadata at parse time.
+* Stream and parse YAML catalogs one document at a time (`AppstreamCollection.fromYamlLines`).
+* Improve catalog parser robustness for CRLF line endings, empty documents, and reload replacement.
 
 ## 0.2.11
 

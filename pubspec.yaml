@@ -1,5 +1,5 @@
 name: appstream
-version: 0.2.12
+version: 0.3.0
 
 description:
   A parser for Appstream data.
