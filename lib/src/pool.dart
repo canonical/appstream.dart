@@ -31,7 +31,9 @@ class AppstreamCollectionLoadException implements Exception {
 
 /// Metadata for all the components known about on this system.
 class AppstreamPool {
-  /// Creates a pool keeping only [locales] translations plus `C` (null: all).
+  /// Creates a pool.
+  ///
+  /// {@macro appstream.locales}
   AppstreamPool({
     List<String>? catalogDirPrefixes,
     List<String>? locales,

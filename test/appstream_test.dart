@@ -1308,23 +1308,76 @@ Summary:
     testOn: 'linux',
   );
 
-  test('collection - locales retains selected translations and C', () {
+  test('collection - YAML locales keep every translation in their languages',
+      () {
     const yaml = '''---
 File: DEP-11
 Version: '0.12'
-Origin: ubuntu
+Origin: test
 ---
-ID: com.example.test
+ID: com.example.App
 Name:
-  C: Hello
-  fr: Bonjour
-  de: Hallo
+  C: App
+  pt: pt
+  pt_BR: pt_BR
+  pt-PT: pt-PT
+  sr@latin: sr@latin
+  de: de
+  fr: fr
 Summary:
   C: Summary
+Keywords:
+  C:
+    - app
+  pt_BR:
+    - aplicativo
+  fr:
+    - application
 ''';
-    final collection = AppstreamCollection.fromYaml(yaml, locales: ['fr']);
-    expect(collection.components.first.name.keys, containsAll(['C', 'fr']));
-    expect(collection.components.first.name.containsKey('de'), isFalse);
+    final component = AppstreamCollection.fromYaml(
+      yaml,
+      locales: ['pt_BR', 'sr_RS', 'de_DE.UTF-8'],
+    ).components.single;
+    expect(
+      component.name.keys,
+      unorderedEquals(['C', 'pt', 'pt_BR', 'pt-PT', 'sr@latin', 'de']),
+    );
+    expect(component.keywords.keys, unorderedEquals(['C', 'pt_BR']));
+  });
+
+  test('collection - XML locales keep every translation in their languages',
+      () {
+    const xml = '''<components version="0.12" origin="test">
+  <component type="desktop-application">
+    <id>com.example.App</id>
+    <name>App</name>
+    <name xml:lang="pt">pt</name>
+    <name xml:lang="pt_BR">pt_BR</name>
+    <name xml:lang="pt-PT">pt-PT</name>
+    <name xml:lang="sr@latin">sr@latin</name>
+    <name xml:lang="de">de</name>
+    <name xml:lang="fr">fr</name>
+    <summary>Summary</summary>
+    <keywords>
+      <keyword>app</keyword>
+    </keywords>
+    <keywords xml:lang="pt_BR">
+      <keyword>aplicativo</keyword>
+    </keywords>
+    <keywords xml:lang="fr">
+      <keyword>application</keyword>
+    </keywords>
+  </component>
+</components>''';
+    final component = AppstreamCollection.fromXml(
+      xml,
+      locales: ['pt_BR', 'sr_RS', 'de_DE.UTF-8'],
+    ).components.single;
+    expect(
+      component.name.keys,
+      unorderedEquals(['C', 'pt', 'pt_BR', 'pt-PT', 'sr@latin', 'de']),
+    );
+    expect(component.keywords.keys, unorderedEquals(['C', 'pt_BR']));
   });
 
   test('collection - omit drops specified detail sections', () {
