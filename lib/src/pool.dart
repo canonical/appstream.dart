@@ -77,11 +77,11 @@ class AppstreamPool {
     for (final dir in catalogDirs) {
       final xmlPaths = await _listFiles(dir, ['.xml', '.xml.gz']);
       for (final path in xmlPaths) {
-        loaders.add(() => _loadCollection(_loadXmlCollectionInIsolate, path));
+        loaders.add(() => _loadCollection(_xmlIsolateEntryPoint, path));
       }
       final yamlPaths = await _listFiles('$dir/yaml', ['.yml', '.yml.gz']);
       for (final path in yamlPaths) {
-        loaders.add(() => _loadCollection(_loadYamlCollectionInIsolate, path));
+        loaders.add(() => _loadCollection(_yamlIsolateEntryPoint, path));
       }
     }
     final collections = await Future.wait([for (final load in loaders) load()]);
@@ -140,8 +140,8 @@ class AppstreamPool {
     }
   }
 
-  // Isolate.exit hands over the collection without copying.
-  static Future<void> _loadXmlCollectionInIsolate(
+  /// [Isolate.spawn] entry point only: [Isolate.exit] ends the calling isolate.
+  static Future<void> _xmlIsolateEntryPoint(
     _LoadCollectionArguments args,
   ) async {
     final xml = await _loadFile(args.path);
@@ -150,10 +150,12 @@ class AppstreamPool {
       locales: args.locales,
       omit: args.omit,
     );
+    // Isolate.exit hands over the collection without copying.
     Isolate.exit(args.port, collection);
   }
 
-  static void _loadYamlCollectionInIsolate(_LoadCollectionArguments args) {
+  /// [Isolate.spawn] entry point only: [Isolate.exit] ends the calling isolate.
+  static void _yamlIsolateEntryPoint(_LoadCollectionArguments args) {
     final file = File(args.path).openSync();
     final AppstreamCollection collection;
     try {
