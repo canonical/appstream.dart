@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:appstream/appstream.dart';
 import 'package:test/test.dart';
@@ -1238,6 +1239,78 @@ Custom:
     );
   });
 
+  test('collection - yaml with CRLF line endings', () {
+    const yaml = '''---
+File: DEP-11
+Version: '0.12'
+Origin: test
+---
+ID: com.example.One
+Name:
+  C: One
+Summary:
+  C: One
+---
+ID: com.example.Two
+Name:
+  C: Two
+Summary:
+  C: Two
+''';
+    final collection =
+        AppstreamCollection.fromYaml(yaml.replaceAll('\n', '\r\n'));
+    expect(collection.components.map((c) => c.name), [
+      {'C': 'One'},
+      {'C': 'Two'},
+    ]);
+  });
+
+  test('collection - yaml skips empty, comment-only and invalid documents', () {
+    final collection = AppstreamCollection.fromYaml('''---
+File: DEP-11
+Version: '0.12'
+Origin: test
+---
+ID: com.example.One
+Name:
+  C: One
+Summary:
+  C: One
+---
+---
+# Only a comment
+---
+ID: [unclosed
+---
+ID: com.example.Two
+Name:
+  C: Two
+Summary:
+  C: Two
+''');
+    expect(
+      collection.components.map((c) => c.id),
+      ['com.example.One', 'com.example.Two'],
+    );
+  });
+
+  test('collection - yaml lines without terminators', () {
+    final collection = AppstreamCollection.fromYamlLines([
+      '---',
+      'File: DEP-11',
+      "Version: '0.12'",
+      'Origin: test',
+      '---',
+      'ID: com.example.App',
+      'Name:',
+      '  C: App',
+      'Summary:',
+      '  C: Summary',
+    ]);
+    expect(collection.origin, 'test');
+    expect(collection.components.single.name, {'C': 'App'});
+  });
+
   test(
     'pool - unparseable catalog reports an error instead of hanging',
     () async {
@@ -1307,6 +1380,95 @@ Summary:
     },
     testOn: 'linux',
   );
+
+  test('pool - loads YAML catalogs whose lines span reads', () async {
+    final tempDir = await Directory.systemTemp.createTemp('appstream_pool');
+    addTearDown(() => tempDir.delete(recursive: true));
+
+    final yamlDir = Directory('${tempDir.path}/swcatalog/yaml');
+    await yamlDir.create(recursive: true);
+    const head = '''---
+File: DEP-11
+Version: '0.12'
+Origin: test
+---
+ID: com.example.Long
+Name:
+  C: ''';
+    // The pool reads 64 KiB at a time, so the emoji's 4 bytes span 2 reads.
+    final longName = '${'x' * (64 * 1024 - 2 - utf8.encode(head).length)}😀';
+    await File('${yamlDir.path}/catalog.yml').writeAsString('''$head$longName
+Summary:
+  C: Long
+---
+ID: com.example.Last
+Name:
+  C: Last
+Summary:
+  C: No final newline''');
+
+    final pool = AppstreamPool(catalogDirPrefixes: [tempDir.path]);
+    await pool.load();
+    expect(pool.components.map((c) => c.name['C']), [longName, 'Last']);
+    expect(pool.components.last.summary, {'C': 'No final newline'});
+  });
+
+  test('pool - loads gzipped YAML catalogs spanning several reads', () async {
+    final tempDir = await Directory.systemTemp.createTemp('appstream_pool');
+    addTearDown(() => tempDir.delete(recursive: true));
+
+    final yamlDir = Directory('${tempDir.path}/swcatalog/yaml');
+    await yamlDir.create(recursive: true);
+    // Random words barely compress, so the file spans several 64 KiB reads.
+    final random = Random(42);
+    String word() => String.fromCharCodes(
+          [for (var i = 0; i < 8; i++) 0x61 + random.nextInt(26)],
+        );
+    final summaries = [
+      for (var i = 0; i < 2000; i++)
+        [for (var j = 0; j < 12; j++) word()].join(' '),
+    ];
+    final yaml =
+        StringBuffer("---\nFile: DEP-11\nVersion: '0.12'\nOrigin: test");
+    for (final summary in summaries) {
+      // Each document starts with a newline, so the last line has none.
+      yaml.write('\n---\nID: com.example.App\nName:\n  C: App\n'
+          'Summary:\n  C: $summary');
+    }
+    await File('${yamlDir.path}/catalog.yml.gz')
+        .writeAsBytes(gzip.encode(utf8.encode(yaml.toString())));
+
+    final pool = AppstreamPool(catalogDirPrefixes: [tempDir.path]);
+    await pool.load();
+    expect(pool.components.map((c) => c.summary['C']), summaries);
+  });
+
+  test('pool - load replaces the components it held before', () async {
+    final tempDir = await Directory.systemTemp.createTemp('appstream_pool');
+    addTearDown(() => tempDir.delete(recursive: true));
+
+    final yamlDir = Directory('${tempDir.path}/swcatalog/yaml');
+    await yamlDir.create(recursive: true);
+    final catalog = File('${yamlDir.path}/catalog.yml');
+    String catalogWith(String id) => '''---
+File: DEP-11
+Version: '0.12'
+Origin: test
+---
+ID: $id
+Name:
+  C: App
+Summary:
+  C: Summary
+''';
+
+    final pool = AppstreamPool(catalogDirPrefixes: [tempDir.path]);
+    await catalog.writeAsString(catalogWith('com.example.Old'));
+    await pool.load();
+    await catalog.writeAsString(catalogWith('com.example.New'));
+    await pool.load();
+    expect(pool.components.map((c) => c.id), ['com.example.New']);
+  });
 
   test('collection - YAML locales keep every translation in their languages',
       () {
@@ -1380,29 +1542,25 @@ Keywords:
     expect(component.keywords.keys, unorderedEquals(['C', 'pt_BR']));
   });
 
-  test('collection - omit drops specified detail sections', () {
-    const yaml = '''---
-File: DEP-11
-Version: '0.12'
-Origin: ubuntu
----
-ID: com.example.test
-Name:
-  C: Hello
-Summary:
-  C: Summary
-Icon:
-  cached:
-    - name: test.png
-      width: 64
-      height: 64
-''';
-    final collection = AppstreamCollection.fromYaml(
-      yaml,
-      omit: [AppstreamDetail.cachedIcons],
-    );
-    expect(collection.components.first.icons, isEmpty);
-  });
+  for (final detail in AppstreamDetail.values) {
+    test('collection - YAML omit ${detail.name} skips it unvalidated', () {
+      _expectOmitted(
+        detail,
+        _omitYaml,
+        _invalidYaml[detail],
+        (yaml, omit) => AppstreamCollection.fromYaml(yaml, omit: omit),
+      );
+    });
+
+    test('collection - XML omit ${detail.name} skips it unvalidated', () {
+      _expectOmitted(
+        detail,
+        _omitXml,
+        _invalidXml[detail],
+        (xml, omit) => AppstreamCollection.fromXml(xml, omit: omit),
+      );
+    });
+  }
 
   test('pool - components collection is unmodifiable', () async {
     final pool = AppstreamPool(catalogDirPrefixes: []);
@@ -1732,4 +1890,189 @@ Summary:
       expect(pool.components.map((c) => c.id), ['com.example.test']);
     });
   });
+}
+
+/// A catalog with every [AppstreamDetail].
+const _omitYaml = '''---
+File: DEP-11
+Version: '0.12'
+Origin: test
+---
+ID: com.example.App
+Name:
+  C: App
+Summary:
+  C: Summary
+Icon:
+  stock: app
+  cached:
+    - name: app.png
+      width: 64
+      height: 64
+Screenshots:
+  - default: true
+    caption:
+      C: Caption
+    source-image:
+      url: https://example.com/source.png
+      width: 800
+      height: 600
+    thumbnails:
+      - url: https://example.com/thumb.png
+        width: 224
+        height: 168
+Releases:
+  - version: '1.0'
+    unix-timestamp: 1700000000
+    description:
+      C: <p>Notes</p>
+    url:
+      details: https://example.com/1.0
+    issues:
+      - id: CVE-2024-0001
+        type: cve
+Languages:
+  - locale: fr
+    percentage: 90
+ContentRating:
+  oars-1.1:
+    violence-cartoon: mild
+''';
+
+/// [_omitYaml] as XML.
+const _omitXml = '''<components version="0.12" origin="test">
+  <component type="desktop-application">
+    <id>com.example.App</id>
+    <name>App</name>
+    <summary>Summary</summary>
+    <icon type="stock">app</icon>
+    <icon type="cached" width="64" height="64">app.png</icon>
+    <screenshots>
+      <screenshot type="default">
+        <caption>Caption</caption>
+        <image type="source" width="800" height="600">https://example.com/source.png</image>
+        <image type="thumbnail" width="224" height="168">https://example.com/thumb.png</image>
+      </screenshot>
+    </screenshots>
+    <releases>
+      <release version="1.0" timestamp="1700000000">
+        <description><p>Notes</p></description>
+        <url>https://example.com/1.0</url>
+        <issues>
+          <issue type="cve">CVE-2024-0001</issue>
+        </issues>
+      </release>
+    </releases>
+    <languages>
+      <lang percentage="90">fr</lang>
+    </languages>
+    <content_rating type="oars-1.1">
+      <content_attribute id="violence-cartoon">mild</content_attribute>
+    </content_rating>
+  </component>
+</components>''';
+
+/// Text in [_omitYaml] and its invalid replacement, for each detail.
+const _invalidYaml = {
+  AppstreamDetail.cachedIcons: ['width: 64', 'width: abc'],
+  AppstreamDetail.contentRatings: ['cartoon: mild', 'cartoon: bogus'],
+  AppstreamDetail.languages: ['percentage: 90', 'percentage: abc'],
+  AppstreamDetail.releaseNotes: ['type: cve', 'type: bogus'],
+  AppstreamDetail.screenshotCaptions: ['C: Caption', 'Caption'],
+  AppstreamDetail.screenshotThumbnails: ['width: 224', 'width: abc'],
+};
+
+/// Text in [_omitXml] and its invalid replacement; any XML caption is valid.
+const _invalidXml = {
+  AppstreamDetail.cachedIcons: ['width="64"', 'width="abc"'],
+  AppstreamDetail.contentRatings: ['>mild<', '>bogus<'],
+  AppstreamDetail.languages: ['percentage="90"', 'percentage="abc"'],
+  AppstreamDetail.releaseNotes: ['type="cve"', 'type="bogus"'],
+  AppstreamDetail.screenshotThumbnails: ['width="224"', 'width="abc"'],
+};
+
+/// Expects omitting [detail] from [catalog] to empty it and nothing else,
+/// even once [invalid] text, `[original, replacement]`, breaks the detail.
+void _expectOmitted(
+  AppstreamDetail detail,
+  String catalog,
+  List<String>? invalid,
+  AppstreamCollection Function(String catalog, List<AppstreamDetail> omit)
+      parse,
+) {
+  final full = parse(catalog, []).components.single;
+  final expected = _detailsWithout(full, detail);
+  expect(_details(full), isNot(expected), reason: 'nothing to omit');
+
+  final broken =
+      invalid == null ? catalog : catalog.replaceFirst(invalid[0], invalid[1]);
+  if (invalid != null) {
+    expect(() => parse(broken, []), throwsA(anything), reason: 'still valid');
+  }
+  expect(_details(parse(broken, [detail]).components.single), expected);
+}
+
+/// The parts of [component] that [AppstreamDetail]s cover.
+Map<String, Object> _details(AppstreamComponent component) => {
+      'icons': component.icons,
+      'screenshots': component.screenshots,
+      'releases': component.releases,
+      'languages': component.languages,
+      'contentRatings': component.contentRatings,
+    };
+
+/// [_details] of [component] as they read with [detail] omitted.
+Map<String, Object> _detailsWithout(
+  AppstreamComponent component,
+  AppstreamDetail detail,
+) {
+  final details = _details(component);
+  switch (detail) {
+    case AppstreamDetail.cachedIcons:
+      details['icons'] = [
+        for (final icon in component.icons)
+          if (icon is! AppstreamCachedIcon) icon,
+      ];
+      break;
+    case AppstreamDetail.contentRatings:
+      details['contentRatings'] = const <String, Object>{};
+      break;
+    case AppstreamDetail.languages:
+      details['languages'] = const <Object>[];
+      break;
+    case AppstreamDetail.releaseNotes:
+      details['releases'] = [
+        for (final release in component.releases)
+          AppstreamRelease(
+            version: release.version,
+            date: release.date,
+            type: release.type,
+            urgency: release.urgency,
+          ),
+      ];
+      break;
+    case AppstreamDetail.screenshotCaptions:
+      details['screenshots'] = [
+        for (final screenshot in component.screenshots)
+          AppstreamScreenshot(
+            images: screenshot.images,
+            isDefault: screenshot.isDefault,
+          ),
+      ];
+      break;
+    case AppstreamDetail.screenshotThumbnails:
+      details['screenshots'] = [
+        for (final screenshot in component.screenshots)
+          AppstreamScreenshot(
+            images: [
+              for (final image in screenshot.images)
+                if (image.type == AppstreamImageType.source) image,
+            ],
+            caption: screenshot.caption,
+            isDefault: screenshot.isDefault,
+          ),
+      ];
+      break;
+  }
+  return details;
 }
