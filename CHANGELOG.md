@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0
+
+* Require Dart 2.15.
+* Make `AppstreamPool.components` read-only: `add` and `clear` throw an `UnsupportedError`, and `load()` replaces the components.
+* Drop null YAML translations and convert other values to strings, instead of failing when they are read.
+* Fix translated YAML strings keeping the whole catalog in memory, and parse YAML catalogs one document at a time (`AppstreamCollection.fromYamlLines`).
+* Add `locales` and `omit` options to keep only some translations and details.
+* Handle CRLF line endings, empty and comment-only YAML documents, and unrelated files in catalog directories.
+* Report catalog load errors from `load()` only, instead of also as an uncaught asynchronous error.
+
 ## 0.2.11
 
 * Support the `snapshot` release type.
