@@ -155,16 +155,18 @@ class AppstreamPool {
 
   static void _loadYamlCollectionInIsolate(_LoadCollectionArguments args) {
     final file = File(args.path).openSync();
+    final AppstreamCollection collection;
     try {
-      final collection = AppstreamCollection.fromYamlLines(
+      collection = AppstreamCollection.fromYamlLines(
         _readLines(file, args.path.endsWith('.gz')),
         locales: args.locales,
         omit: args.omit,
       );
-      Isolate.exit(args.port, collection);
     } finally {
       file.closeSync();
     }
+    // Outside the try: Isolate.exit would skip the finally and leak the file.
+    Isolate.exit(args.port, collection);
   }
 
   static Future<String> _loadFile(String path) async {

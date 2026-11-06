@@ -1272,6 +1272,42 @@ Releases:
     timeout: const Timeout(Duration(seconds: 30)),
   );
 
+  test(
+    'pool - closes YAML catalogs it has loaded',
+    () async {
+      final tempDir = await Directory.systemTemp.createTemp('appstream_pool');
+      addTearDown(() => tempDir.delete(recursive: true));
+
+      final yamlDir = Directory('${tempDir.path}/swcatalog/yaml');
+      await yamlDir.create(recursive: true);
+      await File('${yamlDir.path}/catalog.yml').writeAsString('''---
+File: DEP-11
+Version: '0.12'
+Origin: test
+---
+ID: com.example.App
+Name:
+  C: App
+Summary:
+  C: Summary
+''');
+
+      await AppstreamPool(catalogDirPrefixes: [tempDir.path]).load();
+
+      final openFiles = <String>[];
+      for (final fd in Directory('/proc/self/fd').listSync()) {
+        try {
+          openFiles.add(Link(fd.path).targetSync());
+        } on FileSystemException {
+          // The descriptor was closed while listing.
+        }
+      }
+      final catalogDir = '${tempDir.resolveSymbolicLinksSync()}/';
+      expect(openFiles.where((path) => path.startsWith(catalogDir)), isEmpty);
+    },
+    testOn: 'linux',
+  );
+
   test('collection - locales retains selected translations and C', () {
     const yaml = '''---
 File: DEP-11
