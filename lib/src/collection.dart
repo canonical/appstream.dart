@@ -12,7 +12,7 @@ import 'package:appstream/src/url.dart';
 import 'package:xml/xml.dart';
 import 'package:yaml/yaml.dart';
 
-/// Details a consumer can omit: never parsed, so they read as empty.
+/// Details a consumer can omit: not parsed or validated, so they read as empty.
 enum AppstreamDetail {
   /// [AppstreamCachedIcon]s in [AppstreamComponent.icons]; other icons stay.
   cachedIcons,
