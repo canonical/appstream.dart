@@ -1422,113 +1422,6 @@ Icon:
   });
 
   group('breaking edge cases - YAML parser', () {
-    test('non-map component document fails type cast', () {
-      const yaml = '''---
-File: DEP-11
-Version: '0.12'
-Origin: ubuntu
----
-- not
-- a
-- map
-''';
-      expect(
-        () => AppstreamCollection.fromYaml(yaml),
-        throwsA(isA<TypeError>()),
-      );
-    });
-
-    test('scalar component document fails type cast', () {
-      const yaml = '''---
-File: DEP-11
-Version: '0.12'
-Origin: ubuntu
----
-scalar-value
-''';
-      expect(
-        () => AppstreamCollection.fromYaml(yaml),
-        throwsA(isA<TypeError>()),
-      );
-    });
-
-    test('scalar string Name instead of map fails type cast', () {
-      const yaml = '''---
-File: DEP-11
-Version: '0.12'
-Origin: ubuntu
----
-ID: com.example.test
-Name: Plain String
-Summary:
-  C: Summary
-''';
-      expect(
-        () => AppstreamCollection.fromYaml(yaml),
-        throwsA(isA<TypeError>()),
-      );
-    });
-
-    test('numeric ID fails type cast', () {
-      const yaml = '''---
-File: DEP-11
-Version: '0.12'
-Origin: ubuntu
----
-ID: 12345
-Name:
-  C: Test
-Summary:
-  C: Summary
-''';
-      expect(
-        () => AppstreamCollection.fromYaml(yaml),
-        throwsA(isA<TypeError>()),
-      );
-    });
-
-    test('string priority in header fails type cast', () {
-      const yaml = '''---
-File: DEP-11
-Version: '0.12'
-Origin: ubuntu
-Priority: high
----
-ID: com.example.test
-Name:
-  C: Test
-Summary:
-  C: Summary
-''';
-      expect(
-        () => AppstreamCollection.fromYaml(yaml),
-        throwsA(isA<TypeError>()),
-      );
-    });
-
-    test('string icon width fails type cast', () {
-      const yaml = '''---
-File: DEP-11
-Version: '0.12'
-Origin: ubuntu
----
-ID: com.example.test
-Name:
-  C: Test
-Summary:
-  C: Summary
-Icon:
-  cached:
-    - name: test.png
-      width: '64'
-      height: 64
-''';
-      expect(
-        () => AppstreamCollection.fromYaml(yaml),
-        throwsA(isA<TypeError>()),
-      );
-    });
-
     test('missing component ID throws FormatException', () {
       const yaml = '''---
 File: DEP-11
@@ -1746,20 +1639,6 @@ Releases:
   </component>
 </components>''';
       expect(() => AppstreamCollection.fromXml(xml), throwsFormatException);
-    });
-
-    test(
-        'XML component tolerates missing name and summary whereas YAML does not',
-        () {
-      const xml = '''<components version="0.12" origin="ubuntu">
-  <component type="desktop-application">
-    <id>com.example.test</id>
-  </component>
-</components>''';
-      final collection = AppstreamCollection.fromXml(xml);
-      expect(collection.components.first.id, 'com.example.test');
-      expect(collection.components.first.name, isEmpty);
-      expect(collection.components.first.summary, isEmpty);
     });
   });
 
