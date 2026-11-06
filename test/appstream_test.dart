@@ -1826,21 +1826,31 @@ Summary:
       );
     });
 
-    test('non-catalog text file in catalog dir causes XML load failure',
-        () async {
+    test('non-catalog files in catalog dirs are ignored', () async {
       final tempDir = await Directory.systemTemp.createTemp('appstream-break-');
       addTearDown(() => tempDir.delete(recursive: true));
 
-      final catalogDir = Directory('${tempDir.path}/swcatalog');
-      await catalogDir.create(recursive: true);
-      await File('${catalogDir.path}/README.txt')
+      final yamlDir = Directory('${tempDir.path}/swcatalog/yaml');
+      await yamlDir.create(recursive: true);
+      await File('${tempDir.path}/swcatalog/README.txt')
           .writeAsString('Non-catalog file');
+      await File('${yamlDir.path}/README.txt')
+          .writeAsString('Non-catalog file');
+      await File('${yamlDir.path}/test.yml').writeAsString('''---
+File: DEP-11
+Version: '0.12'
+Origin: test
+---
+ID: com.example.test
+Name:
+  C: Test
+Summary:
+  C: Summary
+''');
 
       final pool = AppstreamPool(catalogDirPrefixes: [tempDir.path]);
-      await expectLater(
-        pool.load(),
-        throwsA(isA<AppstreamCollectionLoadException>()),
-      );
+      await pool.load();
+      expect(pool.components.map((c) => c.id), ['com.example.test']);
     });
   });
 }

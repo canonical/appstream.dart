@@ -102,8 +102,8 @@ class AppstreamPool {
     try {
       return await dir
           .list()
-          .where((e) => e is File)
-          .map((e) => (e as File).path)
+          .where((e) => e is File && suffixes.any(e.path.endsWith))
+          .map((e) => e.path)
           .toList();
     } on FileSystemException {
       return [];
