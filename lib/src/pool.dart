@@ -9,8 +9,8 @@ class _LoadCollectionArguments {
   const _LoadCollectionArguments(this.port, this.path, this.locales, this.omit);
   final SendPort port;
   final String path;
-  final Set<String>? locales;
-  final Set<AppstreamDetail> omit;
+  final List<String>? locales;
+  final List<AppstreamDetail> omit;
 }
 
 /// Thrown when a catalog file cannot be loaded, for instance because it holds
@@ -34,19 +34,19 @@ class AppstreamPool {
   /// Creates a pool keeping only [locales] translations plus `C` (null: all).
   AppstreamPool({
     List<String>? catalogDirPrefixes,
-    Iterable<String>? locales,
-    Iterable<AppstreamDetail> omit = const {},
+    List<String>? locales,
+    List<AppstreamDetail> omit = const [],
   })  : catalogDirPrefixes = catalogDirPrefixes ??
             const ['/usr/share', '/var/lib', '/var/cache'],
-        _locales = locales?.toSet(),
-        _omit = omit.toSet();
+        _locales = locales,
+        _omit = omit;
 
   /// Where `swcatalog` and `app-info` are searched; defaults to system dirs.
   final List<String> catalogDirPrefixes;
 
-  final Set<String>? _locales;
+  final List<String>? _locales;
 
-  final Set<AppstreamDetail> _omit;
+  final List<AppstreamDetail> _omit;
 
   /// The components in this pool, read-only.
   List<AppstreamComponent> get components => _components;

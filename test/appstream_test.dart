@@ -1346,7 +1346,7 @@ Icon:
 ''';
     final collection = AppstreamCollection.fromYaml(
       yaml,
-      omit: {AppstreamDetail.cachedIcons},
+      omit: [AppstreamDetail.cachedIcons],
     );
     expect(collection.components.first.icons, isEmpty);
   });

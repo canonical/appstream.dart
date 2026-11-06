@@ -41,11 +41,10 @@ class AppstreamCollection {
   /// Decodes XML, keeping only [locales] translations plus `C` (null: all).
   factory AppstreamCollection.fromXml(
     String xml, {
-    Iterable<String>? locales,
-    Iterable<AppstreamDetail> omit = const {},
+    List<String>? locales,
+    List<AppstreamDetail> omit = const [],
   }) {
     final keptLocales = _keptLocales(locales);
-    final omitted = omit.toSet();
     final document = XmlDocument.parse(xml);
 
     final root = document.getElement('components');
@@ -97,7 +96,7 @@ class AppstreamCollection {
         if (type == null) {
           throw FormatException('Missing icon type');
         }
-        if (type == 'cached' && omitted.contains(AppstreamDetail.cachedIcons)) {
+        if (type == 'cached' && omit.contains(AppstreamDetail.cachedIcons)) {
           continue;
         }
         final w = icon.getAttribute('width');
@@ -204,7 +203,7 @@ class AppstreamCollection {
       }
       for (final screenshot in screenshotElements) {
         final isDefault = screenshot.getAttribute('type') == 'default';
-        final caption = omitted.contains(AppstreamDetail.screenshotCaptions)
+        final caption = omit.contains(AppstreamDetail.screenshotCaptions)
             ? const <String, String>{}
             : _getXmlTranslatedString(screenshot, 'caption', keptLocales);
         final images = <AppstreamImage>[];
@@ -223,7 +222,7 @@ class AppstreamCollection {
             throw FormatException('Unknown image type');
           }
           if (type == AppstreamImageType.thumbnail &&
-              omitted.contains(AppstreamDetail.screenshotThumbnails)) {
+              omit.contains(AppstreamDetail.screenshotThumbnails)) {
             continue;
           }
           final w = imageElement.getAttribute('width');
@@ -286,7 +285,7 @@ class AppstreamCollection {
           var description = const <String, String>{};
           String? url;
           var issues = const <AppstreamIssue>[];
-          if (!omitted.contains(AppstreamDetail.releaseNotes)) {
+          if (!omit.contains(AppstreamDetail.releaseNotes)) {
             description =
                 _getXmlTranslatedString(release, 'description', keptLocales);
             final urlElement = release.getElement('url');
@@ -390,7 +389,7 @@ class AppstreamCollection {
       }
 
       var languages = const <AppstreamLanguage>[];
-      if (!omitted.contains(AppstreamDetail.languages)) {
+      if (!omit.contains(AppstreamDetail.languages)) {
         languages = [];
         final languagesElement = component.getElement('languages');
         if (languagesElement != null) {
@@ -410,7 +409,7 @@ class AppstreamCollection {
 
       var contentRatings =
           const <String, Map<String, AppstreamContentRating>>{};
-      if (!omitted.contains(AppstreamDetail.contentRatings)) {
+      if (!omit.contains(AppstreamDetail.contentRatings)) {
         contentRatings = {};
         for (final contentRating
             in elements.where((e) => e.name.local == 'content_rating')) {
@@ -493,8 +492,8 @@ class AppstreamCollection {
   /// Decodes YAML, keeping only [locales] translations plus `C` (null: all).
   factory AppstreamCollection.fromYaml(
     String yaml, {
-    Iterable<String>? locales,
-    Iterable<AppstreamDetail> omit = const {},
+    List<String>? locales,
+    List<AppstreamDetail> omit = const [],
   }) =>
       AppstreamCollection.fromYamlLines(
         LineSplitter.split(yaml),
@@ -505,11 +504,10 @@ class AppstreamCollection {
   /// Decodes YAML [lines] as they stream; they must have no line terminators.
   factory AppstreamCollection.fromYamlLines(
     Iterable<String> lines, {
-    Iterable<String>? locales,
-    Iterable<AppstreamDetail> omit = const {},
+    List<String>? locales,
+    List<AppstreamDetail> omit = const [],
   }) {
     final keptLocales = _keptLocales(locales);
-    final omitted = omit.toSet();
     final yamlDocuments = _parseYamlDocuments(lines).iterator;
     if (!yamlDocuments.moveNext()) {
       throw FormatException('Empty YAML file');
@@ -564,8 +562,7 @@ class AppstreamCollection {
       final icon = component['Icon'] as YamlMap?;
       if (icon != null) {
         for (final type in icon.keys) {
-          if (type == 'cached' &&
-              omitted.contains(AppstreamDetail.cachedIcons)) {
+          if (type == 'cached' && omit.contains(AppstreamDetail.cachedIcons)) {
             continue;
           }
           switch (type) {
@@ -687,14 +684,13 @@ class AppstreamCollection {
         }
         for (final screenshot in screenshotsComponent) {
           final isDefault = screenshot['default'] as bool? ?? 'false' == 'true';
-          final caption = omitted.contains(AppstreamDetail.screenshotCaptions)
+          final caption = omit.contains(AppstreamDetail.screenshotCaptions)
               ? null
               : screenshot['caption'];
           final images = <AppstreamImage>[];
-          final thumbnails =
-              omitted.contains(AppstreamDetail.screenshotThumbnails)
-                  ? null
-                  : screenshot['thumbnails'] as YamlList?;
+          final thumbnails = omit.contains(AppstreamDetail.screenshotThumbnails)
+              ? null
+              : screenshot['thumbnails'] as YamlList?;
           if (thumbnails != null) {
             for (final thumbnail in thumbnails) {
               final url = thumbnail['url'] as String?;
@@ -788,7 +784,7 @@ class AppstreamCollection {
           var description = const <String, String>{};
           String? url;
           var issues = const <AppstreamIssue>[];
-          if (!omitted.contains(AppstreamDetail.releaseNotes)) {
+          if (!omit.contains(AppstreamDetail.releaseNotes)) {
             final rawDescription = release['description'];
             url = release['url']?['details'] as String?;
             issues = [];
@@ -952,7 +948,7 @@ class AppstreamCollection {
       }
 
       var languages = const <AppstreamLanguage>[];
-      if (!omitted.contains(AppstreamDetail.languages)) {
+      if (!omit.contains(AppstreamDetail.languages)) {
         languages = [];
         final languagesComponent = component['Languages'];
         if (languagesComponent != null) {
@@ -976,7 +972,7 @@ class AppstreamCollection {
 
       var contentRatings =
           const <String, Map<String, AppstreamContentRating>>{};
-      if (!omitted.contains(AppstreamDetail.contentRatings)) {
+      if (!omit.contains(AppstreamDetail.contentRatings)) {
         contentRatings = {};
         final contentRatingComponent = component['ContentRating'] as YamlMap?;
         if (contentRatingComponent != null) {
